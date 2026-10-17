@@ -35,3 +35,6 @@ ignore_errors = true
 [tool.ty.rules]
 all = "ignore"
 
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
