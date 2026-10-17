@@ -159,7 +159,9 @@ def review_criterion(crit: dict, target: dict, comp_rows: list[dict], doc, elig_
     support = challenge = 0
     regimen_support = 0  # a toxicity rationale supports having a threshold, not its value
     value_txt = _fmt(crit)
+    with_prop: list[str] = []
 
+    # The trial's own arms and protocol text are examined before peer thresholds are interpreted.
     # 1. regimen safety rationale (existence of a threshold, not its value)
     rel = druglib.LAB_RELEVANCE.get(analyte)
     if rel:
@@ -187,7 +189,23 @@ def review_criterion(crit: dict, target: dict, comp_rows: list[dict], doc, elig_
         else:
             missing.append("Treatment regimen could not be determined from registry or protocol text.")
 
-    # 2. comparators
+    # 2. protocol-stated rationale
+    hits = protocol_rationale(doc, crit, elig_pages)
+    value_specific = any(h["value_specific"] for h in hits)
+    for h in hits:
+        ev.append({
+            "kind": "protocol", "stance": "supports" if h["value_specific"] else "context",
+            "strength": "moderate" if h["value_specific"] else "weak", "page": h["page"], "quote": h["text"],
+            "summary": ("Protocol text references this threshold value." if h["value_specific"] else
+                        "Protocol discusses this topic; the passage does not state why this specific threshold was chosen."),
+            "url": doc.url if doc else None,
+        })
+    if value_specific:
+        support += 2
+    else:
+        missing.append(f"No protocol text found that explains why {value_txt} was chosen (searched outside the eligibility section).")
+
+    # 3. comparators
     looser = [r for r in comp_rows if r["direction"] == "comparator looser"]
     same = [r for r in comp_rows if r["direction"] == "same"]
     stricter = [r for r in comp_rows if r["direction"] == "comparator stricter"]
@@ -227,23 +245,9 @@ def review_criterion(crit: dict, target: dict, comp_rows: list[dict], doc, elig_
     if not comparable:
         missing.append("No comparable trial with an extractable value for this criterion was found.")
 
-    # 3. protocol-stated rationale
-    hits = protocol_rationale(doc, crit, elig_pages)
-    value_specific = any(h["value_specific"] for h in hits)
-    for h in hits:
-        ev.append({
-            "kind": "protocol", "stance": "supports" if h["value_specific"] else "context",
-            "strength": "moderate" if h["value_specific"] else "weak", "page": h["page"], "quote": h["text"],
-            "summary": ("Protocol text references this threshold value." if h["value_specific"] else
-                        "Protocol discusses this topic; the passage does not state why this specific threshold was chosen."),
-            "url": doc.url if doc else None,
-        })
-    if value_specific:
-        support += 2
-    else:
-        missing.append(f"No protocol text found that explains why {value_txt} was chosen (searched outside the eligibility section).")
-
-    # 4. FDA guidance
+    # 4. FDA guidance. Guidance issued after the trial started is applied retrospectively: it is a
+    # present-day review standard, not something the trial's designers could have followed.
+    start = target["study"].get("start_date") or ""
     has_hepatic = bool(druglib.drugs_with(drugs, "hepatic"))
     for p in passages_for(analyte):
         if p.stance == "purpose":
@@ -255,8 +259,12 @@ def review_criterion(crit: dict, target: dict, comp_rows: list[dict], doc, elig_
         if p.key in ("wo_time_based_justified", "wo_parameters_not_time") and analyte not in TIME_BASED_PRIOR_THERAPY:
             continue
         specific = p.key in SPECIFIC_FDA
+        retro = bool(start) and start[:7] < d["issued"]
         ev.append({"kind": "fda", "stance": stance, "strength": "specific" if specific else "general", "key": p.key,
-                   "quote": p.quote, "citation": d["citation"], "link": d["link"], "summary": d["citation"]})
+                   "quote": p.quote, "citation": d["citation"], "link": d["link"], "summary": d["citation"],
+                   "issued": d["issued"], "retrospective": retro,
+                   "timing_note": (f"Issued {d['issued']}, after this trial started ({start}); applied retrospectively, "
+                                   "not a standard available when the trial was designed.") if retro else None})
     specific_fda = [e for e in ev if e["kind"] == "fda" and e["strength"] == "specific" and e["stance"] == "challenges"]
     if specific_fda:
         pk_alt = any(c.get("when") == "PK-based alternative" for c in crit.get("conditions", []))
@@ -278,7 +286,14 @@ def review_criterion(crit: dict, target: dict, comp_rows: list[dict], doc, elig_
         cls = CLASS_INSUFFICIENT
         if challenge == 0 and regimen_support and support == regimen_support:
             missing.append("Only a regimen-level toxicity rationale was found; it supports having a threshold, not this value.")
-    rationale = _explain(cls, crit, looser, same, stricter, specific_fda, value_specific, support, challenge)
+    safety_note = None
+    if regimen_support and not value_specific:
+        pages = sorted({h["page"] for h in hits})
+        where = f"; the protocol mentions related safety considerations (p. {', '.join(map(str, pages))})" if pages else ""
+        safety_note = (f"a plausible safety rationale exists (arms include {', '.join(with_prop)}{where}), "
+                       f"but the precise threshold ({value_txt}) is not established by the available evidence")
+    retro = any(e.get("retrospective") for e in specific_fda)
+    rationale = _explain(cls, crit, looser, same, stricter, specific_fda, value_specific, support, challenge, safety_note, retro)
     for e in ev:
         e["tier"] = TIERS.get(e["kind"], e["kind"])
     return {
@@ -293,20 +308,23 @@ def review_criterion(crit: dict, target: dict, comp_rows: list[dict], doc, elig_
     }
 
 
-def _explain(cls, crit, looser, same, stricter, specific_fda, value_specific, support, challenge) -> str:
-    parts = []
+def _explain(cls, crit, looser, same, stricter, specific_fda, value_specific, support, challenge,
+             safety_note=None, fda_retrospective=False) -> str:
+    # The trial's own rationale comes first; peer thresholds are precedent, not proof.
+    parts = [safety_note] if safety_note else []
+    if value_specific:
+        parts.append("the protocol contains a value-specific rationale")
+    elif not safety_note:
+        parts.append("no value-specific rationale was found in the protocol")
     if looser:
-        parts.append(f"{len(looser)} comparable trial(s) used a more permissive threshold")
+        parts.append(f"{len(looser)} comparable trial(s) used a more permissive threshold (precedent, not evidence of safety)")
     if same:
         parts.append(f"{len(same)} used the same threshold")
     if stricter:
         parts.append(f"{len(stricter)} used a stricter one")
     if specific_fda:
-        parts.append("FDA July 2026 guidance makes a specific recommendation for this criterion")
-    if value_specific:
-        parts.append("the protocol contains a value-specific rationale")
-    else:
-        parts.append("no value-specific rationale was found in the protocol")
+        parts.append("FDA's July 2026 guidance makes a specific recommendation for this criterion"
+                     + (" (issued after this trial started; applied retrospectively)" if fda_retrospective else ""))
     return f"{cls}: " + "; ".join(parts) + f". (support score {support}, challenge score {challenge})"
 
 
@@ -324,7 +342,7 @@ def suggest(cls: str, crit: dict, looser: list, specific_fda: list) -> dict:
     if looser and cls == CLASS_REVIEW:
         vals = sorted({r["criterion"]["value_norm"] for r in looser})
         return {"action": "justify_in_protocol",
-                "text": f"Document why {_fmt(crit)} is required when comparable trials used {', '.join(str(v) for v in vals)} {crit['unit_norm']}; consider whether the comparators' threshold would be acceptable for this regimen. This is a review question, not a safety conclusion."}
+                "text": f"Start from the protocol's own safety rationale and treatment arms, and document why {_fmt(crit)} was chosen. Comparable trials used {', '.join(str(v) for v in vals)} {crit['unit_norm']}; that is precedent, not evidence that a lower value is safe for this regimen. This is a clinical review question, not a finding that the threshold is wrong."}
     if crit["category"] == "washout":
         return {"action": "justify_in_protocol",
                 "text": "State the PK/PD or clinical rationale for this time-based interval, or consider clinical/laboratory recovery parameters (FDA washout guidance §III.A)."}

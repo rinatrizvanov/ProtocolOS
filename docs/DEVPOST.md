@@ -3,7 +3,7 @@
 **Tracks:** Regeneron "Reinvent Clinical Trials & Drug Development" · Chalk "Best Data-Driven Agent Built on Chalk"
 
 ## Inspiration
-Eligibility criteria decide who can join a trial, and they are mostly written from precedent and habit. Regeneron's starter material describes protocol teams that rarely get evidence-based feedback before a draft is locked. In July 2026 FDA finalized three oncology guidances on exactly the criteria that are most often templated: laboratory values, performance status and washout periods.
+Eligibility criteria decide who can join a trial, and they are mostly written from precedent and habit. Regeneron's starter material describes protocol teams that rarely get evidence-based feedback before a draft is locked. In July 2026 FDA finalized three oncology guidances on exactly the criteria that are most often templated: laboratory values, performance status and washout periods. When TrialLens reviews older trials, it applies this guidance retrospectively as today's review standard and labels it that way. It is not a judgment of what those trials' designers could have known.
 
 Restrictions also exist for good reasons: safety, enrichment, statistical power. So "loosen everything" is the wrong answer. We wanted a tool that helps a protocol team see *which* restrictions deserve reconsideration, and what evidence says so.
 
@@ -19,7 +19,15 @@ For each lab, performance-status and washout criterion it:
 - **Lets a reviewer challenge any recommendation.** A verifier separates factual checks (source exists, quote matches, value correct) from clinical-logic rules (e.g. you can't relax a neutrophil floor because the PD-1 drug isn't myelosuppressive when the other arms contain carboplatin and paclitaxel). Outcomes include *Needs medical review*.
 - **Exports a review packet** for the protocol meeting, with a decision for each criterion (accept / reject / needs medical review / defer).
 
-On EMPOWER-Lung 3, TrialLens finds that three comparable PD-1 + chemotherapy trials used hemoglobin ≥9 g/dL while EMPOWER-Lung 3 used ≥10. One academic trial (eNERGY) also used 10, and the protocol itself discusses higher anemia with pemetrexed. It surfaces that as a review question, not a recommendation to change the threshold.
+On EMPOWER-Lung 3 (hemoglobin ≥10 g/dL), TrialLens first looks at the trial itself. Its arms include platinum doublets with pemetrexed or paclitaxel, and the protocol (p. 51) notes higher grade 3–4 anemia with pemetrexed. A plausible safety rationale therefore exists, but the precise threshold is not established by the available evidence.
+
+It then compares peers that started earlier:
+- Three comparable first-line NSCLC trials with checkpoint-inhibitor and platinum-chemotherapy arms used ≥9 g/dL (CheckMate 9LA, CheckMate 227, KEYNOTE-042).
+- One academic trial (eNERGY) used >10.
+
+The result is *Review recommended*, a clinical review question for the team. It is not evidence that the threshold was a mistake.
+
+The protocol posted on ClinicalTrials.gov is Amendment 5, so TrialLens makes no claim about whether the threshold changed during development, or about EMPOWER-Lung 1 influencing EMPOWER-Lung 3.
 
 ## How we built it
 - **Python engine:** fetches and caches registry records and protocol PDFs; rule-based, page-anchored extraction (it handles tables, Symbol-font glyphs and image-only pages); a curated drug-class table; registry-driven comparator discovery; verbatim-verified FDA passage index; transparent classification; deterministic verifier; review-packet export.

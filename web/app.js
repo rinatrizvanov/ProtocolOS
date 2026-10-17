@@ -73,7 +73,7 @@ function renderStudy() {
         </div>
         <div class="meta" style="flex-direction:column;align-items:flex-end">
           <span><b>Criteria source</b> ${esc(study.criteria_source)}</span>
-          ${doc ? `<span><b>Protocol</b> <a class="src-link" href="${esc(doc.url)}" target="_blank" rel="noopener">${esc(doc.filename)} (${esc(doc.date)})</a></span>` : ""}
+          ${doc ? `<span><b>Protocol</b> <a class="src-link" href="${esc(doc.url)}" target="_blank" rel="noopener">${esc(doc.filename)} (${esc(doc.date)})</a></span><span class="src">posted version; may be a later amendment, not the design-time draft</span>` : ""}
           <span><b>Eligibility pages</b> ${esc((study.eligibility_pages || []).join(", ") || "—")}</span>
           <span><b>Comparator cutoff</b> ${esc(state.review.as_of || "none")}</span>
         </div>
@@ -171,8 +171,9 @@ function renderDetail() {
       ${items.map((e) => `<div class="ev"><div class="k">${esc(e.tier || e.kind)} · ${esc(e.strength)}</div>${esc(e.summary)}
         ${e.quote && e.kind === "protocol" ? `<q>${esc(e.quote.slice(0, 320))}</q><div>${srcLink(nct, e.page, e.quote.slice(0, 80))}</div>` : ""}
         ${e.kind === "comparator" && e.page ? `<div>${srcLink(e.nct_id, e.page, e.quote, `${e.nct_id} p.${e.page}`)}</div>` : ""}</div>`).join("")}
-      ${fda.map((e) => `<div class="ev fda"><div class="k">FDA guidance · ${esc(e.strength)}</div><q>${esc(e.quote)}</q>
-        <div><a class="src-link" href="${esc(e.link)}" target="_blank" rel="noopener">${esc(e.citation)}</a></div></div>`).join("")}
+      ${fda.map((e) => `<div class="ev fda"><div class="k">FDA guidance · ${esc(e.strength)}${e.retrospective ? " · retrospective" : ""}</div><q>${esc(e.quote)}</q>
+        <div><a class="src-link" href="${esc(e.link)}" target="_blank" rel="noopener">${esc(e.citation)}</a></div>
+        ${e.timing_note ? `<div class="src">${esc(e.timing_note)}</div>` : ""}</div>`).join("")}
       ${!items.length && !fda.length ? `<div class="src">none</div>` : ""}</div>`;
   }).join("");
 
@@ -200,7 +201,7 @@ function renderDetail() {
       <div class="src" style="margin-top:6px">Coverage = whether the comparator's regimen contains the same toxicity-relevant drug classes as this trial (e.g. myelosuppressive classes for hematologic criteria). Partial coverage weakens the comparison.</div></div>
 
     <div class="card"><h3>Evidence</h3><div class="ev-grid">${evCols}</div>
-      ${(() => { const g = r.evidence.filter((e) => e.kind === "fda" && e.strength !== "specific"); return g.length ? `<details style="margin-top:8px"><summary class="src">General FDA principles that apply to this criterion (${g.length} verified passages)</summary>${g.map((e) => `<div class="ev fda"><div class="k">FDA guidance · general · ${esc(e.stance)}</div><q>${esc(e.quote)}</q><div><a class="src-link" href="${esc(e.link)}" target="_blank" rel="noopener">${esc(e.citation)}</a></div></div>`).join("")}</details>` : ""; })()}</div>
+      ${(() => { const g = r.evidence.filter((e) => e.kind === "fda" && e.strength !== "specific"); return g.length ? `<details style="margin-top:8px"><summary class="src">General FDA principles that apply to this criterion (${g.length} verified passages)${g.some((e) => e.retrospective) ? "; issued after this trial started, so applied retrospectively" : ""}</summary>${g.map((e) => `<div class="ev fda"><div class="k">FDA guidance · general · ${esc(e.stance)}</div><q>${esc(e.quote)}</q><div><a class="src-link" href="${esc(e.link)}" target="_blank" rel="noopener">${esc(e.citation)}</a></div></div>`).join("")}</details>` : ""; })()}</div>
 
     <div class="card"><h3>Evidence that is missing</h3><ul class="missing">${r.missing_evidence.map((m) => `<li>${esc(m)}</li>`).join("") || "<li>none recorded</li>"}</ul></div>
 

@@ -125,6 +125,7 @@ class Passage:
         lines = f", lines {self.fda_lines}" if self.fda_lines else ""
         d["citation"] = f"FDA, {self.guidance_title} ({date}), {self.section}, p. {self.printed_page or self.pdf_page}{lines}"
         d["link"] = f"{self.url}#page={self.pdf_page}"
+        d["issued"] = FDA_GUIDANCES[self.guidance]["issued"]
         return d
 
 

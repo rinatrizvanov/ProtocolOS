@@ -25,6 +25,28 @@ But restrictions exist for reasons: patient safety, predictive or prognostic enr
 
 The evidence is scattered. For EMPOWER-Lung 3 (Regeneron, NCT03409614), the registry text never mentions a neutrophil threshold. The lab criteria exist only on page 67 of a 170-page protocol PDF, and comparable trials' thresholds sit in other sponsors' PDFs.
 
+**Retrospective use of the 2026 guidance.** EMPOWER-Lung 3 and its comparators were designed years before FDA's July 2026 guidances. TrialLens applies that guidance as a present-day review standard. It does not judge what those teams could have known when they designed their trials.
+
+### Worked example: EMPOWER-Lung 3 hemoglobin ≥10 g/dL
+
+TrialLens examines the trial's own context before looking at peers:
+- **Own arms.** The regimen contains carboplatin, cisplatin, paclitaxel and pemetrexed.
+- **Own protocol.** Page 51 notes that grade 3–4 anemia was higher with pemetrexed.
+
+A plausible safety rationale therefore exists. A toxicity rationale supports having *a* threshold, though, not this exact number, and the protocol does not say why 10 rather than 9 was chosen.
+
+Among comparable trials started earlier:
+- Three used ≥9 g/dL (CheckMate 9LA, CheckMate 227, KEYNOTE-042).
+- One (eNERGY) used >10 g/dL.
+- EMPOWER-Lung 1 (cemiplimab monotherapy vs platinum-doublet chemotherapy) and KEYNOTE-189 also used ≥9 g/dL. TrialLens did not select them as automatic comparators.
+
+TrialLens classifies this as *Review recommended*: a clinical review question for the protocol team. It is **not** a finding that the threshold is a mistake or that it unjustifiably excludes patients.
+
+Several things are not shown by this evidence:
+- **Protocol version.** The posted protocol is Amendment 5, not necessarily the design-time version. Nothing here shows whether the threshold changed across amendments.
+- **Influence from EMPOWER-Lung 1.** Nothing here shows that EMPOWER-Lung 1 shaped EMPOWER-Lung 3's design.
+- **Optimal threshold.** No outcome data identify which threshold is best.
+
 ## Who it is for and where it fits
 
 Clinical scientists, protocol authors, medical reviewers and cross-functional protocol-review teams. It fits **before protocol finalization**, as preparation for the protocol review meeting. TrialLens gathers and checks the evidence; the team decides.
@@ -137,12 +159,13 @@ Third-party documents (protocol PDFs, FDA PDFs, NHANES files) are downloaded fro
 | `web/` | Dashboard (vanilla JS, no build step) |
 | `evals/` | Gold labels, verifier cases, planted-issue generator, answer key, and runners |
 | `chalk_project/` | Chalk feature store and Chalk Evaluation bundle |
-| `docs/` | Demo script, Devpost text, deck, screenshots |
+| `docs/` | Demo script, Devpost text, deck, screenshots, [teammate onboarding](docs/TEAMMATE_ONBOARDING.md), [evidence-graph/agent plan](docs/EVIDENCE_AGENT_PLAN.md) |
 | `tests/` | Unit invariants |
 
 ## Limitations
 
-- **Protocol versions.** Protocol PDFs on ClinicalTrials.gov are usually the final amendment, not the design-time draft.
+- **Protocol versions.** Protocol PDFs on ClinicalTrials.gov are usually the final amendment, not the design-time draft (EMPOWER-Lung 3's posted protocol is Amendment 5). TrialLens does not track amendment history, so it cannot say whether or why a threshold changed.
+- **Retrospective guidance.** FDA's July 2026 guidances post-date most reviewed trials and are applied retrospectively; FDA citations are marked "retrospective" when issued after the trial's start date.
 - **Coverage.** Only about 28% of recent phase 3 oncology trials post one.
 - **Extraction.** It is rule-based and misses unusual layouts; known failures are listed in the Evaluation tab.
 - **Drug table.** The pharmacology table is curated at class level and not re-verified against current labels.
@@ -151,7 +174,12 @@ Third-party documents (protocol PDFs, FDA PDFs, NHANES files) are downloaded fro
 - **Gold labels.** Single annotator.
 - **NHANES panel (secondary).** It describes the US general population, not people with cancer. Race/ethnicity is not a proxy for Duffy-null phenotype.
 
-**Claims TrialLens does not make:** that any threshold is safe to change; that a change would improve enrollment, timelines or cost; that any output is clinically validated.
+**Claims TrialLens does not make:**
+- That any threshold is safe to change.
+- That a threshold differing from peer trials is a mistake.
+- That one trial's results caused another trial's design choices.
+- That a change would improve enrollment, timelines or cost.
+- That any output is clinically validated.
 
 ## License
 

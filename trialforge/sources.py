@@ -30,21 +30,25 @@ FDA_GUIDANCES = {
     "lab": {
         "title": "Cancer Clinical Trial Eligibility Criteria: Laboratory Values",
         "date": "July 2026",
+        "issued": "2026-07",
         "url": "https://www.fda.gov/media/178013/download",
     },
     "ps": {
         "title": "Cancer Clinical Trial Eligibility Criteria: Performance Status",
         "date": "July 2026",
+        "issued": "2026-07",
         "url": "https://www.fda.gov/media/178018/download",
     },
     "washout": {
         "title": "Cancer Clinical Trial Eligibility Criteria: Washout Periods and Concomitant Medications",
         "date": "July 2026",
+        "issued": "2026-07",
         "url": "https://www.fda.gov/media/178016/download",
     },
     "enrichment": {
         "title": "Enrichment Strategies for Clinical Trials to Support Determination of Effectiveness of Human Drugs and Biological Products",
         "date": "March 2019",
+        "issued": "2019-03",
         "url": "https://www.fda.gov/media/121320/download",
     },
 }

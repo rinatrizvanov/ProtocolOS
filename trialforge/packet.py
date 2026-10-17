@@ -63,7 +63,8 @@ def build_packet(review: dict, decisions: dict | None = None) -> dict:
                 "stance": e["stance"], "strength": e["strength"], "summary": e["summary"],
                 "source": (f"{e.get('nct_id') or st['nct_id']} p.{e['page']}" if e.get("page") else None), "quote": e.get("quote"),
             })
-        guidance = [{"stance": e["stance"], "quote": e["quote"], "citation": e["citation"], "link": e["link"], "specific": e["strength"] == "specific"} for e in rv["evidence"] if e["kind"] == "fda"]
+        guidance = [{"stance": e["stance"], "quote": e["quote"], "citation": e["citation"], "link": e["link"], "specific": e["strength"] == "specific",
+                     "retrospective": bool(e.get("retrospective"))} for e in rv["evidence"] if e["kind"] == "fda"]
         pr, why = PRIORITY.get(rv["classification"], ("—", ""))
         items.append({
             "criterion_id": c["id"],
@@ -100,7 +101,11 @@ def build_packet(review: dict, decisions: dict | None = None) -> dict:
             "TrialLens is a research prototype. Classifications are prompts for expert review, not safety or regulatory determinations.",
             "Likely-purpose tags are inferred by TrialLens from the criterion type and regimen unless a protocol source is cited.",
             "A more permissive comparator shows a threshold was used, not that it was safe; a toxicity link supports having a threshold, not a specific value.",
-            "Protocol PDFs on ClinicalTrials.gov are usually the final amendment, not the design-time version.",
+            "Protocol PDFs on ClinicalTrials.gov are usually the final amendment, not the design-time version. "
+            "A difference from peer trials does not show that a threshold changed across amendments or why it was chosen.",
+            "FDA guidance marked \"retrospective\" was issued after this trial started. It is applied as a present-day review "
+            "standard, not as a standard the trial's designers could have followed.",
+            "Differences from comparable trials are clinical review questions, not findings that a criterion is a mistake.",
         ],
     }
 
@@ -144,7 +149,7 @@ def to_markdown(p: dict) -> str:
         if it["regulatory_guidance"]:
             out.append("\n**Regulatory guidance:**")
             for g in it["regulatory_guidance"]:
-                out.append(f"- [{g['stance']}] \"{g['quote']}\" — {g['citation']}")
+                out.append(f"- [{g['stance']}{', retrospective' if g.get('retrospective') else ''}] \"{g['quote']}\" — {g['citation']}")
         out.append("\n**Unresolved questions / missing evidence:**")
         out += [f"- {q}" for q in it["unresolved_questions"]] or ["- none recorded"]
         out.append(f"\n**Suggested next action ({it['next_action']['action'].replace('_', ' ')}):** {it['next_action']['text']}")
