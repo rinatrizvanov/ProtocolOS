@@ -62,17 +62,17 @@ BASE_URL=http://localhost:8765 /tmp/pw/bin/python scripts/e2e_demo.py
 scripts/smoke_deploy.sh http://localhost:8765
 ```
 
-Secrets scan (plan.md 5.8) before the repo goes public; both commands must print nothing. Report only
-redacted findings.
+Secrets scan (plan.md 5.8) before the repo goes public. Report only redacted findings.
 
 ```bash
 git log -p --all | grep -nE 'ck-[A-Za-z0-9]{6,}|sk-ant-|CLIENT_SECRET=|CHALK_ROUTER_API_KEY=.'
 git ls-files | grep -E '(^|/)\.env$|\.pem$|\.chalk\.yml'
 ```
 
-`.env.example` contains `CHALK_ROUTER_API_KEY=` and `CHALK_CLIENT_SECRET=` with empty values, which the first
-pattern does not match (`CHALK_ROUTER_API_KEY=.` needs a character after `=`; `CLIENT_SECRET=` does match).
-Expect that one hit from `.env.example` and check that it has no value.
+The second command must print nothing. The first is broad and, on `ws/deploy` at 2026-10-17 17:40 ET, matched
+only non-secrets: the word "back-tested" (`ck-` pattern), placeholder text `CHALK_ROUTER_API_KEY=...` in the
+docs, this file's own copy of the pattern, and the empty `CHALK_CLIENT_SECRET=` in `.env.example`. Read every
+hit; a hit with an actual value after `=`, or `ck-`/`sk-ant-` followed by a key, blocks going public.
 
 ## 5. Railway steps (user confirms each)
 
