@@ -1,0 +1,22 @@
+# secrets and local environments (only .env.example may enter the image)
+.env
+.env.*
+!.env.example
+*.pem
+.chalk.yml
+.venv/
+.git/
+
+# tooling and local state
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+.vscode/
+.zed/
+.helix/
+data/decisions/
+data/investigations/
+
+# not ours to redistribute
+Regeneron starter-kit/
