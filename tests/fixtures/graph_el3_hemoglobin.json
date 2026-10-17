@@ -1,0 +1,914 @@
+{
+  "nct_id": "NCT03409614",
+  "criterion_id": "hemoglobin",
+  "built_from": {
+    "computed_at": "2026-10-17 14:59:55",
+    "as_of": "2018-03-06",
+    "fingerprint": "91ae3206b9b57da61dd9352201497a1bba9fae92139b37a3c90f39f85b28a62b"
+  },
+  "nodes": [
+    {
+      "id": "crit:NCT03409614:hemoglobin",
+      "type": "Criterion",
+      "label": "Hemoglobin ≥10 g/dL",
+      "epistemic": "source_fact",
+      "data": {
+        "criterion_id": "hemoglobin",
+        "label": "Hemoglobin",
+        "operator": "≥",
+        "value_norm": 10.0,
+        "unit_norm": "g/dL",
+        "section": "inclusion",
+        "analyte": "hemoglobin",
+        "category": "lab",
+        "conditions": [],
+        "line": 34
+      },
+      "source": {
+        "nct": "NCT03409614",
+        "page": 67,
+        "quote": "a. Hemoglobin ≥10.0 g/dL",
+        "url": "https://cdn.clinicaltrials.gov/large-docs/14/NCT03409614/Prot_000.pdf"
+      }
+    },
+    {
+      "id": "assess:NCT03409614:hemoglobin",
+      "type": "Assessment",
+      "label": "Assessment of Hemoglobin ≥10 g/dL",
+      "epistemic": "rule_inferred",
+      "data": {
+        "scores": {
+          "support": 1,
+          "challenge": 2
+        },
+        "explanation": "Review recommended: a plausible safety rationale exists (arms include carboplatin, cisplatin, paclitaxel, pemetrexed; the protocol mentions related safety considerations (p. 51)), but the precise threshold (≥10 g/dL) is not established by the available evidence; 3 comparable trial(s) used a more permissive threshold (precedent, not evidence of safety); 1 used the same threshold. (support score 1, challenge score 2)"
+      },
+      "source": null
+    },
+    {
+      "id": "class:NCT03409614:hemoglobin",
+      "type": "Classification",
+      "label": "Review recommended",
+      "epistemic": "rule_inferred",
+      "data": {
+        "classification": "Review recommended"
+      },
+      "source": null
+    },
+    {
+      "id": "rec:NCT03409614:hemoglobin",
+      "type": "Recommendation",
+      "label": "Suggested action: justify in protocol",
+      "epistemic": "rule_inferred",
+      "data": {
+        "action": "justify_in_protocol",
+        "text": "Start from the protocol's own safety rationale and treatment arms, and document why ≥10 g/dL was chosen. Comparable trials used 9.0 g/dL; that is precedent, not evidence that a lower value is safe for this regimen. This is a clinical review question, not a finding that the threshold is wrong."
+      },
+      "source": null
+    },
+    {
+      "id": "curated:f6d2b149b9ec",
+      "type": "CuratedFact",
+      "label": "Curated pharmacology: Arms include carboplatin, cisplatin, paclitaxel, pemetrexed (myelosuppression (anemia), curated pharmacology…",
+      "epistemic": "curated_pharmacology",
+      "data": {
+        "existence_only": true,
+        "summary": "Arms include carboplatin, cisplatin, paclitaxel, pemetrexed (myelosuppression (anemia), curated pharmacology table). This supports having a threshold; it does not show that ≥10 g/dL is the right value.",
+        "strength": "existence only"
+      },
+      "source": null
+    },
+    {
+      "id": "passage:902716994c70",
+      "type": "Passage",
+      "label": "p.51: However, drug-related grade 3 to 4 toxicities of anemia, fatigue, and neutropenia were si…",
+      "epistemic": "source_fact",
+      "data": {
+        "value_specific": false
+      },
+      "source": {
+        "nct": "NCT03409614",
+        "page": 51,
+        "quote": "However, drug-related grade 3 to 4 toxicities of anemia, fatigue, and neutropenia were significantly higher in pemetrexed-treated patients.",
+        "url": "https://cdn.clinicaltrials.gov/large-docs/14/NCT03409614/Prot_000.pdf"
+      }
+    },
+    {
+      "id": "cmpthr:NCT03215706:hemoglobin",
+      "type": "ComparatorThreshold",
+      "label": "CheckMate 9LA: Hemoglobin ≥9 g/dL",
+      "epistemic": "source_fact",
+      "data": {
+        "nct_id": "NCT03215706",
+        "acronym": "CheckMate 9LA",
+        "operator": "≥",
+        "value_norm": 9.0,
+        "unit_norm": "g/dL",
+        "direction": "comparator looser",
+        "coverage": {
+          "status": "full",
+          "missing_classes": []
+        },
+        "similarity": {
+          "registry_jaccard": 1.0,
+          "protocol_class_jaccard": 1.0,
+          "shared_classes": [
+            "CTLA-4 inhibitor",
+            "PD-1 inhibitor",
+            "antifolate",
+            "platinum",
+            "taxane"
+          ],
+          "target_only_classes": [],
+          "comparator_only_classes": []
+        },
+        "summary": "CheckMate 9LA used ≥9 g/dL (vs ≥10 g/dL). A more permissive threshold in a comparable trial shows it was used, not that it was safe or that the stricter value is unnecessary."
+      },
+      "source": {
+        "nct": "NCT03215706",
+        "page": 42,
+        "quote": "iv) Hemoglobin ≥ 9.0 g/dL",
+        "url": "https://cdn.clinicaltrials.gov/large-docs/06/NCT03215706/Prot_000.pdf"
+      }
+    },
+    {
+      "id": "cmpthr:NCT03351361:hemoglobin",
+      "type": "ComparatorThreshold",
+      "label": "eNERGY: Hemoglobin >10 g/dL",
+      "epistemic": "source_fact",
+      "data": {
+        "nct_id": "NCT03351361",
+        "acronym": "eNERGY",
+        "operator": ">",
+        "value_norm": 10.0,
+        "unit_norm": "g/dL",
+        "direction": "same",
+        "coverage": {
+          "status": "full",
+          "missing_classes": []
+        },
+        "similarity": {
+          "registry_jaccard": 1.0,
+          "protocol_class_jaccard": 1.0,
+          "shared_classes": [
+            "CTLA-4 inhibitor",
+            "PD-1 inhibitor",
+            "antifolate",
+            "platinum",
+            "taxane"
+          ],
+          "target_only_classes": [],
+          "comparator_only_classes": []
+        },
+        "summary": "eNERGY used the same threshold (same value, different operator). Agreement may reflect template carry-forward (FDA lab guidance §II) rather than independent justification."
+      },
+      "source": {
+        "nct": "NCT03351361",
+        "page": 8,
+        "quote": "• Hemoglobin > 10.0 g/dL",
+        "url": "https://cdn.clinicaltrials.gov/large-docs/61/NCT03351361/Prot_SAP_001.pdf"
+      }
+    },
+    {
+      "id": "cmpthr:NCT02477826:hemoglobin",
+      "type": "ComparatorThreshold",
+      "label": "CheckMate 227: Hemoglobin ≥9 g/dL",
+      "epistemic": "source_fact",
+      "data": {
+        "nct_id": "NCT02477826",
+        "acronym": "CheckMate 227",
+        "operator": "≥",
+        "value_norm": 9.0,
+        "unit_norm": "g/dL",
+        "direction": "comparator looser",
+        "coverage": {
+          "status": "full",
+          "missing_classes": []
+        },
+        "similarity": {
+          "registry_jaccard": 0.833,
+          "protocol_class_jaccard": 0.833,
+          "shared_classes": [
+            "CTLA-4 inhibitor",
+            "PD-1 inhibitor",
+            "antifolate",
+            "platinum",
+            "taxane"
+          ],
+          "target_only_classes": [],
+          "comparator_only_classes": [
+            "nucleoside analog"
+          ]
+        },
+        "summary": "CheckMate 227 used ≥9 g/dL (vs ≥10 g/dL). A more permissive threshold in a comparable trial shows it was used, not that it was safe or that the stricter value is unnecessary."
+      },
+      "source": {
+        "nct": "NCT02477826",
+        "page": 73,
+        "quote": "iv) Hemoglobin               ≥ 9.0 g/dL",
+        "url": "https://cdn.clinicaltrials.gov/large-docs/26/NCT02477826/Prot_SAP_000.pdf"
+      }
+    },
+    {
+      "id": "cmpthr:NCT02220894:hemoglobin",
+      "type": "ComparatorThreshold",
+      "label": "NCT02220894: Hemoglobin ≥9 g/dL",
+      "epistemic": "source_fact",
+      "data": {
+        "nct_id": "NCT02220894",
+        "acronym": null,
+        "operator": "≥",
+        "value_norm": 9.0,
+        "unit_norm": "g/dL",
+        "direction": "comparator looser",
+        "coverage": {
+          "status": "full",
+          "missing_classes": []
+        },
+        "similarity": {
+          "registry_jaccard": 0.8,
+          "protocol_class_jaccard": 0.8,
+          "shared_classes": [
+            "PD-1 inhibitor",
+            "antifolate",
+            "platinum",
+            "taxane"
+          ],
+          "target_only_classes": [
+            "CTLA-4 inhibitor"
+          ],
+          "comparator_only_classes": []
+        },
+        "summary": "NCT02220894 used ≥9 g/dL (vs ≥10 g/dL). A more permissive threshold in a comparable trial shows it was used, not that it was safe or that the stricter value is unnecessary."
+      },
+      "source": {
+        "nct": "NCT02220894",
+        "page": 33,
+        "quote": "Hemoglobin                                    ≥9 g/dL or ≥5.6 mmol/L",
+        "url": "https://cdn.clinicaltrials.gov/large-docs/94/NCT02220894/Prot_SAP_001.pdf"
+      }
+    },
+    {
+      "id": "fda:lab_restrictive_slows",
+      "type": "GuidancePassage",
+      "label": "FDA: Unnecessarily restrictive eligibility criteria may slow subject accrual, limit patients'…",
+      "epistemic": "source_fact",
+      "data": {
+        "key": "lab_restrictive_slows",
+        "citation": "FDA, Cancer Clinical Trial Eligibility Criteria: Laboratory Values (July 2026), §I Introduction, p. 2, lines 37–39",
+        "issued": "2026-07",
+        "retrospective": true,
+        "timing_note": "Issued 2026-07, after this trial started (2018-03-06); applied retrospectively, not a standard available when the trial was designed.",
+        "strength": "general"
+      },
+      "source": {
+        "nct": null,
+        "page": null,
+        "quote": "Unnecessarily restrictive eligibility criteria may slow subject accrual, limit patients’ access to clinical trials, and lead to trial results that do not fully represent treatment effects in the patient population that will ultimately use the drug.",
+        "url": "https://www.fda.gov/media/178013/download#page=5"
+      }
+    },
+    {
+      "id": "fda:lab_only_when_necessary",
+      "type": "GuidancePassage",
+      "label": "FDA: Laboratory values should be used as exclusionary criteria only when clearly necessary to…",
+      "epistemic": "source_fact",
+      "data": {
+        "key": "lab_only_when_necessary",
+        "citation": "FDA, Cancer Clinical Trial Eligibility Criteria: Laboratory Values (July 2026), §III Recommendations, p. 4, lines 102–103",
+        "issued": "2026-07",
+        "retrospective": true,
+        "timing_note": "Issued 2026-07, after this trial started (2018-03-06); applied retrospectively, not a standard available when the trial was designed.",
+        "strength": "general"
+      },
+      "source": {
+        "nct": null,
+        "page": null,
+        "quote": "Laboratory values should be used as exclusionary criteria only when clearly necessary to mitigate potential safety concerns.",
+        "url": "https://www.fda.gov/media/178013/download#page=7"
+      }
+    },
+    {
+      "id": "fda:lab_specific_concerns",
+      "type": "GuidancePassage",
+      "label": "FDA: Restrictions based upon renal, hepatic, or bone marrow function should reflect specific,…",
+      "epistemic": "source_fact",
+      "data": {
+        "key": "lab_specific_concerns",
+        "citation": "FDA, Cancer Clinical Trial Eligibility Criteria: Laboratory Values (July 2026), §III Recommendations, p. 4, lines 105–107",
+        "issued": "2026-07",
+        "retrospective": true,
+        "timing_note": "Issued 2026-07, after this trial started (2018-03-06); applied retrospectively, not a standard available when the trial was designed.",
+        "strength": "general"
+      },
+      "source": {
+        "nct": null,
+        "page": null,
+        "quote": "Restrictions based upon renal, hepatic, or bone marrow function should reflect specific, well-reasoned concerns regarding drug exposure that might result in toxicity, or organ susceptibility to toxicity, based upon available data",
+        "url": "https://www.fda.gov/media/178013/download#page=7"
+      }
+    },
+    {
+      "id": "fda:lab_customized",
+      "type": "GuidancePassage",
+      "label": "FDA: Laboratory value-based eligibility criteria should be customized to the drug(s) under inv…",
+      "epistemic": "source_fact",
+      "data": {
+        "key": "lab_customized",
+        "citation": "FDA, Cancer Clinical Trial Eligibility Criteria: Laboratory Values (July 2026), §III Recommendations › A. Scientific Justification for Laboratory Tests as Exclusion Criteria, p. 4, lines 119–120",
+        "issued": "2026-07",
+        "retrospective": true,
+        "timing_note": "Issued 2026-07, after this trial started (2018-03-06); applied retrospectively, not a standard available when the trial was designed.",
+        "strength": "general"
+      },
+      "source": {
+        "nct": null,
+        "page": null,
+        "quote": "Laboratory value-based eligibility criteria should be customized to the drug(s) under investigation.",
+        "url": "https://www.fda.gov/media/178013/download#page=7"
+      }
+    },
+    {
+      "id": "fda:lab_not_carried_forward",
+      "type": "GuidancePassage",
+      "label": "FDA: laboratory value-related restrictions from earlier clinical trials should not be carried…",
+      "epistemic": "source_fact",
+      "data": {
+        "key": "lab_not_carried_forward",
+        "citation": "FDA, Cancer Clinical Trial Eligibility Criteria: Laboratory Values (July 2026), §III Recommendations › A. Scientific Justification for Laboratory Tests as Exclusion Criteria, p. 4, lines 133–134",
+        "issued": "2026-07",
+        "retrospective": true,
+        "timing_note": "Issued 2026-07, after this trial started (2018-03-06); applied retrospectively, not a standard available when the trial was designed.",
+        "strength": "general"
+      },
+      "source": {
+        "nct": null,
+        "page": null,
+        "quote": "laboratory value-related restrictions from earlier clinical trials should not be carried forward automatically",
+        "url": "https://www.fda.gov/media/178013/download#page=7"
+      }
+    },
+    {
+      "id": "fda:lab_template_variation",
+      "type": "GuidancePassage",
+      "label": "FDA: Analysis of industry-sponsored trials in oncology over time shows little variation in lab…",
+      "epistemic": "source_fact",
+      "data": {
+        "key": "lab_template_variation",
+        "citation": "FDA, Cancer Clinical Trial Eligibility Criteria: Laboratory Values (July 2026), §II Background, p. 3, lines 82–84",
+        "issued": "2026-07",
+        "retrospective": true,
+        "timing_note": "Issued 2026-07, after this trial started (2018-03-06); applied retrospectively, not a standard available when the trial was designed.",
+        "strength": "general"
+      },
+      "source": {
+        "nct": null,
+        "page": null,
+        "quote": "Analysis of industry-sponsored trials in oncology over time shows little variation in laboratory value-based eligibility criteria, suggesting that these criteria may have been carried forward from early-phase to late-phase trials",
+        "url": "https://www.fda.gov/media/178013/download#page=6"
+      }
+    },
+    {
+      "id": "fda:lab_pd1_class",
+      "type": "GuidancePassage",
+      "label": "FDA: pharmacology and toxicity profiles are similar across agents, facilitating use of compara…",
+      "epistemic": "source_fact",
+      "data": {
+        "key": "lab_pd1_class",
+        "citation": "FDA, Cancer Clinical Trial Eligibility Criteria: Laboratory Values (July 2026), §III Recommendations › A. Scientific Justification for Laboratory Tests as Exclusion Criteria, p. 4, lines 129–131",
+        "issued": "2026-07",
+        "retrospective": true,
+        "timing_note": "Issued 2026-07, after this trial started (2018-03-06); applied retrospectively, not a standard available when the trial was designed.",
+        "strength": "general"
+      },
+      "source": {
+        "nct": null,
+        "page": null,
+        "quote": "pharmacology and toxicity profiles are similar across agents, facilitating use of comparable laboratory-related eligibility criteria, as long as they are otherwise well-justified.",
+        "url": "https://www.fda.gov/media/178013/download#page=7"
+      }
+    },
+    {
+      "id": "fda:lab_as_restrictive_as_necessary",
+      "type": "GuidancePassage",
+      "label": "FDA: Laboratory-based eligibility criteria should be only as restrictive as necessary to mitig…",
+      "epistemic": "source_fact",
+      "data": {
+        "key": "lab_as_restrictive_as_necessary",
+        "citation": "FDA, Cancer Clinical Trial Eligibility Criteria: Laboratory Values (July 2026), §III Recommendations › A. Scientific Justification for Laboratory Tests as Exclusion Criteria, p. 4, lines 137–138",
+        "issued": "2026-07",
+        "retrospective": true,
+        "timing_note": "Issued 2026-07, after this trial started (2018-03-06); applied retrospectively, not a standard available when the trial was designed.",
+        "strength": "general"
+      },
+      "source": {
+        "nct": null,
+        "page": null,
+        "quote": "Laboratory-based eligibility criteria should be only as restrictive as necessary to mitigate the clinical risk(s) of concern.",
+        "url": "https://www.fda.gov/media/178013/download#page=7"
+      }
+    },
+    {
+      "id": "fda:lab_assess_impact",
+      "type": "GuidancePassage",
+      "label": "FDA: The impact on trial eligibility, enrollment, and generalizability should be assessed when…",
+      "epistemic": "source_fact",
+      "data": {
+        "key": "lab_assess_impact",
+        "citation": "FDA, Cancer Clinical Trial Eligibility Criteria: Laboratory Values (July 2026), §III Recommendations › B. Accounting for Potential Expected Variations in Laboratory Values, p. 5, lines 157–158",
+        "issued": "2026-07",
+        "retrospective": true,
+        "timing_note": "Issued 2026-07, after this trial started (2018-03-06); applied retrospectively, not a standard available when the trial was designed.",
+        "strength": "general"
+      },
+      "source": {
+        "nct": null,
+        "page": null,
+        "quote": "The impact on trial eligibility, enrollment, and generalizability should be assessed when selecting laboratory-based eligibility criteria.",
+        "url": "https://www.fda.gov/media/178013/download#page=8"
+      }
+    },
+    {
+      "id": "fda:lab_abnormal_common_in_cancer",
+      "type": "GuidancePassage",
+      "label": "FDA: the likelihood of test results outside reference ranges is far greater among individuals…",
+      "epistemic": "source_fact",
+      "data": {
+        "key": "lab_abnormal_common_in_cancer",
+        "citation": "FDA, Cancer Clinical Trial Eligibility Criteria: Laboratory Values (July 2026), §III Recommendations › B. Accounting for Potential Expected Variations in Laboratory Values, p. 5, lines 182–184",
+        "issued": "2026-07",
+        "retrospective": true,
+        "timing_note": "Issued 2026-07, after this trial started (2018-03-06); applied retrospectively, not a standard available when the trial was designed.",
+        "strength": "general"
+      },
+      "source": {
+        "nct": null,
+        "page": null,
+        "quote": "the likelihood of test results outside reference ranges is far greater among individuals with cancer and may not be of clinical significance with respect to the treatment being studied.",
+        "url": "https://www.fda.gov/media/178013/download#page=8"
+      }
+    },
+    {
+      "id": "fda:lab_randomized_little_benefit",
+      "type": "GuidancePassage",
+      "label": "FDA: Excluding patients with abnormal baseline laboratory values in randomized trials without…",
+      "epistemic": "source_fact",
+      "data": {
+        "key": "lab_randomized_little_benefit",
+        "citation": "FDA, Cancer Clinical Trial Eligibility Criteria: Laboratory Values (July 2026), §II Background, p. 3, lines 94–96",
+        "issued": "2026-07",
+        "retrospective": true,
+        "timing_note": "Issued 2026-07, after this trial started (2018-03-06); applied retrospectively, not a standard available when the trial was designed.",
+        "strength": "general"
+      },
+      "source": {
+        "nct": null,
+        "page": null,
+        "quote": "Excluding patients with abnormal baseline laboratory values in randomized trials without an evidence-based safety concern has little benefit to a drug development program",
+        "url": "https://www.fda.gov/media/178013/download#page=6"
+      }
+    },
+    {
+      "id": "fda:lab_demographic",
+      "type": "GuidancePassage",
+      "label": "FDA: Demographic differences in laboratory test results, and their implication across populati…",
+      "epistemic": "source_fact",
+      "data": {
+        "key": "lab_demographic",
+        "citation": "FDA, Cancer Clinical Trial Eligibility Criteria: Laboratory Values (July 2026), §III Recommendations › B. Accounting for Potential Expected Variations in Laboratory Values, p. 5, lines 172–173",
+        "issued": "2026-07",
+        "retrospective": true,
+        "timing_note": "Issued 2026-07, after this trial started (2018-03-06); applied retrospectively, not a standard available when the trial was designed.",
+        "strength": "general"
+      },
+      "source": {
+        "nct": null,
+        "page": null,
+        "quote": "Demographic differences in laboratory test results, and their implication across populations, should be understood when eligibility criteria are written.",
+        "url": "https://www.fda.gov/media/178013/download#page=8"
+      }
+    },
+    {
+      "id": "fda:enr_generalizability",
+      "type": "GuidancePassage",
+      "label": "FDA: The principal concerns with the use of enrichment strategies relate to the generalizabili…",
+      "epistemic": "source_fact",
+      "data": {
+        "key": "enr_generalizability",
+        "citation": "FDA, Enrichment Strategies for Clinical Trials to Support Determination of Effectiveness of Human Drugs and Biological Products (March 2019), §II Background, p. 3",
+        "issued": "2019-03",
+        "retrospective": true,
+        "timing_note": "Issued 2019-03, after this trial started (2018-03-06); applied retrospectively, not a standard available when the trial was designed.",
+        "strength": "general"
+      },
+      "source": {
+        "nct": null,
+        "page": null,
+        "quote": "The principal concerns with the use of enrichment strategies relate to the generalizability and applicability of the study results.",
+        "url": "https://www.fda.gov/media/121320/download#page=7"
+      }
+    },
+    {
+      "id": "fda:enr_balance_subgroups",
+      "type": "GuidancePassage",
+      "label": "FDA: Therefore, the implications of using these strategies should be carefully considered befo…",
+      "epistemic": "source_fact",
+      "data": {
+        "key": "enr_balance_subgroups",
+        "citation": "FDA, Enrichment Strategies for Clinical Trials to Support Determination of Effectiveness of Human Drugs and Biological Products (March 2019), §III Decreasing Variability, p. 4",
+        "issued": "2019-03",
+        "retrospective": true,
+        "timing_note": "Issued 2019-03, after this trial started (2018-03-06); applied retrospectively, not a standard available when the trial was designed.",
+        "strength": "general"
+      },
+      "source": {
+        "nct": null,
+        "page": null,
+        "quote": "Therefore, the implications of using these strategies should be carefully considered before they are used and should be balanced against the need for information in critical patient subgroups.",
+        "url": "https://www.fda.gov/media/121320/download#page=8"
+      }
+    },
+    {
+      "id": "rule:NCT03409614:hemoglobin:regimen_support",
+      "type": "ScoreRule",
+      "label": "regimen support: +1 support (existence of a threshold, not its value)",
+      "epistemic": "rule_inferred",
+      "data": {
+        "group": "regimen_support",
+        "axis": "support",
+        "points": 1,
+        "members": [
+          "curated:f6d2b149b9ec"
+        ]
+      },
+      "source": null
+    },
+    {
+      "id": "rule:NCT03409614:hemoglobin:looser_comparators",
+      "type": "ScoreRule",
+      "label": "looser comparators: +2 challenge (group max)",
+      "epistemic": "rule_inferred",
+      "data": {
+        "group": "looser_comparators",
+        "axis": "challenge",
+        "points": 2,
+        "members": [
+          "cmpthr:NCT03215706:hemoglobin",
+          "cmpthr:NCT02477826:hemoglobin",
+          "cmpthr:NCT02220894:hemoglobin"
+        ]
+      },
+      "source": null
+    },
+    {
+      "id": "missing:NCT03409614:hemoglobin:a00ca443",
+      "type": "MissingEvidence",
+      "label": "Missing: No protocol text found that explains why ≥10 g/dL was chosen (searched outside the eligib…",
+      "epistemic": "rule_inferred",
+      "data": {
+        "text": "No protocol text found that explains why ≥10 g/dL was chosen (searched outside the eligibility section).",
+        "affects_rule": "protocol_value_specific"
+      },
+      "source": null
+    },
+    {
+      "id": "missing:NCT03409614:hemoglobin:7a5f4985",
+      "type": "MissingEvidence",
+      "label": "Missing: No randomized or outcome evidence comparing toxicity or efficacy across threshold values…",
+      "epistemic": "rule_inferred",
+      "data": {
+        "text": "No randomized or outcome evidence comparing toxicity or efficacy across threshold values was retrieved.",
+        "affects_rule": null
+      },
+      "source": null
+    }
+  ],
+  "edges": [
+    {
+      "id": "e:62396e3994f6",
+      "from": "crit:NCT03409614:hemoglobin",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "CRITERION_HAS_ASSESSMENT",
+      "stance": null,
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:6840d77df420",
+      "from": "assess:NCT03409614:hemoglobin",
+      "to": "class:NCT03409614:hemoglobin",
+      "type": "ASSESSMENT_CLASSIFIED_AS",
+      "stance": null,
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:d1c14714bc7c",
+      "from": "assess:NCT03409614:hemoglobin",
+      "to": "rec:NCT03409614:hemoglobin",
+      "type": "ASSESSMENT_RECOMMENDS",
+      "stance": null,
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:47eeeaf0117a",
+      "from": "curated:f6d2b149b9ec",
+      "to": "rule:NCT03409614:hemoglobin:regimen_support",
+      "type": "EVIDENCE_IN_RULE",
+      "stance": "supports",
+      "points": 0,
+      "axis": "support",
+      "group": "regimen_support",
+      "scope": "existence_of_threshold",
+      "label": null
+    },
+    {
+      "id": "e:db209bc55971",
+      "from": "rule:NCT03409614:hemoglobin:regimen_support",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "RULE_SCORES",
+      "stance": "supports",
+      "points": 1,
+      "axis": "support",
+      "group": "regimen_support",
+      "scope": "existence_of_threshold",
+      "label": "+1 support (existence of a threshold, not its value)"
+    },
+    {
+      "id": "e:3bf13c4331b6",
+      "from": "cmpthr:NCT03215706:hemoglobin",
+      "to": "rule:NCT03409614:hemoglobin:looser_comparators",
+      "type": "EVIDENCE_IN_RULE",
+      "stance": "challenges",
+      "points": 0,
+      "axis": "challenge",
+      "group": "looser_comparators",
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:2e011bc9be09",
+      "from": "cmpthr:NCT02477826:hemoglobin",
+      "to": "rule:NCT03409614:hemoglobin:looser_comparators",
+      "type": "EVIDENCE_IN_RULE",
+      "stance": "challenges",
+      "points": 0,
+      "axis": "challenge",
+      "group": "looser_comparators",
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:d322e169986b",
+      "from": "cmpthr:NCT02220894:hemoglobin",
+      "to": "rule:NCT03409614:hemoglobin:looser_comparators",
+      "type": "EVIDENCE_IN_RULE",
+      "stance": "challenges",
+      "points": 0,
+      "axis": "challenge",
+      "group": "looser_comparators",
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:fa2359dafcf9",
+      "from": "rule:NCT03409614:hemoglobin:looser_comparators",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "RULE_SCORES",
+      "stance": "challenges",
+      "points": 2,
+      "axis": "challenge",
+      "group": "looser_comparators",
+      "scope": null,
+      "label": "+2 challenge (group max)"
+    },
+    {
+      "id": "e:2bd28dc3a6b4",
+      "from": "passage:902716994c70",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "context",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:3f0141b42bcc",
+      "from": "cmpthr:NCT03351361:hemoglobin",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "context",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:0b8fa647d4ef",
+      "from": "fda:lab_restrictive_slows",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "context",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:4b6512e9d14a",
+      "from": "fda:lab_only_when_necessary",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "challenges",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:683ee84f6177",
+      "from": "fda:lab_specific_concerns",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "challenges",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:22ac8a36a5c9",
+      "from": "fda:lab_customized",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "challenges",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:033ba58c0d21",
+      "from": "fda:lab_not_carried_forward",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "challenges",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:7e45c327a3e7",
+      "from": "fda:lab_template_variation",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "context",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:d4f91ad5e863",
+      "from": "fda:lab_pd1_class",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "context",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:bf4de7b1bd8e",
+      "from": "fda:lab_as_restrictive_as_necessary",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "challenges",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:4a1de47c1329",
+      "from": "fda:lab_assess_impact",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "challenges",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:cdb21479fde6",
+      "from": "fda:lab_abnormal_common_in_cancer",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "context",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:a05903025483",
+      "from": "fda:lab_randomized_little_benefit",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "challenges",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:80e3eb76af45",
+      "from": "fda:lab_demographic",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "challenges",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:f6cee7cbf8c3",
+      "from": "fda:enr_generalizability",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "context",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:e3ccae37418f",
+      "from": "fda:enr_balance_subgroups",
+      "to": "assess:NCT03409614:hemoglobin",
+      "type": "EVIDENCE_FOR",
+      "stance": "context",
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:cf6109663b82",
+      "from": "assess:NCT03409614:hemoglobin",
+      "to": "missing:NCT03409614:hemoglobin:a00ca443",
+      "type": "ASSESSMENT_LACKS",
+      "stance": null,
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    },
+    {
+      "id": "e:6059645bb260",
+      "from": "assess:NCT03409614:hemoglobin",
+      "to": "missing:NCT03409614:hemoglobin:7a5f4985",
+      "type": "ASSESSMENT_LACKS",
+      "stance": null,
+      "points": 0,
+      "axis": null,
+      "group": null,
+      "scope": null,
+      "label": null
+    }
+  ],
+  "warnings": [],
+  "validation": []
+}
