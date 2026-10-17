@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>TrialLens — Every exclusion deserves evidence</title>
   <link rel="stylesheet" href="/static/styles.css" />
+  <link rel="stylesheet" href="/static/graph.css">
+  <link rel="stylesheet" href="/static/tour.css">
 </head>
 <body>
   <header class="topbar">
@@ -31,6 +33,7 @@
     <button class="tab active" data-tab="review">Protocol review</button>
     <button class="tab" data-tab="packet">Review packet</button>
     <button class="tab" data-tab="evals">Evaluation</button>
+    <button class="tab" data-tab="graph">Evidence graph</button>
     <button class="tab" data-tab="method">Method &amp; limits</button>
   </nav>
 
@@ -48,6 +51,7 @@
 
     <section id="tab-packet" class="tabpane"><div id="packet"></div></section>
     <section id="tab-evals" class="tabpane"><div id="evals"></div></section>
+    <section id="tab-graph" class="tabpane"><div id="graph"></div></section>
 
     <section id="tab-method" class="tabpane">
       <div class="card prose">
@@ -86,5 +90,7 @@
     </div>
   </div>
   <script src="/static/app.js"></script>
+  <script src="/static/graph.js"></script>
+  <script src="/static/tour.js"></script>
 </body>
 </html>

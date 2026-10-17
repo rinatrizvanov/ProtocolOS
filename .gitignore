@@ -30,3 +30,9 @@ chalk_project/trialforge_chalk_eval.py
 
 # Regeneron hackathon starter kit (not ours to redistribute)
 Regeneron starter-kit/
+
+# investigator audit log and generated investigator eval bundle
+data/investigations/
+chalk_project/triallens_investigator_eval.py
+chalk_project/investigator_dataset.jsonl
+!.env.example

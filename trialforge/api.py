@@ -248,3 +248,8 @@ app.mount("/static", StaticFiles(directory=WEB), name="static")
 @app.get("/")
 def index():
     return FileResponse(WEB / "index.html")
+
+
+from .routes_graph import install as _install_graph  # noqa: E402
+
+_install_graph(app)
