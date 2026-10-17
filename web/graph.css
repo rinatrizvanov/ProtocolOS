@@ -1,0 +1,128 @@
+/* Evidence graph tab (web/graph.js). Uses the variables defined in styles.css. */
+#graph .g-head { padding: 12px 16px; }
+#graph .g-head-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+#graph .g-lbl { font-size: 12px; color: var(--muted); font-weight: 600; }
+#graph #graph-criterion { min-width: 280px; max-width: 100%; }
+#graph .g-viewtoggle { display: flex; gap: 4px; }
+#graph .g-built { margin-left: auto; font-size: 11.5px; }
+#graph .g-intro { margin-top: 6px; }
+#graph .src { font-size: 12px; color: var(--muted); }
+#graph .g-msg { padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 13px; }
+#graph .g-msg.warn { background: var(--warn-bg); color: var(--warn); }
+#graph .g-msg.hidden { display: none; }
+
+#graph .g-body { display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 14px; align-items: start; }
+@media (max-width: 1200px) { #graph .g-body { grid-template-columns: 1fr; } }
+#graph .g-canvas { padding: 12px; overflow-x: auto; }
+#graph .g-svg { display: block; width: 100%; height: auto; font-family: var(--sans); }
+#graph #graph-panel { position: sticky; top: 10px; max-height: calc(100vh - 20px); overflow: auto; font-size: 12.5px; }
+
+/* nodes */
+.g-svg .g-colhead { font-size: 10.5px; font-weight: 700; fill: var(--faint); text-transform: uppercase; letter-spacing: .6px; }
+.g-svg .gnode { cursor: pointer; outline: none; }
+.g-svg .gnode rect { fill: #fff; stroke: #5b6676; stroke-width: 1.3; }
+.g-svg .gnode rect.inner { fill: none; stroke-width: 1; }
+.g-svg .gnode .cap { font-size: 9.5px; font-weight: 700; fill: var(--faint); text-transform: uppercase; letter-spacing: .3px; }
+.g-svg .gnode .lbl { font-size: 12px; fill: var(--ink); }
+.g-svg .gnode.e-source_fact rect { stroke-dasharray: none; }
+.g-svg .gnode.e-rule_inferred rect, .g-svg .gnode.e-curated_pharmacology rect { stroke-dasharray: 5 3; }
+.g-svg .gnode.e-model_generated rect { stroke-dasharray: 1.5 2.5; }
+.g-svg .gnode.t-Criterion rect { fill: #fbfaf3; stroke: var(--accent); }
+.g-svg .gnode.t-CuratedFact rect { fill: #f7f9fc; }
+.g-svg .gnode.t-ComparatorThreshold rect { fill: #fff; }
+.g-svg .gnode.t-GuidancePassage rect { fill: #f6f8fb; stroke: #6b7fa3; }
+.g-svg .gnode.t-ScoreRule rect { fill: var(--accent-soft); stroke: var(--accent); }
+.g-svg .gnode.t-Assessment rect { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.8; }
+.g-svg .gnode.t-Recommendation rect { fill: #fff; stroke: var(--accent); }
+.g-svg .gnode.t-MissingEvidence rect { fill: var(--insuff-bg); stroke: var(--insuff); }
+.g-svg .gnode.t-Classification.k-review rect { fill: var(--review-bg); stroke: var(--review); }
+.g-svg .gnode.t-Classification.k-retain rect { fill: var(--retain-bg); stroke: var(--retain); }
+.g-svg .gnode.t-Classification.k-insufficient rect { fill: var(--insuff-bg); stroke: var(--insuff); }
+.g-svg .gnode.t-ReviewerDecision rect { fill: var(--pass-bg); stroke: var(--pass); }
+.g-svg .gnode:hover rect, .g-svg .gnode:focus rect { stroke-width: 2.2; }
+.g-svg .gnode.sel rect { stroke: var(--accent); stroke-width: 2.6; }
+.g-svg.has-sel .gnode:not(.near) { opacity: .45; }
+
+/* edges */
+.g-svg .gedge path { fill: none; stroke: #8a94a3; stroke-width: 1.2; opacity: .75; }
+.g-svg .gedge.s-supports path { stroke: var(--retain); }
+.g-svg .gedge.s-challenges path { stroke: var(--review); }
+.g-svg .gedge.s-context path { stroke: #9aa3b0; stroke-dasharray: 4 3; opacity: .55; }
+.g-svg .gedge.t-RULE_SCORES path { stroke-width: 2.6; opacity: .95; }
+.g-svg .gedge.t-EVIDENCE_IN_RULE path { stroke-width: 1.7; opacity: .9; }
+.g-svg .gedge.scoped path { stroke-dasharray: 2 3; }
+.g-svg.has-sel .gedge:not(.hl) { opacity: .2; }
+.g-svg .gedge.hl path { stroke-width: 2.6; opacity: 1; }
+.g-svg .g-elabel { font-size: 11px; font-weight: 700; paint-order: stroke; stroke: #fff; stroke-width: 3px; stroke-linejoin: round; }
+.g-svg .g-elabel.pts.support { fill: var(--retain); }
+.g-svg .g-elabel.pts.challenge { fill: var(--review); }
+.g-svg .g-elabel.grp { fill: var(--muted); font-weight: 600; }
+.g-svg .g-elabel.grp.scope { fill: var(--retain); font-style: italic; }
+
+/* legend */
+#graph .g-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 11.5px; color: var(--muted); margin-top: 10px; align-items: center; }
+#graph .g-legend svg { vertical-align: -2px; }
+#graph .g-legend .lg-solid, #graph .g-legend .lg-dashed, #graph .g-legend .lg-dotted { fill: #fff; stroke: #5b6676; stroke-width: 1.2; }
+#graph .g-legend .lg-dashed { stroke-dasharray: 4 2; }
+#graph .g-legend .lg-dotted { stroke-dasharray: 1.2 2; }
+#graph .lg-line { display: inline-block; width: 22px; border-top: 2px solid #9aa3b0; vertical-align: 3px; margin-right: 3px; }
+#graph .lg-line.supports { border-color: var(--retain); }
+#graph .lg-line.challenges { border-color: var(--review); }
+#graph .lg-line.context { border-top-style: dashed; }
+#graph .g-legend-notes { flex-basis: 100%; display: grid; gap: 3px; }
+
+/* list view */
+#graph .g-listwrap.hidden { display: none; }
+#graph .g-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; font-size: 12.5px; }
+#graph .g-list-col h4 { margin: 0 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; color: var(--faint); }
+#graph .g-list ul { list-style: none; margin: 0; padding: 0; }
+#graph .g-li { display: block; width: 100%; text-align: left; background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 5px 7px; margin-bottom: 5px; font: 12px/1.4 var(--sans); }
+#graph .g-li.sel { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+#graph .g-li .cap, #graph .gp-cap { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; color: var(--faint); }
+#graph .g-list-edges { grid-column: 1 / -1; }
+
+/* side panel */
+#graph .gp-title { margin: 2px 0 8px; font-size: 14px; }
+#graph .gp-epi.e-source_fact { color: var(--pass); }
+#graph .gp-epi.e-human { color: var(--accent); }
+#graph .gp-quote { display: block; font-style: italic; color: #3a4553; background: #f7f8fa; border-left: 3px solid var(--accent); padding: 6px 8px; margin: 6px 0; white-space: pre-wrap; }
+#graph .gp-row { margin: 6px 0; }
+#graph .gp-kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; margin: 6px 0; }
+#graph .gp-kv span:nth-child(odd) { color: var(--muted); }
+#graph .gp-sub { margin: 10px 0 3px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; color: var(--faint); }
+#graph .gp-links { margin: 0; padding-left: 16px; }
+#graph .gp-links li { margin-bottom: 3px; }
+#graph .gp-expl { margin: 8px 0 0; }
+#graph button.linkish { background: none; border: none; padding: 0; color: var(--accent); font: inherit; font-size: 12px; text-align: left; border-bottom: 1px dotted var(--accent); border-radius: 0; cursor: pointer; }
+
+/* investigator + safeguards */
+#graph .g-inv { margin-top: 14px; }
+#graph .g-inv-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+#graph .g-inv-head h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 0 0 8px; }
+#graph .inv-qs { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 10px; }
+#graph .inv-model { display: inline-flex; gap: 4px; align-items: center; margin-left: 6px; }
+#graph .inv-grid { display: grid; grid-template-columns: minmax(0, 1fr) 310px; gap: 14px; align-items: start; }
+@media (max-width: 1000px) { #graph .inv-grid { grid-template-columns: 1fr; } }
+#graph .inv-q-title { font-weight: 700; margin-bottom: 4px; }
+#graph .inv-summary { margin: 4px 0 8px; }
+#graph .inv-statements { margin: 0; padding-left: 20px; }
+#graph .inv-statement { margin-bottom: 9px; font-size: 13px; }
+#graph .inv-statement[data-status="unsupported"] .inv-text { text-decoration: line-through; color: var(--faint); }
+#graph .inv-status { font-size: 10.5px; font-weight: 800; text-transform: uppercase; padding: 1px 5px; border-radius: 3px; }
+#graph .inv-status.supported { color: var(--pass); background: var(--pass-bg); }
+#graph .inv-status.uncertain { color: var(--warn); background: var(--warn-bg); }
+#graph .inv-status.unsupported { color: var(--fail); background: var(--fail-bg); }
+#graph .inv-pol { font-size: 10.5px; color: var(--faint); text-transform: uppercase; letter-spacing: .3px; }
+#graph .inv-ev, #graph .inv-checks { margin-top: 3px; display: flex; gap: 4px 8px; flex-wrap: wrap; }
+#graph .inv-check { font: 10.5px var(--mono); padding: 1px 5px; border-radius: 3px; background: #eef1f5; color: var(--muted); }
+#graph .inv-check[data-result="pass"] { color: var(--pass); background: var(--pass-bg); }
+#graph .inv-check[data-result="warn"] { color: var(--warn); background: var(--warn-bg); }
+#graph .inv-check[data-result="fail"] { color: var(--fail); background: var(--fail-bg); }
+#graph .inv-counter { margin-top: 8px; font-size: 12.5px; }
+#graph .inv-empty { background: var(--insuff-bg); color: var(--insuff); padding: 8px 10px; border-radius: 6px; margin: 6px 0; }
+#graph .warnbox { background: var(--warn-bg); color: var(--warn); padding: 6px 9px; border-radius: 5px; margin: 6px 0; font-size: 12.5px; }
+#graph #inv-security { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: #fafbfc; font-size: 12.5px; }
+#graph #inv-security h4 { margin: 0 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+#graph .sec-budget { font: 600 12.5px var(--mono); margin-bottom: 4px; }
+#graph .sec-list { margin: 0; padding-left: 16px; }
+#graph .sec-list li { margin-bottom: 3px; }
