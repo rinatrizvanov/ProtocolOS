@@ -1,0 +1,13 @@
+{
+  "status": "operational (features + evaluations); model gateway pending key",
+  "detail": "Logged in to environment trllf247b678 (project Default). Feature store deployed (Trial features, live ClinicalTrials.gov resolver) and queried online from the app. Verifier evaluation executed on Chalk Compute: run SUCCEEDED, 39 rows, 0 task errors. Model Gateway/router: not yet called (no router key in .env).",
+  "components": {
+    "chalk_init": "ran non-interactively 2026-10-17; no packages removed or changed; added chalk.yaml, .chalkignore, uv.lock, editor settings",
+    "mcp": "registered for Claude Code (local scope, this project only)",
+    "features_resolvers": "deployed (deployment cmvco4ewl01ct014wpkr04aev, then redeployed with explicit resolver outputs); online queries succeed",
+    "compute_functions": "tf_verify, verdict_correct, rejected_fault, false_rejection, valid-json registered and Ready",
+    "evaluations": "trialforge-verifier: evaluation cmvco3m0n01dw01y520oc80sq, run e61fce6c-892f-4215-9122-48ad77c42df6, SUCCEEDED",
+    "model_gateway_router": "pending: CHALK_ROUTER_API_KEY not provided yet",
+    "sandboxes": "not used"
+  }
+}

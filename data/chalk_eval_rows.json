@@ -1,0 +1,757 @@
+[
+ {
+  "case_id": "F04",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F06",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F12",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F22",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "V05",
+  "kind": "valid",
+  "expected": "NOT_REJECTED",
+  "remote_status": "PASSED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [
+   {
+    "score": 0.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F01",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F23",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "V06",
+  "kind": "valid",
+  "expected": "NOT_REJECTED",
+  "remote_status": "PASSED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [
+   {
+    "score": 0.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F07",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F17",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "V10",
+  "kind": "valid",
+  "expected": "NOT_REJECTED",
+  "remote_status": "PASSED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [
+   {
+    "score": 0.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "A05",
+  "kind": "ambiguous",
+  "expected": "PASSED_WITH_WARNINGS",
+  "remote_status": "PASSED_WITH_WARNINGS",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F09",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F21",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "A04",
+  "kind": "ambiguous",
+  "expected": "PASSED_WITH_WARNINGS",
+  "remote_status": "PASSED_WITH_WARNINGS",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F10",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F13",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "V03",
+  "kind": "valid",
+  "expected": "NOT_REJECTED",
+  "remote_status": "PASSED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [
+   {
+    "score": 0.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "A03",
+  "kind": "ambiguous",
+  "expected": "PASSED_WITH_WARNINGS",
+  "remote_status": "PASSED_WITH_WARNINGS",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "V02",
+  "kind": "valid",
+  "expected": "NOT_REJECTED",
+  "remote_status": "PASSED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [
+   {
+    "score": 0.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "V04",
+  "kind": "valid",
+  "expected": "NOT_REJECTED",
+  "remote_status": "PASSED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [
+   {
+    "score": 0.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "A01",
+  "kind": "ambiguous",
+  "expected": "PASSED_WITH_WARNINGS",
+  "remote_status": "PASSED_WITH_WARNINGS",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F08",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "V07",
+  "kind": "valid",
+  "expected": "NOT_REJECTED",
+  "remote_status": "PASSED_WITH_WARNINGS",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [
+   {
+    "score": 0.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "V08",
+  "kind": "valid",
+  "expected": "NOT_REJECTED",
+  "remote_status": "PASSED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [
+   {
+    "score": 0.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F15",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F11",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F16",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F20",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F03",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F24",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "V09",
+  "kind": "valid",
+  "expected": "NOT_REJECTED",
+  "remote_status": "PASSED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [
+   {
+    "score": 0.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "A02",
+  "kind": "ambiguous",
+  "expected": "PASSED_WITH_WARNINGS",
+  "remote_status": "PASSED_WITH_WARNINGS",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F02",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F18",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "V01",
+  "kind": "valid",
+  "expected": "NOT_REJECTED",
+  "remote_status": "PASSED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [
+   {
+    "score": 0.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F05",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F19",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ },
+ {
+  "case_id": "F14",
+  "kind": "fault",
+  "expected": "REJECTED",
+  "remote_status": "REJECTED",
+  "output_error": null,
+  "scorer_cmvco3m0j01ds01y576qotyq0": 1.0,
+  "scorer_cmvco3m0j01ds01y576qotyq0_error": null,
+  "scorer_cmvco3m0k01dt01y5gaas8cqe": [
+   {
+    "score": 1.0,
+    "metadata": null
+   }
+  ],
+  "scorer_cmvco3m0k01dt01y5gaas8cqe_error": null,
+  "scorer_cmvco3m0m01du01y5scm8cb0w": [],
+  "scorer_cmvco3m0m01du01y5scm8cb0w_error": null,
+  "valid-json_value": 1.0,
+  "valid-json_error": null
+ }
+]

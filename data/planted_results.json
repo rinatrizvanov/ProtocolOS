@@ -1,0 +1,1319 @@
+{
+ "summary": {
+  "label": "Synthetic modifications to authentic, previously unseen protocols (5 bases). Not clinical validation.",
+  "stricter": {
+   "n": 24,
+   "extracted": [
+    24,
+    24
+   ],
+   "discrepancy_surfaced": [
+    14,
+    24
+   ],
+   "escalated_strict": [
+    16,
+    24
+   ],
+   "escalated_lenient": [
+    24,
+    24
+   ],
+   "differential_detection_where_control_not_flagged": [
+    6,
+    14
+   ],
+   "control_already_flagged": [
+    10,
+    24
+   ],
+   "cautious_action": [
+    24,
+    24
+   ]
+  },
+  "looser": {
+   "n": 10,
+   "extracted": [
+    10,
+    10
+   ],
+   "false_over_restriction_flags": [
+    0,
+    10
+   ]
+  },
+  "controls": {
+   "criteria": 42,
+   "review_recommended": 14,
+   "by_criterion": {
+    "anc": 5,
+    "ast_alt": 0,
+    "bilirubin": 1,
+    "ecog": 4,
+    "hemoglobin": 0,
+    "platelets": 0,
+    "renal": 0,
+    "washout_corticosteroid": 0,
+    "washout_investigational": 1,
+    "washout_radiotherapy": 3,
+    "washout_surgery": 0,
+    "washout_vaccine": 0
+   },
+   "note": "Flags on unmodified protocols are not counted as errors: several come from criterion-specific FDA recommendations (ECOG PS2, Duffy-null ANC). They are reported so differential detection can be interpreted."
+  },
+  "seconds": 56.2
+ },
+ "rows": [
+  {
+   "id": "NCT02657434__stricter__hemoglobin",
+   "name": "IMpower132 (NSCLC)",
+   "kind": "stricter",
+   "analyte": "hemoglobin",
+   "from": 9.0,
+   "to": 11.0,
+   "unit": "g/dL",
+   "extracted": true,
+   "variant": {
+    "value": 11.0,
+    "classification": "Review recommended",
+    "surfaced": true,
+    "n_permissive_comparators": 3,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: 3 comparable trial(s) used a more permissive threshold; no value-specific rationale was found in the protocol. (support score 1, challenge score 2)"
+   },
+   "control": {
+    "value": 9.0,
+    "classification": "Evidence supports retaining",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "retain",
+    "explanation": "Evidence supports retaining: 3 used the same threshold; no value-specific rationale was found in the protocol. (support score 2, challenge score 0)"
+   },
+   "surfaced": true,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": true,
+   "control_already_flagged": false,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02657434__stricter__anc",
+   "name": "IMpower132 (NSCLC)",
+   "kind": "stricter",
+   "analyte": "anc",
+   "from": 1.5,
+   "to": 2.0,
+   "unit": "\u00d710\u2079/L",
+   "extracted": true,
+   "variant": {
+    "value": 2.0,
+    "classification": "Review recommended",
+    "surfaced": true,
+    "n_permissive_comparators": 4,
+    "action": "add_provision",
+    "explanation": "Review recommended: 4 comparable trial(s) used a more permissive threshold; FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 1, challenge score 4)"
+   },
+   "control": {
+    "value": 1.5,
+    "classification": "Review recommended",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "add_provision",
+    "explanation": "Review recommended: 4 used the same threshold; FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 2, challenge score 2)"
+   },
+   "surfaced": true,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": true,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02657434__stricter__platelets",
+   "name": "IMpower132 (NSCLC)",
+   "kind": "stricter",
+   "analyte": "platelets",
+   "from": 100.0,
+   "to": 150.0,
+   "unit": "\u00d710\u2079/L",
+   "extracted": true,
+   "variant": {
+    "value": 150.0,
+    "classification": "Review recommended",
+    "surfaced": true,
+    "n_permissive_comparators": 4,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: 4 comparable trial(s) used a more permissive threshold; no value-specific rationale was found in the protocol. (support score 1, challenge score 2)"
+   },
+   "control": {
+    "value": 100.0,
+    "classification": "Evidence supports retaining",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "retain",
+    "explanation": "Evidence supports retaining: 4 used the same threshold; no value-specific rationale was found in the protocol. (support score 2, challenge score 0)"
+   },
+   "surfaced": true,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": true,
+   "control_already_flagged": false,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02657434__stricter__ast_alt",
+   "name": "IMpower132 (NSCLC)",
+   "kind": "stricter",
+   "analyte": "ast_alt",
+   "from": 2.5,
+   "to": 1.5,
+   "unit": "\u00d7ULN",
+   "extracted": true,
+   "variant": {
+    "value": 1.5,
+    "classification": "Review recommended",
+    "surfaced": true,
+    "n_permissive_comparators": 4,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: 4 comparable trial(s) used a more permissive threshold; no value-specific rationale was found in the protocol. (support score 1, challenge score 2)"
+   },
+   "control": {
+    "value": 2.5,
+    "classification": "Evidence supports retaining",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "retain",
+    "explanation": "Evidence supports retaining: 4 used the same threshold; no value-specific rationale was found in the protocol. (support score 2, challenge score 0)"
+   },
+   "surfaced": true,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": true,
+   "control_already_flagged": false,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02657434__stricter__ecog",
+   "name": "IMpower132 (NSCLC)",
+   "kind": "stricter",
+   "analyte": "ecog",
+   "from": 1.0,
+   "to": 0.0,
+   "unit": "ECOG",
+   "extracted": true,
+   "variant": {
+    "value": 0.0,
+    "classification": "Review recommended",
+    "surfaced": true,
+    "n_permissive_comparators": 4,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: 4 comparable trial(s) used a more permissive threshold; FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 0, challenge score 3)"
+   },
+   "control": {
+    "value": 1.0,
+    "classification": "Review recommended",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: 4 used the same threshold; FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 1, challenge score 2)"
+   },
+   "surfaced": true,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": true,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02657434__looser__hemoglobin",
+   "name": "IMpower132 (NSCLC)",
+   "kind": "looser",
+   "analyte": "hemoglobin",
+   "from": 9.0,
+   "to": 8.0,
+   "unit": "g/dL",
+   "extracted": true,
+   "variant": {
+    "value": 8.0,
+    "classification": "Evidence supports retaining",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "retain",
+    "explanation": "Evidence supports retaining: 3 used a stricter one; no value-specific rationale was found in the protocol. (support score 2, challenge score 0)"
+   },
+   "control": {
+    "value": 9.0,
+    "classification": "Evidence supports retaining",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "retain",
+    "explanation": "Evidence supports retaining: 3 used the same threshold; no value-specific rationale was found in the protocol. (support score 2, challenge score 0)"
+   },
+   "false_over_restriction_flag": false
+  },
+  {
+   "id": "NCT02657434__looser__platelets",
+   "name": "IMpower132 (NSCLC)",
+   "kind": "looser",
+   "analyte": "platelets",
+   "from": 100.0,
+   "to": 75.0,
+   "unit": "\u00d710\u2079/L",
+   "extracted": true,
+   "variant": {
+    "value": 75.0,
+    "classification": "Evidence supports retaining",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "retain",
+    "explanation": "Evidence supports retaining: 4 used a stricter one; no value-specific rationale was found in the protocol. (support score 2, challenge score 0)"
+   },
+   "control": {
+    "value": 100.0,
+    "classification": "Evidence supports retaining",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "retain",
+    "explanation": "Evidence supports retaining: 4 used the same threshold; no value-specific rationale was found in the protocol. (support score 2, challenge score 0)"
+   },
+   "false_over_restriction_flag": false
+  },
+  {
+   "id": "NCT03164616__stricter__hemoglobin",
+   "name": "POSEIDON (NSCLC)",
+   "kind": "stricter",
+   "analyte": "hemoglobin",
+   "from": 9.0,
+   "to": 11.0,
+   "unit": "g/dL",
+   "extracted": true,
+   "variant": {
+    "value": 11.0,
+    "classification": "Review recommended",
+    "surfaced": true,
+    "n_permissive_comparators": 3,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: 3 comparable trial(s) used a more permissive threshold; no value-specific rationale was found in the protocol. (support score 1, challenge score 2)"
+   },
+   "control": {
+    "value": 9.0,
+    "classification": "Evidence supports retaining",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "retain",
+    "explanation": "Evidence supports retaining: 3 used the same threshold; no value-specific rationale was found in the protocol. (support score 2, challenge score 0)"
+   },
+   "surfaced": true,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": true,
+   "control_already_flagged": false,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT03164616__stricter__anc",
+   "name": "POSEIDON (NSCLC)",
+   "kind": "stricter",
+   "analyte": "anc",
+   "from": 1.5,
+   "to": 2.0,
+   "unit": "\u00d710\u2079/L",
+   "extracted": true,
+   "variant": {
+    "value": 2.0,
+    "classification": "Review recommended",
+    "surfaced": true,
+    "n_permissive_comparators": 4,
+    "action": "add_provision",
+    "explanation": "Review recommended: 4 comparable trial(s) used a more permissive threshold; FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 1, challenge score 4)"
+   },
+   "control": {
+    "value": 1.5,
+    "classification": "Review recommended",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "add_provision",
+    "explanation": "Review recommended: 4 used the same threshold; FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 2, challenge score 2)"
+   },
+   "surfaced": true,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": true,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT03164616__stricter__platelets",
+   "name": "POSEIDON (NSCLC)",
+   "kind": "stricter",
+   "analyte": "platelets",
+   "from": 100.0,
+   "to": 150.0,
+   "unit": "\u00d710\u2079/L",
+   "extracted": true,
+   "variant": {
+    "value": 150.0,
+    "classification": "Review recommended",
+    "surfaced": true,
+    "n_permissive_comparators": 4,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: 4 comparable trial(s) used a more permissive threshold; no value-specific rationale was found in the protocol. (support score 1, challenge score 2)"
+   },
+   "control": {
+    "value": 100.0,
+    "classification": "Evidence supports retaining",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "retain",
+    "explanation": "Evidence supports retaining: 4 used the same threshold; no value-specific rationale was found in the protocol. (support score 2, challenge score 0)"
+   },
+   "surfaced": true,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": true,
+   "control_already_flagged": false,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT03164616__stricter__ast_alt",
+   "name": "POSEIDON (NSCLC)",
+   "kind": "stricter",
+   "analyte": "ast_alt",
+   "from": 2.5,
+   "to": 1.5,
+   "unit": "\u00d7ULN",
+   "extracted": true,
+   "variant": {
+    "value": 1.5,
+    "classification": "Review recommended",
+    "surfaced": true,
+    "n_permissive_comparators": 4,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: 4 comparable trial(s) used a more permissive threshold; no value-specific rationale was found in the protocol. (support score 1, challenge score 2)"
+   },
+   "control": {
+    "value": 2.5,
+    "classification": "Insufficient evidence",
+    "surfaced": true,
+    "n_permissive_comparators": 1,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: 1 comparable trial(s) used a more permissive threshold; 3 used the same threshold; no value-specific rationale was found in the protocol. (support score 1, challenge score 1)"
+   },
+   "surfaced": true,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": true,
+   "control_already_flagged": false,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT03164616__stricter__ecog",
+   "name": "POSEIDON (NSCLC)",
+   "kind": "stricter",
+   "analyte": "ecog",
+   "from": 1.0,
+   "to": 0.0,
+   "unit": "ECOG",
+   "extracted": true,
+   "variant": {
+    "value": 0.0,
+    "classification": "Review recommended",
+    "surfaced": true,
+    "n_permissive_comparators": 4,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: 4 comparable trial(s) used a more permissive threshold; FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 0, challenge score 3)"
+   },
+   "control": {
+    "value": 1.0,
+    "classification": "Review recommended",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: 4 used the same threshold; FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 1, challenge score 2)"
+   },
+   "surfaced": true,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": true,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT03164616__looser__hemoglobin",
+   "name": "POSEIDON (NSCLC)",
+   "kind": "looser",
+   "analyte": "hemoglobin",
+   "from": 9.0,
+   "to": 8.0,
+   "unit": "g/dL",
+   "extracted": true,
+   "variant": {
+    "value": 8.0,
+    "classification": "Evidence supports retaining",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "retain",
+    "explanation": "Evidence supports retaining: 3 used a stricter one; no value-specific rationale was found in the protocol. (support score 2, challenge score 0)"
+   },
+   "control": {
+    "value": 9.0,
+    "classification": "Evidence supports retaining",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "retain",
+    "explanation": "Evidence supports retaining: 3 used the same threshold; no value-specific rationale was found in the protocol. (support score 2, challenge score 0)"
+   },
+   "false_over_restriction_flag": false
+  },
+  {
+   "id": "NCT03164616__looser__platelets",
+   "name": "POSEIDON (NSCLC)",
+   "kind": "looser",
+   "analyte": "platelets",
+   "from": 100.0,
+   "to": 75.0,
+   "unit": "\u00d710\u2079/L",
+   "extracted": true,
+   "variant": {
+    "value": 75.0,
+    "classification": "Evidence supports retaining",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "retain",
+    "explanation": "Evidence supports retaining: 4 used a stricter one; no value-specific rationale was found in the protocol. (support score 2, challenge score 0)"
+   },
+   "control": {
+    "value": 100.0,
+    "classification": "Evidence supports retaining",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "retain",
+    "explanation": "Evidence supports retaining: 4 used the same threshold; no value-specific rationale was found in the protocol. (support score 2, challenge score 0)"
+   },
+   "false_over_restriction_flag": false
+  },
+  {
+   "id": "NCT02358031__stricter__hemoglobin",
+   "name": "KEYNOTE-048 (head and neck)",
+   "kind": "stricter",
+   "analyte": "hemoglobin",
+   "from": 9.0,
+   "to": 11.0,
+   "unit": "g/dL",
+   "extracted": true,
+   "variant": {
+    "value": 11.0,
+    "classification": "Insufficient evidence",
+    "surfaced": true,
+    "n_permissive_comparators": 1,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: 1 comparable trial(s) used a more permissive threshold; no value-specific rationale was found in the protocol. (support score 1, challenge score 1)"
+   },
+   "control": {
+    "value": 9.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: 1 used the same threshold; no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "surfaced": true,
+   "escalated_strict": false,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": false,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02358031__stricter__anc",
+   "name": "KEYNOTE-048 (head and neck)",
+   "kind": "stricter",
+   "analyte": "anc",
+   "from": 1.5,
+   "to": 2.0,
+   "unit": "\u00d710\u2079/L",
+   "extracted": true,
+   "variant": {
+    "value": 2.0,
+    "classification": "Review recommended",
+    "surfaced": true,
+    "n_permissive_comparators": 1,
+    "action": "add_provision",
+    "explanation": "Review recommended: 1 comparable trial(s) used a more permissive threshold; FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 1, challenge score 3)"
+   },
+   "control": {
+    "value": 1.5,
+    "classification": "Review recommended",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "add_provision",
+    "explanation": "Review recommended: 1 used the same threshold; FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 1, challenge score 2)"
+   },
+   "surfaced": true,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": true,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02358031__stricter__platelets",
+   "name": "KEYNOTE-048 (head and neck)",
+   "kind": "stricter",
+   "analyte": "platelets",
+   "from": 100.0,
+   "to": 150.0,
+   "unit": "\u00d710\u2079/L",
+   "extracted": true,
+   "variant": {
+    "value": 150.0,
+    "classification": "Insufficient evidence",
+    "surfaced": true,
+    "n_permissive_comparators": 1,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: 1 comparable trial(s) used a more permissive threshold; no value-specific rationale was found in the protocol. (support score 1, challenge score 1)"
+   },
+   "control": {
+    "value": 100.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: 1 used the same threshold; no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "surfaced": true,
+   "escalated_strict": false,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": false,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02358031__stricter__ecog",
+   "name": "KEYNOTE-048 (head and neck)",
+   "kind": "stricter",
+   "analyte": "ecog",
+   "from": 1.0,
+   "to": 0.0,
+   "unit": "ECOG",
+   "extracted": true,
+   "variant": {
+    "value": 0.0,
+    "classification": "Review recommended",
+    "surfaced": true,
+    "n_permissive_comparators": 1,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: 1 comparable trial(s) used a more permissive threshold; FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 0, challenge score 3)"
+   },
+   "control": {
+    "value": 1.0,
+    "classification": "Review recommended",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: 1 used the same threshold; FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 0, challenge score 2)"
+   },
+   "surfaced": true,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": true,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02358031__looser__hemoglobin",
+   "name": "KEYNOTE-048 (head and neck)",
+   "kind": "looser",
+   "analyte": "hemoglobin",
+   "from": 9.0,
+   "to": 8.0,
+   "unit": "g/dL",
+   "extracted": true,
+   "variant": {
+    "value": 8.0,
+    "classification": "Evidence supports retaining",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "retain",
+    "explanation": "Evidence supports retaining: 1 used a stricter one; no value-specific rationale was found in the protocol. (support score 2, challenge score 0)"
+   },
+   "control": {
+    "value": 9.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: 1 used the same threshold; no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "false_over_restriction_flag": false
+  },
+  {
+   "id": "NCT02358031__looser__platelets",
+   "name": "KEYNOTE-048 (head and neck)",
+   "kind": "looser",
+   "analyte": "platelets",
+   "from": 100.0,
+   "to": 75.0,
+   "unit": "\u00d710\u2079/L",
+   "extracted": true,
+   "variant": {
+    "value": 75.0,
+    "classification": "Evidence supports retaining",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "retain",
+    "explanation": "Evidence supports retaining: 1 used a stricter one; no value-specific rationale was found in the protocol. (support score 2, challenge score 0)"
+   },
+   "control": {
+    "value": 100.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: 1 used the same threshold; no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "false_over_restriction_flag": false
+  },
+  {
+   "id": "NCT02763579__stricter__hemoglobin",
+   "name": "IMpower133 (SCLC)",
+   "kind": "stricter",
+   "analyte": "hemoglobin",
+   "from": 9.0,
+   "to": 11.0,
+   "unit": "g/dL",
+   "extracted": true,
+   "variant": {
+    "value": 11.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "control": {
+    "value": 9.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "surfaced": false,
+   "escalated_strict": false,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": false,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02763579__stricter__anc",
+   "name": "IMpower133 (SCLC)",
+   "kind": "stricter",
+   "analyte": "anc",
+   "from": 1.5,
+   "to": 2.0,
+   "unit": "\u00d710\u2079/L",
+   "extracted": true,
+   "variant": {
+    "value": 2.0,
+    "classification": "Review recommended",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "add_provision",
+    "explanation": "Review recommended: FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 1, challenge score 2)"
+   },
+   "control": {
+    "value": 1.5,
+    "classification": "Review recommended",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "add_provision",
+    "explanation": "Review recommended: FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 1, challenge score 2)"
+   },
+   "surfaced": false,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": true,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02763579__stricter__platelets",
+   "name": "IMpower133 (SCLC)",
+   "kind": "stricter",
+   "analyte": "platelets",
+   "from": 100.0,
+   "to": 150.0,
+   "unit": "\u00d710\u2079/L",
+   "extracted": true,
+   "variant": {
+    "value": 150.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "control": {
+    "value": 100.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "surfaced": false,
+   "escalated_strict": false,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": false,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02763579__stricter__ast_alt",
+   "name": "IMpower133 (SCLC)",
+   "kind": "stricter",
+   "analyte": "ast_alt",
+   "from": 2.5,
+   "to": 1.5,
+   "unit": "\u00d7ULN",
+   "extracted": true,
+   "variant": {
+    "value": 1.5,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "control": {
+    "value": 2.5,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "surfaced": false,
+   "escalated_strict": false,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": false,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02763579__stricter__ecog",
+   "name": "IMpower133 (SCLC)",
+   "kind": "stricter",
+   "analyte": "ecog",
+   "from": 1.0,
+   "to": 0.0,
+   "unit": "ECOG",
+   "extracted": true,
+   "variant": {
+    "value": 0.0,
+    "classification": "Review recommended",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 0, challenge score 2)"
+   },
+   "control": {
+    "value": 1.0,
+    "classification": "Review recommended",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 0, challenge score 2)"
+   },
+   "surfaced": false,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": true,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02763579__looser__hemoglobin",
+   "name": "IMpower133 (SCLC)",
+   "kind": "looser",
+   "analyte": "hemoglobin",
+   "from": 9.0,
+   "to": 8.0,
+   "unit": "g/dL",
+   "extracted": true,
+   "variant": {
+    "value": 8.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "control": {
+    "value": 9.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "false_over_restriction_flag": false
+  },
+  {
+   "id": "NCT02763579__looser__platelets",
+   "name": "IMpower133 (SCLC)",
+   "kind": "looser",
+   "analyte": "platelets",
+   "from": 100.0,
+   "to": 75.0,
+   "unit": "\u00d710\u2079/L",
+   "extracted": true,
+   "variant": {
+    "value": 75.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "control": {
+    "value": 100.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "false_over_restriction_flag": false
+  },
+  {
+   "id": "NCT02853331__stricter__hemoglobin",
+   "name": "KEYNOTE-426 (renal)",
+   "kind": "stricter",
+   "analyte": "hemoglobin",
+   "from": 9.0,
+   "to": 11.0,
+   "unit": "g/dL",
+   "extracted": true,
+   "variant": {
+    "value": 11.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 0, challenge score 0)"
+   },
+   "control": {
+    "value": 9.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 0, challenge score 0)"
+   },
+   "surfaced": false,
+   "escalated_strict": false,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": false,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02853331__stricter__anc",
+   "name": "KEYNOTE-426 (renal)",
+   "kind": "stricter",
+   "analyte": "anc",
+   "from": 1.5,
+   "to": 2.0,
+   "unit": "\u00d710\u2079/L",
+   "extracted": true,
+   "variant": {
+    "value": 2.0,
+    "classification": "Review recommended",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "add_provision",
+    "explanation": "Review recommended: FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 0, challenge score 2)"
+   },
+   "control": {
+    "value": 1.5,
+    "classification": "Review recommended",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "add_provision",
+    "explanation": "Review recommended: FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 0, challenge score 2)"
+   },
+   "surfaced": false,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": true,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02853331__stricter__platelets",
+   "name": "KEYNOTE-426 (renal)",
+   "kind": "stricter",
+   "analyte": "platelets",
+   "from": 100.0,
+   "to": 150.0,
+   "unit": "\u00d710\u2079/L",
+   "extracted": true,
+   "variant": {
+    "value": 150.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 0, challenge score 0)"
+   },
+   "control": {
+    "value": 100.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 0, challenge score 0)"
+   },
+   "surfaced": false,
+   "escalated_strict": false,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": false,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02853331__stricter__ast_alt",
+   "name": "KEYNOTE-426 (renal)",
+   "kind": "stricter",
+   "analyte": "ast_alt",
+   "from": 2.5,
+   "to": 1.5,
+   "unit": "\u00d7ULN",
+   "extracted": true,
+   "variant": {
+    "value": 1.5,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "control": {
+    "value": 2.5,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 1, challenge score 0)"
+   },
+   "surfaced": false,
+   "escalated_strict": false,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": false,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02853331__stricter__washout_investigational",
+   "name": "KEYNOTE-426 (renal)",
+   "kind": "stricter",
+   "analyte": "washout_investigational",
+   "from": 28.0,
+   "to": 56.0,
+   "unit": "days",
+   "extracted": true,
+   "variant": {
+    "value": 56.0,
+    "classification": "Review recommended",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 0, challenge score 2)"
+   },
+   "control": {
+    "value": 28.0,
+    "classification": "Review recommended",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Review recommended: FDA July 2026 guidance makes a specific recommendation for this criterion; no value-specific rationale was found in the protocol. (support score 0, challenge score 2)"
+   },
+   "surfaced": false,
+   "escalated_strict": true,
+   "escalated_lenient": true,
+   "differential": false,
+   "control_already_flagged": true,
+   "cautious_action": true
+  },
+  {
+   "id": "NCT02853331__looser__hemoglobin",
+   "name": "KEYNOTE-426 (renal)",
+   "kind": "looser",
+   "analyte": "hemoglobin",
+   "from": 9.0,
+   "to": 8.0,
+   "unit": "g/dL",
+   "extracted": true,
+   "variant": {
+    "value": 8.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 0, challenge score 0)"
+   },
+   "control": {
+    "value": 9.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 0, challenge score 0)"
+   },
+   "false_over_restriction_flag": false
+  },
+  {
+   "id": "NCT02853331__looser__platelets",
+   "name": "KEYNOTE-426 (renal)",
+   "kind": "looser",
+   "analyte": "platelets",
+   "from": 100.0,
+   "to": 75.0,
+   "unit": "\u00d710\u2079/L",
+   "extracted": true,
+   "variant": {
+    "value": 75.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 0, challenge score 0)"
+   },
+   "control": {
+    "value": 100.0,
+    "classification": "Insufficient evidence",
+    "surfaced": false,
+    "n_permissive_comparators": 0,
+    "action": "justify_in_protocol",
+    "explanation": "Insufficient evidence: no value-specific rationale was found in the protocol. (support score 0, challenge score 0)"
+   },
+   "false_over_restriction_flag": false
+  }
+ ],
+ "controls": [
+  {
+   "base": "NCT02657434",
+   "id": "anc",
+   "classification": "Review recommended"
+  },
+  {
+   "base": "NCT02657434",
+   "id": "platelets",
+   "classification": "Evidence supports retaining"
+  },
+  {
+   "base": "NCT02657434",
+   "id": "hemoglobin",
+   "classification": "Evidence supports retaining"
+  },
+  {
+   "base": "NCT02657434",
+   "id": "ast_alt",
+   "classification": "Evidence supports retaining"
+  },
+  {
+   "base": "NCT02657434",
+   "id": "bilirubin",
+   "classification": "Review recommended"
+  },
+  {
+   "base": "NCT02657434",
+   "id": "renal",
+   "classification": "Evidence supports retaining"
+  },
+  {
+   "base": "NCT02657434",
+   "id": "ecog",
+   "classification": "Review recommended"
+  },
+  {
+   "base": "NCT03164616",
+   "id": "hemoglobin",
+   "classification": "Evidence supports retaining"
+  },
+  {
+   "base": "NCT03164616",
+   "id": "anc",
+   "classification": "Review recommended"
+  },
+  {
+   "base": "NCT03164616",
+   "id": "platelets",
+   "classification": "Evidence supports retaining"
+  },
+  {
+   "base": "NCT03164616",
+   "id": "bilirubin",
+   "classification": "Evidence supports retaining"
+  },
+  {
+   "base": "NCT03164616",
+   "id": "ast_alt",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT03164616",
+   "id": "renal",
+   "classification": "Evidence supports retaining"
+  },
+  {
+   "base": "NCT03164616",
+   "id": "ecog",
+   "classification": "Review recommended"
+  },
+  {
+   "base": "NCT03164616",
+   "id": "washout_radiotherapy",
+   "classification": "Review recommended"
+  },
+  {
+   "base": "NCT03164616",
+   "id": "washout_vaccine",
+   "classification": "Evidence supports retaining"
+  },
+  {
+   "base": "NCT02358031",
+   "id": "anc",
+   "classification": "Review recommended"
+  },
+  {
+   "base": "NCT02358031",
+   "id": "platelets",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02358031",
+   "id": "hemoglobin",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02358031",
+   "id": "renal",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02358031",
+   "id": "bilirubin",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02358031",
+   "id": "ast_alt",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02358031",
+   "id": "ecog",
+   "classification": "Review recommended"
+  },
+  {
+   "base": "NCT02358031",
+   "id": "washout_radiotherapy",
+   "classification": "Review recommended"
+  },
+  {
+   "base": "NCT02358031",
+   "id": "washout_corticosteroid",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02358031",
+   "id": "washout_vaccine",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02763579",
+   "id": "anc",
+   "classification": "Review recommended"
+  },
+  {
+   "base": "NCT02763579",
+   "id": "platelets",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02763579",
+   "id": "hemoglobin",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02763579",
+   "id": "ast_alt",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02763579",
+   "id": "bilirubin",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02763579",
+   "id": "ecog",
+   "classification": "Review recommended"
+  },
+  {
+   "base": "NCT02853331",
+   "id": "anc",
+   "classification": "Review recommended"
+  },
+  {
+   "base": "NCT02853331",
+   "id": "platelets",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02853331",
+   "id": "hemoglobin",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02853331",
+   "id": "renal",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02853331",
+   "id": "bilirubin",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02853331",
+   "id": "ast_alt",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02853331",
+   "id": "washout_investigational",
+   "classification": "Review recommended"
+  },
+  {
+   "base": "NCT02853331",
+   "id": "washout_radiotherapy",
+   "classification": "Review recommended"
+  },
+  {
+   "base": "NCT02853331",
+   "id": "washout_surgery",
+   "classification": "Insufficient evidence"
+  },
+  {
+   "base": "NCT02853331",
+   "id": "washout_vaccine",
+   "classification": "Insufficient evidence"
+  }
+ ]
+}

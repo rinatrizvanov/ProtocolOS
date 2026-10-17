@@ -1,0 +1,2457 @@
+{
+ "generated_at": "2026-10-17 13:40:33",
+ "runner": "local (evals/run_evals.py)",
+ "seconds": 100.7,
+ "chalk": {
+  "status": "EvaluationRunStatus.SUCCEEDED",
+  "rows": 39,
+  "evaluation_id": "cmvco3m0n01dw01y520oc80sq",
+  "run_id": "e61fce6c-892f-4215-9122-48ad77c42df6",
+  "result_dataset": "DatasetRevisionRef(dataset_id='c09e896a-5c00-51b2-9ef4-1a6bb6038ff4', revision_id='6ba6e5f3-079e-467d-9604-c0d68c38e20b', dataset_name=None)",
+  "task_errors": 0,
+  "verdicts_matching_expectation": 39,
+  "fault_rejected": 24,
+  "n_fault": 24,
+  "valid_rejected": 0,
+  "n_valid": 10,
+  "ambiguous_flagged": 5,
+  "n_ambiguous": 5,
+  "scorer_column_names": {
+   "scorer_cmvco3m0j01ds01y576qotyq0": "verdict_correct",
+   "scorer_cmvco3m0k01dt01y5gaas8cqe": "rejected_fault",
+   "scorer_cmvco3m0m01du01y5scm8cb0w": "false_rejection"
+  },
+  "verdict_correct_mean": 1.0,
+  "verdict_correct_n": 39,
+  "rejected_fault_mean": null,
+  "rejected_fault_n": 0,
+  "false_rejection_mean": null,
+  "false_rejection_n": 0,
+  "valid-json_value_mean": 1.0,
+  "valid-json_value_n": 39,
+  "note": "scorer-id -> name mapping assumes Chalk preserves the order scorers were passed in; verified by comparing each scorer's n with the number of fault/valid rows.",
+  "evaluation": "trialforge-verifier",
+  "ran_at": "2026-10-17 13:25:55"
+ },
+ "first_run": {
+  "generated_at": "2026-10-17 12:00:58",
+  "extraction_by_split": {
+   "dev": "54/55",
+   "heldout": "18/19",
+   "unseen": "15/21"
+  },
+  "extraction_total": "87/95",
+  "regimen_precision": 0.9180327868852459,
+  "fixes_after": [
+   "eligibility region: choose the heading occurrence with most requirement lines (synopsis vs full section) - fixed CheckMate 649"
+  ]
+ },
+ "suites": {
+  "extraction": {
+   "protocols": 19,
+   "total": 256,
+   "correct": 244,
+   "field_accuracy": 0.953125,
+   "gold_criteria": 128,
+   "found_correct": 122,
+   "extracted": 125,
+   "value_recall": 0.953125,
+   "precision": 0.976,
+   "by_split": {
+    "dev": {
+     "fields": 110,
+     "correct": 108,
+     "gold": 55,
+     "found": 54,
+     "extracted": 54,
+     "criterion_accuracy": 0.9818181818181818
+    },
+    "heldout": {
+     "fields": 38,
+     "correct": 36,
+     "gold": 19,
+     "found": 18,
+     "extracted": 18,
+     "criterion_accuracy": 0.9473684210526315
+    },
+    "unseen": {
+     "fields": 42,
+     "correct": 42,
+     "gold": 21,
+     "found": 21,
+     "extracted": 21,
+     "criterion_accuracy": 1.0
+    },
+    "unseen2": {
+     "fields": 66,
+     "correct": 58,
+     "gold": 33,
+     "found": 29,
+     "extracted": 32,
+     "criterion_accuracy": 0.8787878787878788
+    }
+   },
+   "rows": [
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "split": "dev",
+     "id": "hemoglobin",
+     "gold": "\u226510.0",
+     "got": "\u226510.0",
+     "ok": true,
+     "why": "",
+     "page": 67
+    },
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "split": "dev",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 67
+    },
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "split": "dev",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 67
+    },
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "split": "dev",
+     "id": "renal",
+     "gold": ">30.0",
+     "got": ">30.0",
+     "ok": true,
+     "why": "",
+     "page": 67
+    },
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "split": "dev",
+     "id": "bilirubin",
+     "gold": "\u22641.5",
+     "got": "\u22641.5",
+     "ok": true,
+     "why": "",
+     "page": 67
+    },
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "split": "dev",
+     "id": "ast_alt",
+     "gold": "\u22643.0",
+     "got": "\u22643.0",
+     "ok": true,
+     "why": "",
+     "page": 67
+    },
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "split": "dev",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": 67
+    },
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "split": "dev",
+     "id": "washout_corticosteroid",
+     "gold": "\u226514.0",
+     "got": "\u226514.0",
+     "ok": true,
+     "why": "",
+     "page": 68
+    },
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "split": "dev",
+     "id": "washout_investigational",
+     "gold": "\u226530.0",
+     "got": "\u226530.0",
+     "ok": true,
+     "why": "",
+     "page": 69
+    },
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "split": "dev",
+     "id": "washout_vaccine",
+     "gold": "\u226530.0",
+     "got": "\u226530.0",
+     "ok": true,
+     "why": "",
+     "page": 69
+    },
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "split": "dev",
+     "id": "washout_surgery",
+     "gold": "\u226528.0",
+     "got": "\u226528.0",
+     "ok": true,
+     "why": "",
+     "page": 69
+    },
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "split": "dev",
+     "id": "washout_immunomodulator",
+     "gold": "\u2265180.0",
+     "got": "\u2014",
+     "ok": false,
+     "why": "not extracted",
+     "page": null
+    },
+    {
+     "nct": "NCT03088540",
+     "name": "EMPOWER-Lung 1",
+     "split": "dev",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 58
+    },
+    {
+     "nct": "NCT03088540",
+     "name": "EMPOWER-Lung 1",
+     "split": "dev",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 58
+    },
+    {
+     "nct": "NCT03088540",
+     "name": "EMPOWER-Lung 1",
+     "split": "dev",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 58
+    },
+    {
+     "nct": "NCT03088540",
+     "name": "EMPOWER-Lung 1",
+     "split": "dev",
+     "id": "renal",
+     "gold": ">30.0",
+     "got": ">30.0",
+     "ok": true,
+     "why": "",
+     "page": 58
+    },
+    {
+     "nct": "NCT03088540",
+     "name": "EMPOWER-Lung 1",
+     "split": "dev",
+     "id": "bilirubin",
+     "gold": "\u22641.5",
+     "got": "\u22641.5",
+     "ok": true,
+     "why": "",
+     "page": 58
+    },
+    {
+     "nct": "NCT03088540",
+     "name": "EMPOWER-Lung 1",
+     "split": "dev",
+     "id": "ast_alt",
+     "gold": "\u22643.0",
+     "got": "\u22643.0",
+     "ok": true,
+     "why": "",
+     "page": 58
+    },
+    {
+     "nct": "NCT03088540",
+     "name": "EMPOWER-Lung 1",
+     "split": "dev",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": 57
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "split": "dev",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 31
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "split": "dev",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 31
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "split": "dev",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 31
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "split": "dev",
+     "id": "renal",
+     "gold": "\u226550.0",
+     "got": "\u226550.0",
+     "ok": true,
+     "why": "",
+     "page": 31
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "split": "dev",
+     "id": "bilirubin",
+     "gold": "\u22641.5",
+     "got": "\u22641.5",
+     "ok": true,
+     "why": "",
+     "page": 31
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "split": "dev",
+     "id": "ast_alt",
+     "gold": "\u22642.5",
+     "got": "\u22642.5",
+     "ok": true,
+     "why": "",
+     "page": 31
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "split": "dev",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": 30
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "split": "dev",
+     "id": "washout_investigational",
+     "gold": "\u226528.0",
+     "got": "\u226528.0",
+     "ok": true,
+     "why": "",
+     "page": 32
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "split": "dev",
+     "id": "washout_surgery",
+     "gold": "\u226521.0",
+     "got": "\u226521.0",
+     "ok": true,
+     "why": "",
+     "page": 32
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "split": "dev",
+     "id": "washout_radiotherapy",
+     "gold": "\u2265180.0",
+     "got": "\u2265180.0",
+     "ok": true,
+     "why": "",
+     "page": 32
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "split": "dev",
+     "id": "washout_vaccine",
+     "gold": "\u226530.0",
+     "got": "\u226530.0",
+     "ok": true,
+     "why": "",
+     "page": 32
+    },
+    {
+     "nct": "NCT02775435",
+     "name": "KEYNOTE-407",
+     "split": "dev",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 32
+    },
+    {
+     "nct": "NCT02775435",
+     "name": "KEYNOTE-407",
+     "split": "dev",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 32
+    },
+    {
+     "nct": "NCT02775435",
+     "name": "KEYNOTE-407",
+     "split": "dev",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 32
+    },
+    {
+     "nct": "NCT02775435",
+     "name": "KEYNOTE-407",
+     "split": "dev",
+     "id": "renal",
+     "gold": "\u226560.0",
+     "got": "\u226560.0",
+     "ok": true,
+     "why": "",
+     "page": 32
+    },
+    {
+     "nct": "NCT02775435",
+     "name": "KEYNOTE-407",
+     "split": "dev",
+     "id": "bilirubin",
+     "gold": "\u22641.5",
+     "got": "\u22641.5",
+     "ok": true,
+     "why": "",
+     "page": 32
+    },
+    {
+     "nct": "NCT02775435",
+     "name": "KEYNOTE-407",
+     "split": "dev",
+     "id": "ast_alt",
+     "gold": "\u22642.5",
+     "got": "\u22642.5",
+     "ok": true,
+     "why": "",
+     "page": 32
+    },
+    {
+     "nct": "NCT02775435",
+     "name": "KEYNOTE-407",
+     "split": "dev",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": 31
+    },
+    {
+     "nct": "NCT03215706",
+     "name": "CheckMate 9LA",
+     "split": "dev",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 42
+    },
+    {
+     "nct": "NCT03215706",
+     "name": "CheckMate 9LA",
+     "split": "dev",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 42
+    },
+    {
+     "nct": "NCT03215706",
+     "name": "CheckMate 9LA",
+     "split": "dev",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 42
+    },
+    {
+     "nct": "NCT03215706",
+     "name": "CheckMate 9LA",
+     "split": "dev",
+     "id": "renal",
+     "gold": "\u226550.0",
+     "got": "\u226550.0",
+     "ok": true,
+     "why": "",
+     "page": 42
+    },
+    {
+     "nct": "NCT03215706",
+     "name": "CheckMate 9LA",
+     "split": "dev",
+     "id": "bilirubin",
+     "gold": "\u22641.5",
+     "got": "\u22641.5",
+     "ok": true,
+     "why": "",
+     "page": 42
+    },
+    {
+     "nct": "NCT03215706",
+     "name": "CheckMate 9LA",
+     "split": "dev",
+     "id": "ast_alt",
+     "gold": "\u22643.0",
+     "got": "\u22643.0",
+     "ok": true,
+     "why": "",
+     "page": 42
+    },
+    {
+     "nct": "NCT02367781",
+     "name": "IMpower130",
+     "split": "dev",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 238
+    },
+    {
+     "nct": "NCT02367781",
+     "name": "IMpower130",
+     "split": "dev",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 238
+    },
+    {
+     "nct": "NCT02367781",
+     "name": "IMpower130",
+     "split": "dev",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 238
+    },
+    {
+     "nct": "NCT02367781",
+     "name": "IMpower130",
+     "split": "dev",
+     "id": "bilirubin",
+     "gold": "\u22641.25",
+     "got": "\u22641.25",
+     "ok": true,
+     "why": "",
+     "page": 238
+    },
+    {
+     "nct": "NCT02367781",
+     "name": "IMpower130",
+     "split": "dev",
+     "id": "ast_alt",
+     "gold": "\u22642.5",
+     "got": "\u22642.5",
+     "ok": true,
+     "why": "",
+     "page": 238
+    },
+    {
+     "nct": "NCT02367781",
+     "name": "IMpower130",
+     "split": "dev",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": 236
+    },
+    {
+     "nct": "NCT02366143",
+     "name": "IMpower150",
+     "split": "dev",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 20
+    },
+    {
+     "nct": "NCT02366143",
+     "name": "IMpower150",
+     "split": "dev",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 20
+    },
+    {
+     "nct": "NCT02366143",
+     "name": "IMpower150",
+     "split": "dev",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 20
+    },
+    {
+     "nct": "NCT02366143",
+     "name": "IMpower150",
+     "split": "dev",
+     "id": "bilirubin",
+     "gold": "\u22641.25",
+     "got": "\u22641.25",
+     "ok": true,
+     "why": "",
+     "page": 20
+    },
+    {
+     "nct": "NCT02366143",
+     "name": "IMpower150",
+     "split": "dev",
+     "id": "ast_alt",
+     "gold": "\u22642.5",
+     "got": "\u22642.5",
+     "ok": true,
+     "why": "",
+     "page": 20
+    },
+    {
+     "nct": "NCT02366143",
+     "name": "IMpower150",
+     "split": "dev",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": 19
+    },
+    {
+     "nct": "NCT03351361",
+     "name": "eNERGY",
+     "split": "heldout",
+     "id": "hemoglobin",
+     "gold": ">10.0",
+     "got": ">10.0",
+     "ok": true,
+     "why": "",
+     "page": 8
+    },
+    {
+     "nct": "NCT03351361",
+     "name": "eNERGY",
+     "split": "heldout",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 8
+    },
+    {
+     "nct": "NCT03351361",
+     "name": "eNERGY",
+     "split": "heldout",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 8
+    },
+    {
+     "nct": "NCT03351361",
+     "name": "eNERGY",
+     "split": "heldout",
+     "id": "bilirubin",
+     "gold": "\u22641.5",
+     "got": "\u22641.5",
+     "ok": true,
+     "why": "",
+     "page": 8
+    },
+    {
+     "nct": "NCT03351361",
+     "name": "eNERGY",
+     "split": "heldout",
+     "id": "ast_alt",
+     "gold": "\u22643.0",
+     "got": "\u22643.0",
+     "ok": true,
+     "why": "",
+     "page": 8
+    },
+    {
+     "nct": "NCT02864251",
+     "name": "CheckMate 722",
+     "split": "heldout",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 49
+    },
+    {
+     "nct": "NCT02864251",
+     "name": "CheckMate 722",
+     "split": "heldout",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 49
+    },
+    {
+     "nct": "NCT02864251",
+     "name": "CheckMate 722",
+     "split": "heldout",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 49
+    },
+    {
+     "nct": "NCT02864251",
+     "name": "CheckMate 722",
+     "split": "heldout",
+     "id": "renal",
+     "gold": "\u226550.0",
+     "got": "\u226550.0",
+     "ok": true,
+     "why": "",
+     "page": 49
+    },
+    {
+     "nct": "NCT02864251",
+     "name": "CheckMate 722",
+     "split": "heldout",
+     "id": "bilirubin",
+     "gold": "\u22641.5",
+     "got": "\u22641.5",
+     "ok": true,
+     "why": "",
+     "page": 49
+    },
+    {
+     "nct": "NCT02864251",
+     "name": "CheckMate 722",
+     "split": "heldout",
+     "id": "ast_alt",
+     "gold": "\u22643.0",
+     "got": "\u22643.0",
+     "ok": true,
+     "why": "",
+     "page": 49
+    },
+    {
+     "nct": "NCT02864251",
+     "name": "CheckMate 722",
+     "split": "heldout",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": 48
+    },
+    {
+     "nct": "NCT02220894",
+     "name": "KEYNOTE-042",
+     "split": "heldout",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 33
+    },
+    {
+     "nct": "NCT02220894",
+     "name": "KEYNOTE-042",
+     "split": "heldout",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 33
+    },
+    {
+     "nct": "NCT02220894",
+     "name": "KEYNOTE-042",
+     "split": "heldout",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 33
+    },
+    {
+     "nct": "NCT02220894",
+     "name": "KEYNOTE-042",
+     "split": "heldout",
+     "id": "renal",
+     "gold": "\u226550.0",
+     "got": "\u226550.0",
+     "ok": true,
+     "why": "",
+     "page": 33
+    },
+    {
+     "nct": "NCT02220894",
+     "name": "KEYNOTE-042",
+     "split": "heldout",
+     "id": "bilirubin",
+     "gold": "\u22641.0",
+     "got": "\u2014",
+     "ok": false,
+     "why": "not extracted",
+     "page": null
+    },
+    {
+     "nct": "NCT02220894",
+     "name": "KEYNOTE-042",
+     "split": "heldout",
+     "id": "ast_alt",
+     "gold": "\u22642.5",
+     "got": "\u22642.5",
+     "ok": true,
+     "why": "",
+     "page": 33
+    },
+    {
+     "nct": "NCT02220894",
+     "name": "KEYNOTE-042",
+     "split": "heldout",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": 32
+    },
+    {
+     "nct": "NCT02819518",
+     "name": "KEYNOTE-355 (TNBC)",
+     "split": "unseen",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 39
+    },
+    {
+     "nct": "NCT02819518",
+     "name": "KEYNOTE-355 (TNBC)",
+     "split": "unseen",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 39
+    },
+    {
+     "nct": "NCT02819518",
+     "name": "KEYNOTE-355 (TNBC)",
+     "split": "unseen",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 39
+    },
+    {
+     "nct": "NCT02819518",
+     "name": "KEYNOTE-355 (TNBC)",
+     "split": "unseen",
+     "id": "renal",
+     "gold": "\u226530.0",
+     "got": "\u226530.0",
+     "ok": true,
+     "why": "",
+     "page": 39
+    },
+    {
+     "nct": "NCT02819518",
+     "name": "KEYNOTE-355 (TNBC)",
+     "split": "unseen",
+     "id": "bilirubin",
+     "gold": "\u22641.5",
+     "got": "\u22641.5",
+     "ok": true,
+     "why": "",
+     "page": 39
+    },
+    {
+     "nct": "NCT02819518",
+     "name": "KEYNOTE-355 (TNBC)",
+     "split": "unseen",
+     "id": "ast_alt",
+     "gold": "\u22642.5",
+     "got": "\u22642.5",
+     "ok": true,
+     "why": "",
+     "page": 39
+    },
+    {
+     "nct": "NCT02819518",
+     "name": "KEYNOTE-355 (TNBC)",
+     "split": "unseen",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": 39
+    },
+    {
+     "nct": "NCT02872116",
+     "name": "CheckMate 649 (gastric)",
+     "split": "unseen",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 54
+    },
+    {
+     "nct": "NCT02872116",
+     "name": "CheckMate 649 (gastric)",
+     "split": "unseen",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 54
+    },
+    {
+     "nct": "NCT02872116",
+     "name": "CheckMate 649 (gastric)",
+     "split": "unseen",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 54
+    },
+    {
+     "nct": "NCT02872116",
+     "name": "CheckMate 649 (gastric)",
+     "split": "unseen",
+     "id": "renal",
+     "gold": ">50.0",
+     "got": ">50.0",
+     "ok": true,
+     "why": "",
+     "page": 55
+    },
+    {
+     "nct": "NCT02872116",
+     "name": "CheckMate 649 (gastric)",
+     "split": "unseen",
+     "id": "bilirubin",
+     "gold": "\u22641.5",
+     "got": "\u22641.5",
+     "ok": true,
+     "why": "",
+     "page": 55
+    },
+    {
+     "nct": "NCT02872116",
+     "name": "CheckMate 649 (gastric)",
+     "split": "unseen",
+     "id": "ast_alt",
+     "gold": "\u22643.0",
+     "got": "\u22643.0",
+     "ok": true,
+     "why": "",
+     "page": 55
+    },
+    {
+     "nct": "NCT02872116",
+     "name": "CheckMate 649 (gastric)",
+     "split": "unseen",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": 54
+    },
+    {
+     "nct": "NCT03434379",
+     "name": "IMbrave150 (HCC)",
+     "split": "unseen",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 52
+    },
+    {
+     "nct": "NCT03434379",
+     "name": "IMbrave150 (HCC)",
+     "split": "unseen",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 52
+    },
+    {
+     "nct": "NCT03434379",
+     "name": "IMbrave150 (HCC)",
+     "split": "unseen",
+     "id": "platelets",
+     "gold": "\u226575.0",
+     "got": "\u226575.0",
+     "ok": true,
+     "why": "",
+     "page": 52
+    },
+    {
+     "nct": "NCT03434379",
+     "name": "IMbrave150 (HCC)",
+     "split": "unseen",
+     "id": "renal",
+     "gold": "\u226550.0",
+     "got": "\u226550.0",
+     "ok": true,
+     "why": "",
+     "page": 52
+    },
+    {
+     "nct": "NCT03434379",
+     "name": "IMbrave150 (HCC)",
+     "split": "unseen",
+     "id": "bilirubin",
+     "gold": "\u22643.0",
+     "got": "\u22643.0",
+     "ok": true,
+     "why": "",
+     "page": 52
+    },
+    {
+     "nct": "NCT03434379",
+     "name": "IMbrave150 (HCC)",
+     "split": "unseen",
+     "id": "ast_alt",
+     "gold": "\u22645.0",
+     "got": "\u22645.0",
+     "ok": true,
+     "why": "",
+     "page": 52
+    },
+    {
+     "nct": "NCT03434379",
+     "name": "IMbrave150 (HCC)",
+     "split": "unseen",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": 52
+    },
+    {
+     "nct": "NCT02657434",
+     "name": "IMpower132 (NSCLC)",
+     "split": "unseen2",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 19
+    },
+    {
+     "nct": "NCT02657434",
+     "name": "IMpower132 (NSCLC)",
+     "split": "unseen2",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 19
+    },
+    {
+     "nct": "NCT02657434",
+     "name": "IMpower132 (NSCLC)",
+     "split": "unseen2",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 19
+    },
+    {
+     "nct": "NCT02657434",
+     "name": "IMpower132 (NSCLC)",
+     "split": "unseen2",
+     "id": "ast_alt",
+     "gold": "\u22642.5",
+     "got": "\u22642.5",
+     "ok": true,
+     "why": "",
+     "page": 19
+    },
+    {
+     "nct": "NCT02657434",
+     "name": "IMpower132 (NSCLC)",
+     "split": "unseen2",
+     "id": "bilirubin",
+     "gold": "\u22641.25",
+     "got": "\u22641.25",
+     "ok": true,
+     "why": "",
+     "page": 19
+    },
+    {
+     "nct": "NCT02657434",
+     "name": "IMpower132 (NSCLC)",
+     "split": "unseen2",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": 17
+    },
+    {
+     "nct": "NCT03164616",
+     "name": "POSEIDON (NSCLC)",
+     "split": "unseen2",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 73
+    },
+    {
+     "nct": "NCT03164616",
+     "name": "POSEIDON (NSCLC)",
+     "split": "unseen2",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 73
+    },
+    {
+     "nct": "NCT03164616",
+     "name": "POSEIDON (NSCLC)",
+     "split": "unseen2",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 73
+    },
+    {
+     "nct": "NCT03164616",
+     "name": "POSEIDON (NSCLC)",
+     "split": "unseen2",
+     "id": "bilirubin",
+     "gold": "\u22641.5",
+     "got": "\u22641.5",
+     "ok": true,
+     "why": "",
+     "page": 73
+    },
+    {
+     "nct": "NCT03164616",
+     "name": "POSEIDON (NSCLC)",
+     "split": "unseen2",
+     "id": "ast_alt",
+     "gold": "\u22642.5",
+     "got": "\u22642.5",
+     "ok": true,
+     "why": "",
+     "page": 73
+    },
+    {
+     "nct": "NCT03164616",
+     "name": "POSEIDON (NSCLC)",
+     "split": "unseen2",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": 73
+    },
+    {
+     "nct": "NCT02358031",
+     "name": "KEYNOTE-048 (head and neck)",
+     "split": "unseen2",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 37
+    },
+    {
+     "nct": "NCT02358031",
+     "name": "KEYNOTE-048 (head and neck)",
+     "split": "unseen2",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 37
+    },
+    {
+     "nct": "NCT02358031",
+     "name": "KEYNOTE-048 (head and neck)",
+     "split": "unseen2",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 37
+    },
+    {
+     "nct": "NCT02358031",
+     "name": "KEYNOTE-048 (head and neck)",
+     "split": "unseen2",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": 37
+    },
+    {
+     "nct": "NCT02358031",
+     "name": "KEYNOTE-048 (head and neck)",
+     "split": "unseen2",
+     "id": "bilirubin",
+     "gold": "unlabellable",
+     "got": ">1.5",
+     "ok": false,
+     "why": "known wrong (true value not recoverable from text layout)",
+     "page": null
+    },
+    {
+     "nct": "NCT02358031",
+     "name": "KEYNOTE-048 (head and neck)",
+     "split": "unseen2",
+     "id": "ast_alt",
+     "gold": "unlabellable",
+     "got": "\u22645.0",
+     "ok": false,
+     "why": "known wrong (true value not recoverable from text layout)",
+     "page": null
+    },
+    {
+     "nct": "NCT02763579",
+     "name": "IMpower133 (SCLC)",
+     "split": "unseen2",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 224
+    },
+    {
+     "nct": "NCT02763579",
+     "name": "IMpower133 (SCLC)",
+     "split": "unseen2",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 224
+    },
+    {
+     "nct": "NCT02763579",
+     "name": "IMpower133 (SCLC)",
+     "split": "unseen2",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 224
+    },
+    {
+     "nct": "NCT02763579",
+     "name": "IMpower133 (SCLC)",
+     "split": "unseen2",
+     "id": "ast_alt",
+     "gold": "\u22642.5",
+     "got": "\u22642.5",
+     "ok": true,
+     "why": "",
+     "page": 225
+    },
+    {
+     "nct": "NCT02763579",
+     "name": "IMpower133 (SCLC)",
+     "split": "unseen2",
+     "id": "bilirubin",
+     "gold": "\u22641.25",
+     "got": "\u22641.25",
+     "ok": true,
+     "why": "",
+     "page": 225
+    },
+    {
+     "nct": "NCT02763579",
+     "name": "IMpower133 (SCLC)",
+     "split": "unseen2",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": 224
+    },
+    {
+     "nct": "NCT02853331",
+     "name": "KEYNOTE-426 (renal)",
+     "split": "unseen2",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u22659.0",
+     "ok": true,
+     "why": "",
+     "page": 41
+    },
+    {
+     "nct": "NCT02853331",
+     "name": "KEYNOTE-426 (renal)",
+     "split": "unseen2",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u22651.5",
+     "ok": true,
+     "why": "",
+     "page": 41
+    },
+    {
+     "nct": "NCT02853331",
+     "name": "KEYNOTE-426 (renal)",
+     "split": "unseen2",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2265100.0",
+     "ok": true,
+     "why": "",
+     "page": 41
+    },
+    {
+     "nct": "NCT02853331",
+     "name": "KEYNOTE-426 (renal)",
+     "split": "unseen2",
+     "id": "bilirubin",
+     "gold": "\u22641.5",
+     "got": "\u22641.5",
+     "ok": true,
+     "why": "",
+     "page": 41
+    },
+    {
+     "nct": "NCT02853331",
+     "name": "KEYNOTE-426 (renal)",
+     "split": "unseen2",
+     "id": "ast_alt",
+     "gold": "\u22642.5",
+     "got": "\u22642.5",
+     "ok": true,
+     "why": "",
+     "page": 41
+    },
+    {
+     "nct": "NCT02853331",
+     "name": "KEYNOTE-426 (renal)",
+     "split": "unseen2",
+     "id": "washout_investigational",
+     "gold": "\u226528.0",
+     "got": "\u226528.0",
+     "ok": true,
+     "why": "",
+     "page": 42
+    },
+    {
+     "nct": "NCT03043872",
+     "name": "CASPIAN (SCLC)",
+     "split": "unseen2",
+     "id": "hemoglobin",
+     "gold": "\u22659.0",
+     "got": "\u2014",
+     "ok": false,
+     "why": "not extracted",
+     "page": null
+    },
+    {
+     "nct": "NCT03043872",
+     "name": "CASPIAN (SCLC)",
+     "split": "unseen2",
+     "id": "anc",
+     "gold": "\u22651.5",
+     "got": "\u2014",
+     "ok": false,
+     "why": "not extracted",
+     "page": null
+    },
+    {
+     "nct": "NCT03043872",
+     "name": "CASPIAN (SCLC)",
+     "split": "unseen2",
+     "id": "platelets",
+     "gold": "\u2265100.0",
+     "got": "\u2014",
+     "ok": false,
+     "why": "not extracted",
+     "page": null
+    },
+    {
+     "nct": "NCT03043872",
+     "name": "CASPIAN (SCLC)",
+     "split": "unseen2",
+     "id": "bilirubin",
+     "gold": "\u22641.5",
+     "got": "<2.0",
+     "ok": false,
+     "why": "wrong value",
+     "page": 159
+    },
+    {
+     "nct": "NCT03043872",
+     "name": "CASPIAN (SCLC)",
+     "split": "unseen2",
+     "id": "ecog",
+     "gold": "\u22641.0",
+     "got": "\u22641.0",
+     "ok": true,
+     "why": "",
+     "page": null
+    }
+   ]
+  },
+  "regimen": {
+   "protocols": 12,
+   "precision": 0.9824561403508771,
+   "recall": 1.0,
+   "tp": 56,
+   "fp": 1,
+   "fn": 0,
+   "rows": [
+    {
+     "nct": "NCT03409614",
+     "extra": [],
+     "missing": []
+    },
+    {
+     "nct": "NCT03088540",
+     "extra": [],
+     "missing": []
+    },
+    {
+     "nct": "NCT02578680",
+     "extra": [],
+     "missing": []
+    },
+    {
+     "nct": "NCT02775435",
+     "extra": [],
+     "missing": []
+    },
+    {
+     "nct": "NCT03215706",
+     "extra": [],
+     "missing": []
+    },
+    {
+     "nct": "NCT02367781",
+     "extra": [],
+     "missing": []
+    },
+    {
+     "nct": "NCT02366143",
+     "extra": [
+      "docetaxel"
+     ],
+     "missing": []
+    },
+    {
+     "nct": "NCT02864251",
+     "extra": [],
+     "missing": []
+    },
+    {
+     "nct": "NCT02220894",
+     "extra": [],
+     "missing": []
+    },
+    {
+     "nct": "NCT02819518",
+     "extra": [],
+     "missing": []
+    },
+    {
+     "nct": "NCT02872116",
+     "extra": [],
+     "missing": []
+    },
+    {
+     "nct": "NCT03434379",
+     "extra": [],
+     "missing": []
+    }
+   ]
+  },
+  "comparison": {
+   "total": 1944,
+   "correct": 1780,
+   "accuracy": 0.9156378600823045,
+   "compared": 1802,
+   "accuracy_when_compared": 0.9877913429522752,
+   "missing_extraction": 142,
+   "wrong_direction": 22,
+   "errors": [
+    {
+     "target": "NCT03409614",
+     "comparator": "NCT03043872",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator looser"
+    },
+    {
+     "target": "NCT03088540",
+     "comparator": "NCT03043872",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator looser"
+    },
+    {
+     "target": "NCT02578680",
+     "comparator": "NCT03043872",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator looser"
+    },
+    {
+     "target": "NCT02775435",
+     "comparator": "NCT03043872",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator looser"
+    },
+    {
+     "target": "NCT03215706",
+     "comparator": "NCT03043872",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator looser"
+    },
+    {
+     "target": "NCT03351361",
+     "comparator": "NCT03043872",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator looser"
+    },
+    {
+     "target": "NCT02864251",
+     "comparator": "NCT03043872",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator looser"
+    },
+    {
+     "target": "NCT02819518",
+     "comparator": "NCT03043872",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator looser"
+    },
+    {
+     "target": "NCT02872116",
+     "comparator": "NCT03043872",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator looser"
+    },
+    {
+     "target": "NCT03164616",
+     "comparator": "NCT03043872",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator looser"
+    },
+    {
+     "target": "NCT02853331",
+     "comparator": "NCT03043872",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator looser"
+    },
+    {
+     "target": "NCT03043872",
+     "comparator": "NCT03409614",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator stricter"
+    },
+    {
+     "target": "NCT03043872",
+     "comparator": "NCT03088540",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator stricter"
+    },
+    {
+     "target": "NCT03043872",
+     "comparator": "NCT02578680",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator stricter"
+    },
+    {
+     "target": "NCT03043872",
+     "comparator": "NCT02775435",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator stricter"
+    },
+    {
+     "target": "NCT03043872",
+     "comparator": "NCT03215706",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator stricter"
+    },
+    {
+     "target": "NCT03043872",
+     "comparator": "NCT03351361",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator stricter"
+    },
+    {
+     "target": "NCT03043872",
+     "comparator": "NCT02864251",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator stricter"
+    },
+    {
+     "target": "NCT03043872",
+     "comparator": "NCT02819518",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator stricter"
+    },
+    {
+     "target": "NCT03043872",
+     "comparator": "NCT02872116",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator stricter"
+    },
+    {
+     "target": "NCT03043872",
+     "comparator": "NCT03164616",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator stricter"
+    },
+    {
+     "target": "NCT03043872",
+     "comparator": "NCT02853331",
+     "criterion": "bilirubin",
+     "gold": "same",
+     "got": "comparator stricter"
+    }
+   ]
+  },
+  "citations": {
+   "fda_total": 32,
+   "fda_ok": 32,
+   "fda_quote_accuracy": 1.0,
+   "prot_total": 157,
+   "prot_ok": 157,
+   "protocol_quote_accuracy": 1.0,
+   "prot_misses": [],
+   "nct_total": 12,
+   "nct_ok": 12,
+   "nct_exist": 1.0
+  },
+  "verifier": {
+   "n_faults": 24,
+   "n_valid": 10,
+   "n_ambiguous": 5,
+   "deterministic": {
+    "fault_catch_rate": 1.0,
+    "false_rejection_rate": 0.0,
+    "ambiguous_agreement": 1.0
+   },
+   "no_verifier": {
+    "fault_catch_rate": 0.0,
+    "false_rejection_rate": 0.0,
+    "ambiguous_agreement": 0.0,
+    "note": "accepts every recommendation"
+   },
+   "llm_only": {
+    "note": "not run (no model credentials: CHALK_ROUTER_API_KEY or ANTHROPIC_API_KEY)"
+   },
+   "cases": [
+    {
+     "id": "F01",
+     "kind": "fault",
+     "fault_type": "fabricated trial ID",
+     "description": "Cites a non-existent NCT ID as a comparator",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "comparator_exists",
+      "evidence_required"
+     ],
+     "det_warned_checks": [
+      "regimen_relevance"
+     ]
+    },
+    {
+     "id": "F02",
+     "kind": "fault",
+     "fault_type": "malformed trial ID",
+     "description": "Malformed NCT identifier",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "comparator_id",
+      "evidence_required"
+     ],
+     "det_warned_checks": [
+      "regimen_relevance"
+     ]
+    },
+    {
+     "id": "F03",
+     "kind": "fault",
+     "fault_type": "wrong comparator value",
+     "description": "CheckMate 9LA Hgb misreported as 8.0 (source: \u22659.0, p.42)",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "comparator_value",
+      "evidence_required"
+     ],
+     "det_warned_checks": [
+      "regimen_relevance"
+     ]
+    },
+    {
+     "id": "F04",
+     "kind": "fault",
+     "fault_type": "wrong comparator value",
+     "description": "KEYNOTE-042 ANC misreported as 1.0 (source: \u22651,500/mcL)",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "comparator_value",
+      "evidence_required"
+     ],
+     "det_warned_checks": [
+      "regimen_relevance"
+     ]
+    },
+    {
+     "id": "F05",
+     "kind": "fault",
+     "fault_type": "wrong comparator unit",
+     "description": "Comparator value stated in the wrong unit",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "comparator_value"
+     ],
+     "det_warned_checks": []
+    },
+    {
+     "id": "F06",
+     "kind": "fault",
+     "fault_type": "misquoted FDA text",
+     "description": "FDA sentence with 'should' changed to 'must'",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "fda_quote"
+     ],
+     "det_warned_checks": []
+    },
+    {
+     "id": "F07",
+     "kind": "fault",
+     "fault_type": "fabricated FDA quote",
+     "description": "Plausible but non-existent FDA sentence",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "fda_quote",
+      "evidence_required"
+     ],
+     "det_warned_checks": [
+      "regimen_relevance"
+     ]
+    },
+    {
+     "id": "F08",
+     "kind": "fault",
+     "fault_type": "wrong guidance topic",
+     "description": "Performance-status guidance cited for a hemoglobin criterion",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "fda_topic",
+      "evidence_required"
+     ],
+     "det_warned_checks": [
+      "regimen_relevance"
+     ]
+    },
+    {
+     "id": "F09",
+     "kind": "fault",
+     "fault_type": "regimen contradiction",
+     "description": "Relax ANC because cemiplimab is not myelosuppressive, ignoring platinum/taxane/pemetrexed arms",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "regimen_contradiction"
+     ],
+     "det_warned_checks": [
+      "guidance_only"
+     ]
+    },
+    {
+     "id": "F10",
+     "kind": "fault",
+     "fault_type": "regimen contradiction",
+     "description": "Relax platelets because ipilimumab is not myelosuppressive",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "regimen_contradiction"
+     ],
+     "det_warned_checks": [
+      "guidance_only"
+     ]
+    },
+    {
+     "id": "F11",
+     "kind": "fault",
+     "fault_type": "regimen contradiction",
+     "description": "KEYNOTE-189: relax ANC citing pembrolizumab only (pemetrexed + platinum present)",
+     "nct": "NCT02578680",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "regimen_contradiction"
+     ],
+     "det_warned_checks": [
+      "guidance_only"
+     ]
+    },
+    {
+     "id": "F12",
+     "kind": "fault",
+     "fault_type": "drug not in regimen",
+     "description": "Claims about pembrolizumab, which is not in EMPOWER-Lung 3",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "drug_in_regimen"
+     ],
+     "det_warned_checks": []
+    },
+    {
+     "id": "F13",
+     "kind": "fault",
+     "fault_type": "false drug property",
+     "description": "Claims carboplatin is not myelosuppressive",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "drug_property",
+      "regimen_contradiction",
+      "evidence_required"
+     ],
+     "det_warned_checks": []
+    },
+    {
+     "id": "F14",
+     "kind": "fault",
+     "fault_type": "direction error",
+     "description": "'Relax' Hgb to 11.0 (stricter than current 10.0)",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "direction"
+     ],
+     "det_warned_checks": [
+      "permissive_comparator",
+      "regimen_relevance"
+     ]
+    },
+    {
+     "id": "F15",
+     "kind": "fault",
+     "fault_type": "comparator does not support direction",
+     "description": "Relax Hgb citing eNERGY, which is not more permissive (>10.0)",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "comparator_direction"
+     ],
+     "det_warned_checks": [
+      "permissive_comparator",
+      "regimen_relevance"
+     ]
+    },
+    {
+     "id": "F16",
+     "kind": "fault",
+     "fault_type": "unit error",
+     "description": "ANC proposed as 1500 g/dL",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "units"
+     ],
+     "det_warned_checks": [
+      "regimen_relevance",
+      "guidance_only"
+     ]
+    },
+    {
+     "id": "F17",
+     "kind": "fault",
+     "fault_type": "implausible value",
+     "description": "Hgb relaxed to 3.0 g/dL",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "plausibility"
+     ],
+     "det_warned_checks": [
+      "permissive_comparator",
+      "regimen_relevance"
+     ]
+    },
+    {
+     "id": "F18",
+     "kind": "fault",
+     "fault_type": "overclaim (safety)",
+     "description": "States relaxation is safe",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "overclaim"
+     ],
+     "det_warned_checks": [
+      "permissive_comparator",
+      "regimen_relevance"
+     ]
+    },
+    {
+     "id": "F19",
+     "kind": "fault",
+     "fault_type": "overclaim (enrollment)",
+     "description": "Claims a change will increase enrollment",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "overclaim"
+     ],
+     "det_warned_checks": [
+      "guidance_only"
+     ]
+    },
+    {
+     "id": "F20",
+     "kind": "fault",
+     "fault_type": "unsupported removal",
+     "description": "Remove the ANC criterion entirely",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "removal"
+     ],
+     "det_warned_checks": [
+      "regimen_relevance"
+     ]
+    },
+    {
+     "id": "F21",
+     "kind": "fault",
+     "fault_type": "no evidence",
+     "description": "Relaxation with no cited evidence",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "evidence_required"
+     ],
+     "det_warned_checks": [
+      "regimen_relevance"
+     ]
+    },
+    {
+     "id": "F22",
+     "kind": "fault",
+     "fault_type": "non-existent criterion",
+     "description": "Refers to an LDH criterion the protocol does not have",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "criterion_exists"
+     ],
+     "det_warned_checks": []
+    },
+    {
+     "id": "F23",
+     "kind": "fault",
+     "fault_type": "misquoted protocol text",
+     "description": "Protocol sentence altered ('higher' -> 'not higher')",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "protocol_quote"
+     ],
+     "det_warned_checks": [
+      "permissive_comparator",
+      "regimen_relevance"
+     ]
+    },
+    {
+     "id": "F24",
+     "kind": "fault",
+     "fault_type": "direction error",
+     "description": "'Tighten' ECOG to 2 (more permissive)",
+     "nct": "NCT03409614",
+     "expected": "REJECTED",
+     "det_status": "REJECTED",
+     "det_ok": true,
+     "det_failed_checks": [
+      "direction"
+     ],
+     "det_warned_checks": []
+    },
+    {
+     "id": "V01",
+     "kind": "valid",
+     "fault_type": null,
+     "description": "Ask to justify Hgb \u226510 citing CheckMate 9LA \u22659.0 and FDA \u00a7III.A",
+     "nct": "NCT03409614",
+     "expected": "not REJECTED",
+     "det_status": "PASSED",
+     "det_ok": true,
+     "det_failed_checks": [],
+     "det_warned_checks": []
+    },
+    {
+     "id": "V02",
+     "kind": "valid",
+     "fault_type": null,
+     "description": "Consider a Duffy-null ANC provision, citing FDA \u00a7III.B",
+     "nct": "NCT03409614",
+     "expected": "not REJECTED",
+     "det_status": "PASSED",
+     "det_ok": true,
+     "det_failed_checks": [],
+     "det_warned_checks": []
+    },
+    {
+     "id": "V03",
+     "kind": "valid",
+     "fault_type": null,
+     "description": "Justify ECOG \u22641 in protocol, citing FDA PS \u00a7IV.A",
+     "nct": "NCT03409614",
+     "expected": "not REJECTED",
+     "det_status": "PASSED",
+     "det_ok": true,
+     "det_failed_checks": [],
+     "det_warned_checks": []
+    },
+    {
+     "id": "V04",
+     "kind": "valid",
+     "fault_type": null,
+     "description": "Retain platelets; comparator used the same value",
+     "nct": "NCT03409614",
+     "expected": "not REJECTED",
+     "det_status": "PASSED",
+     "det_ok": true,
+     "det_failed_checks": [],
+     "det_warned_checks": []
+    },
+    {
+     "id": "V05",
+     "kind": "valid",
+     "fault_type": null,
+     "description": "Justify investigational-agent washout citing FDA washout \u00a7III",
+     "nct": "NCT03409614",
+     "expected": "not REJECTED",
+     "det_status": "PASSED",
+     "det_ok": true,
+     "det_failed_checks": [],
+     "det_warned_checks": []
+    },
+    {
+     "id": "V06",
+     "kind": "valid",
+     "fault_type": null,
+     "description": "Justify Hgb citing the protocol's own anemia sentence (verbatim)",
+     "nct": "NCT03409614",
+     "expected": "not REJECTED",
+     "det_status": "PASSED",
+     "det_ok": true,
+     "det_failed_checks": [],
+     "det_warned_checks": []
+    },
+    {
+     "id": "V07",
+     "kind": "valid",
+     "fault_type": null,
+     "description": "Retain AST/ALT; KEYNOTE-042 was stricter (\u22642.5\u00d7ULN)",
+     "nct": "NCT03409614",
+     "expected": "not REJECTED",
+     "det_status": "PASSED_WITH_WARNINGS",
+     "det_ok": true,
+     "det_failed_checks": [],
+     "det_warned_checks": [
+      "comparator_regimen"
+     ]
+    },
+    {
+     "id": "V08",
+     "kind": "valid",
+     "fault_type": null,
+     "description": "KEYNOTE-189: retain Hgb \u22659.0, consistent with KEYNOTE-407",
+     "nct": "NCT02578680",
+     "expected": "not REJECTED",
+     "det_status": "PASSED",
+     "det_ok": true,
+     "det_failed_checks": [],
+     "det_warned_checks": []
+    },
+    {
+     "id": "V09",
+     "kind": "valid",
+     "fault_type": null,
+     "description": "Correctly states cemiplimab is not myelosuppressive while asking for justification (no relaxation)",
+     "nct": "NCT03409614",
+     "expected": "not REJECTED",
+     "det_status": "PASSED",
+     "det_ok": true,
+     "det_failed_checks": [],
+     "det_warned_checks": []
+    },
+    {
+     "id": "V10",
+     "kind": "valid",
+     "fault_type": null,
+     "description": "Justify Hgb citing KEYNOTE-189 (not an auto-selected comparator; checked via registry + protocol)",
+     "nct": "NCT03409614",
+     "expected": "not REJECTED",
+     "det_status": "PASSED",
+     "det_ok": true,
+     "det_failed_checks": [],
+     "det_warned_checks": []
+    },
+    {
+     "id": "A01",
+     "kind": "ambiguous",
+     "fault_type": null,
+     "description": "Relax Hgb to 9.0 citing only CheckMate 722 (regimen lacks taxane)",
+     "nct": "NCT03409614",
+     "expected": "PASSED_WITH_WARNINGS",
+     "det_status": "PASSED_WITH_WARNINGS",
+     "det_ok": true,
+     "det_failed_checks": [],
+     "det_warned_checks": [
+      "permissive_comparator",
+      "regimen_relevance"
+     ]
+    },
+    {
+     "id": "A02",
+     "kind": "ambiguous",
+     "fault_type": null,
+     "description": "Relax ANC to 1.2 citing FDA Duffy passage while the regimen is myelosuppressive",
+     "nct": "NCT03409614",
+     "expected": "PASSED_WITH_WARNINGS",
+     "det_status": "PASSED_WITH_WARNINGS",
+     "det_ok": true,
+     "det_failed_checks": [],
+     "det_warned_checks": [
+      "regimen_relevance",
+      "guidance_only"
+     ]
+    },
+    {
+     "id": "A03",
+     "kind": "ambiguous",
+     "fault_type": null,
+     "description": "Valid comparator but calls the stricter value 'unnecessary'",
+     "nct": "NCT03409614",
+     "expected": "PASSED_WITH_WARNINGS",
+     "det_status": "PASSED_WITH_WARNINGS",
+     "det_ok": true,
+     "det_failed_checks": [],
+     "det_warned_checks": [
+      "necessity_language"
+     ]
+    },
+    {
+     "id": "A04",
+     "kind": "ambiguous",
+     "fault_type": null,
+     "description": "Relax Hgb to 9.0 citing a regimen-matched comparator (still a relaxation of a toxicity-linked criterion)",
+     "nct": "NCT03409614",
+     "expected": "PASSED_WITH_WARNINGS",
+     "det_status": "PASSED_WITH_WARNINGS",
+     "det_ok": true,
+     "det_failed_checks": [],
+     "det_warned_checks": [
+      "permissive_comparator",
+      "regimen_relevance"
+     ]
+    },
+    {
+     "id": "A05",
+     "kind": "ambiguous",
+     "fault_type": null,
+     "description": "KEYNOTE-189: relax surgery washout from 21 to 14 days citing only FDA washout guidance",
+     "nct": "NCT02578680",
+     "expected": "PASSED_WITH_WARNINGS",
+     "det_status": "PASSED_WITH_WARNINGS",
+     "det_ok": true,
+     "det_failed_checks": [],
+     "det_warned_checks": [
+      "guidance_only"
+     ]
+    }
+   ]
+  },
+  "classification": {
+   "total": 10,
+   "correct": 10,
+   "accuracy": 1.0,
+   "rows": [
+    {
+     "nct": "NCT03409614",
+     "id": "hemoglobin",
+     "expected": "Review recommended",
+     "got": "Review recommended",
+     "ok": true
+    },
+    {
+     "nct": "NCT03409614",
+     "id": "anc",
+     "expected": "Review recommended",
+     "got": "Review recommended",
+     "ok": true
+    },
+    {
+     "nct": "NCT03409614",
+     "id": "platelets",
+     "expected": "Evidence supports retaining",
+     "got": "Evidence supports retaining",
+     "ok": true
+    },
+    {
+     "nct": "NCT03409614",
+     "id": "ecog",
+     "expected": "Review recommended",
+     "got": "Review recommended",
+     "ok": true
+    },
+    {
+     "nct": "NCT03409614",
+     "id": "ast_alt",
+     "expected": "Evidence supports retaining",
+     "got": "Evidence supports retaining",
+     "ok": true
+    },
+    {
+     "nct": "NCT02578680",
+     "id": "hemoglobin",
+     "expected": "Evidence supports retaining",
+     "got": "Evidence supports retaining",
+     "ok": true
+    },
+    {
+     "nct": "NCT02578680",
+     "id": "platelets",
+     "expected": "Evidence supports retaining",
+     "got": "Evidence supports retaining",
+     "ok": true
+    },
+    {
+     "nct": "NCT02578680",
+     "id": "ecog",
+     "expected": "Review recommended",
+     "got": "Review recommended",
+     "ok": true
+    },
+    {
+     "nct": "NCT03088540",
+     "id": "hemoglobin",
+     "expected": "Evidence supports retaining",
+     "got": "Evidence supports retaining",
+     "ok": true
+    },
+    {
+     "nct": "NCT03088540",
+     "id": "anc",
+     "expected": "Review recommended",
+     "got": "Review recommended",
+     "ok": true
+    }
+   ],
+   "note": "Hand-written expectations for the demo trial and two comparators. NOT blind: written after the classification rules were calibrated on NCT03409614. Reported for transparency, not as a validation metric."
+  }
+ }
+}

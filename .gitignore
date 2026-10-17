@@ -1,0 +1,32 @@
+# environments and secrets
+.venv/
+.env
+.env.*
+*.pem
+.chalk.yml
+
+# python / tooling
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+.vscode/
+.zed/
+.helix/
+
+# Third-party documents are fetched from their official URLs on first run, not redistributed:
+# sponsor protocol PDFs, FDA PDFs, NHANES files, registry/search caches.
+data/protocols/
+data/fda/
+data/nhanes/
+data/registry/
+data/search_cache/
+data/reviews/
+data/decisions/
+
+# generated Chalk eval dataset embeds protocol text; rebuild with `python -m chalk_project.build_eval_bundle`
+chalk_project/eval_dataset.jsonl
+chalk_project/trialforge_chalk_eval.py
+
+# Regeneron hackathon starter kit (not ours to redistribute)
+Regeneron starter-kit/

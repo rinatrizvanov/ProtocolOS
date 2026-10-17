@@ -1,0 +1,336 @@
+{
+ "_about": "Expected reviewer-facing behaviour per variant. Stricter plants should be escalated for evidence review (not declared unsafe); looser plants should not be flagged as over-restrictive because of the change. Synthetic modifications of authentic protocols.",
+ "variants": {
+  "NCT02657434__control": {
+   "kind": "control",
+   "base": "NCT02657434",
+   "expected": "no planted change"
+  },
+  "NCT02657434__stricter__hemoglobin": {
+   "kind": "stricter",
+   "base": "NCT02657434",
+   "analyte": "hemoglobin",
+   "original_value": 9.0,
+   "planted_value": 11.0,
+   "unit": "g/dL",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02657434__stricter__anc": {
+   "kind": "stricter",
+   "base": "NCT02657434",
+   "analyte": "anc",
+   "original_value": 1.5,
+   "planted_value": 2.0,
+   "unit": "×10⁹/L",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02657434__stricter__platelets": {
+   "kind": "stricter",
+   "base": "NCT02657434",
+   "analyte": "platelets",
+   "original_value": 100.0,
+   "planted_value": 150.0,
+   "unit": "×10⁹/L",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02657434__stricter__ast_alt": {
+   "kind": "stricter",
+   "base": "NCT02657434",
+   "analyte": "ast_alt",
+   "original_value": 2.5,
+   "planted_value": 1.5,
+   "unit": "×ULN",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02657434__stricter__ecog": {
+   "kind": "stricter",
+   "base": "NCT02657434",
+   "analyte": "ecog",
+   "original_value": 1.0,
+   "planted_value": 0.0,
+   "unit": "ECOG",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02657434__looser__hemoglobin": {
+   "kind": "looser",
+   "base": "NCT02657434",
+   "analyte": "hemoglobin",
+   "original_value": 9.0,
+   "planted_value": 8.0,
+   "unit": "g/dL",
+   "expected": "no over-restriction flag caused by the change"
+  },
+  "NCT02657434__looser__platelets": {
+   "kind": "looser",
+   "base": "NCT02657434",
+   "analyte": "platelets",
+   "original_value": 100.0,
+   "planted_value": 75.0,
+   "unit": "×10⁹/L",
+   "expected": "no over-restriction flag caused by the change"
+  },
+  "NCT03164616__control": {
+   "kind": "control",
+   "base": "NCT03164616",
+   "expected": "no planted change"
+  },
+  "NCT03164616__stricter__hemoglobin": {
+   "kind": "stricter",
+   "base": "NCT03164616",
+   "analyte": "hemoglobin",
+   "original_value": 9.0,
+   "planted_value": 11.0,
+   "unit": "g/dL",
+   "expected": "escalate for evidence review"
+  },
+  "NCT03164616__stricter__anc": {
+   "kind": "stricter",
+   "base": "NCT03164616",
+   "analyte": "anc",
+   "original_value": 1.5,
+   "planted_value": 2.0,
+   "unit": "×10⁹/L",
+   "expected": "escalate for evidence review"
+  },
+  "NCT03164616__stricter__platelets": {
+   "kind": "stricter",
+   "base": "NCT03164616",
+   "analyte": "platelets",
+   "original_value": 100.0,
+   "planted_value": 150.0,
+   "unit": "×10⁹/L",
+   "expected": "escalate for evidence review"
+  },
+  "NCT03164616__stricter__ast_alt": {
+   "kind": "stricter",
+   "base": "NCT03164616",
+   "analyte": "ast_alt",
+   "original_value": 2.5,
+   "planted_value": 1.5,
+   "unit": "×ULN",
+   "expected": "escalate for evidence review"
+  },
+  "NCT03164616__stricter__ecog": {
+   "kind": "stricter",
+   "base": "NCT03164616",
+   "analyte": "ecog",
+   "original_value": 1.0,
+   "planted_value": 0.0,
+   "unit": "ECOG",
+   "expected": "escalate for evidence review"
+  },
+  "NCT03164616__looser__hemoglobin": {
+   "kind": "looser",
+   "base": "NCT03164616",
+   "analyte": "hemoglobin",
+   "original_value": 9.0,
+   "planted_value": 8.0,
+   "unit": "g/dL",
+   "expected": "no over-restriction flag caused by the change"
+  },
+  "NCT03164616__looser__platelets": {
+   "kind": "looser",
+   "base": "NCT03164616",
+   "analyte": "platelets",
+   "original_value": 100.0,
+   "planted_value": 75.0,
+   "unit": "×10⁹/L",
+   "expected": "no over-restriction flag caused by the change"
+  },
+  "NCT02358031__control": {
+   "kind": "control",
+   "base": "NCT02358031",
+   "expected": "no planted change"
+  },
+  "NCT02358031__stricter__hemoglobin": {
+   "kind": "stricter",
+   "base": "NCT02358031",
+   "analyte": "hemoglobin",
+   "original_value": 9.0,
+   "planted_value": 11.0,
+   "unit": "g/dL",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02358031__stricter__anc": {
+   "kind": "stricter",
+   "base": "NCT02358031",
+   "analyte": "anc",
+   "original_value": 1.5,
+   "planted_value": 2.0,
+   "unit": "×10⁹/L",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02358031__stricter__platelets": {
+   "kind": "stricter",
+   "base": "NCT02358031",
+   "analyte": "platelets",
+   "original_value": 100.0,
+   "planted_value": 150.0,
+   "unit": "×10⁹/L",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02358031__stricter__ecog": {
+   "kind": "stricter",
+   "base": "NCT02358031",
+   "analyte": "ecog",
+   "original_value": 1.0,
+   "planted_value": 0.0,
+   "unit": "ECOG",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02358031__looser__hemoglobin": {
+   "kind": "looser",
+   "base": "NCT02358031",
+   "analyte": "hemoglobin",
+   "original_value": 9.0,
+   "planted_value": 8.0,
+   "unit": "g/dL",
+   "expected": "no over-restriction flag caused by the change"
+  },
+  "NCT02358031__looser__platelets": {
+   "kind": "looser",
+   "base": "NCT02358031",
+   "analyte": "platelets",
+   "original_value": 100.0,
+   "planted_value": 75.0,
+   "unit": "×10⁹/L",
+   "expected": "no over-restriction flag caused by the change"
+  },
+  "NCT02763579__control": {
+   "kind": "control",
+   "base": "NCT02763579",
+   "expected": "no planted change"
+  },
+  "NCT02763579__stricter__hemoglobin": {
+   "kind": "stricter",
+   "base": "NCT02763579",
+   "analyte": "hemoglobin",
+   "original_value": 9.0,
+   "planted_value": 11.0,
+   "unit": "g/dL",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02763579__stricter__anc": {
+   "kind": "stricter",
+   "base": "NCT02763579",
+   "analyte": "anc",
+   "original_value": 1.5,
+   "planted_value": 2.0,
+   "unit": "×10⁹/L",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02763579__stricter__platelets": {
+   "kind": "stricter",
+   "base": "NCT02763579",
+   "analyte": "platelets",
+   "original_value": 100.0,
+   "planted_value": 150.0,
+   "unit": "×10⁹/L",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02763579__stricter__ast_alt": {
+   "kind": "stricter",
+   "base": "NCT02763579",
+   "analyte": "ast_alt",
+   "original_value": 2.5,
+   "planted_value": 1.5,
+   "unit": "×ULN",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02763579__stricter__ecog": {
+   "kind": "stricter",
+   "base": "NCT02763579",
+   "analyte": "ecog",
+   "original_value": 1.0,
+   "planted_value": 0.0,
+   "unit": "ECOG",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02763579__looser__hemoglobin": {
+   "kind": "looser",
+   "base": "NCT02763579",
+   "analyte": "hemoglobin",
+   "original_value": 9.0,
+   "planted_value": 8.0,
+   "unit": "g/dL",
+   "expected": "no over-restriction flag caused by the change"
+  },
+  "NCT02763579__looser__platelets": {
+   "kind": "looser",
+   "base": "NCT02763579",
+   "analyte": "platelets",
+   "original_value": 100.0,
+   "planted_value": 75.0,
+   "unit": "×10⁹/L",
+   "expected": "no over-restriction flag caused by the change"
+  },
+  "NCT02853331__control": {
+   "kind": "control",
+   "base": "NCT02853331",
+   "expected": "no planted change"
+  },
+  "NCT02853331__stricter__hemoglobin": {
+   "kind": "stricter",
+   "base": "NCT02853331",
+   "analyte": "hemoglobin",
+   "original_value": 9.0,
+   "planted_value": 11.0,
+   "unit": "g/dL",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02853331__stricter__anc": {
+   "kind": "stricter",
+   "base": "NCT02853331",
+   "analyte": "anc",
+   "original_value": 1.5,
+   "planted_value": 2.0,
+   "unit": "×10⁹/L",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02853331__stricter__platelets": {
+   "kind": "stricter",
+   "base": "NCT02853331",
+   "analyte": "platelets",
+   "original_value": 100.0,
+   "planted_value": 150.0,
+   "unit": "×10⁹/L",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02853331__stricter__ast_alt": {
+   "kind": "stricter",
+   "base": "NCT02853331",
+   "analyte": "ast_alt",
+   "original_value": 2.5,
+   "planted_value": 1.5,
+   "unit": "×ULN",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02853331__stricter__washout_investigational": {
+   "kind": "stricter",
+   "base": "NCT02853331",
+   "analyte": "washout_investigational",
+   "original_value": 28.0,
+   "planted_value": 56.0,
+   "unit": "days",
+   "expected": "escalate for evidence review"
+  },
+  "NCT02853331__looser__hemoglobin": {
+   "kind": "looser",
+   "base": "NCT02853331",
+   "analyte": "hemoglobin",
+   "original_value": 9.0,
+   "planted_value": 8.0,
+   "unit": "g/dL",
+   "expected": "no over-restriction flag caused by the change"
+  },
+  "NCT02853331__looser__platelets": {
+   "kind": "looser",
+   "base": "NCT02853331",
+   "analyte": "platelets",
+   "original_value": 100.0,
+   "planted_value": 75.0,
+   "unit": "×10⁹/L",
+   "expected": "no over-restriction flag caused by the change"
+  }
+ }
+}

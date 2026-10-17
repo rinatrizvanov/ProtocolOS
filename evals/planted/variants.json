@@ -1,0 +1,474 @@
+[
+ {
+  "id": "NCT02657434__control",
+  "base": "NCT02657434",
+  "name": "IMpower132 (NSCLC)",
+  "substitutions": []
+ },
+ {
+  "id": "NCT02657434__stricter__hemoglobin",
+  "base": "NCT02657434",
+  "name": "IMpower132 (NSCLC)",
+  "substitutions": [
+   {
+    "page": 19,
+    "line_index": 5,
+    "original": "         Hemoglobin ≥ 9.0 g/dL",
+    "modified": "         Hemoglobin ≥ 11.0 g/dL"
+   }
+  ]
+ },
+ {
+  "id": "NCT02657434__stricter__anc",
+  "base": "NCT02657434",
+  "name": "IMpower132 (NSCLC)",
+  "substitutions": [
+   {
+    "page": 19,
+    "line_index": 2,
+    "original": "         ANC ≥ 1500 cells/µL without granulocyte colony-stimulating factor support",
+    "modified": "         ANC ≥ 2000 cells/µL without granulocyte colony-stimulating factor support"
+   }
+  ]
+ },
+ {
+  "id": "NCT02657434__stricter__platelets",
+  "base": "NCT02657434",
+  "name": "IMpower132 (NSCLC)",
+  "substitutions": [
+   {
+    "page": 19,
+    "line_index": 4,
+    "original": "         Platelet count ≥ 100,000/µL without transfusion",
+    "modified": "         Platelet count ≥ 150,000/µL without transfusion"
+   }
+  ]
+ },
+ {
+  "id": "NCT02657434__stricter__ast_alt",
+  "base": "NCT02657434",
+  "name": "IMpower132 (NSCLC)",
+  "substitutions": [
+   {
+    "page": 19,
+    "line_index": 10,
+    "original": "         AST, ALT, and alkaline phosphatase ≤ 2.5 × ULN, with the following exceptions:",
+    "modified": "         AST, ALT, and alkaline phosphatase ≤ 1.5 × ULN, with the following exceptions:"
+   }
+  ]
+ },
+ {
+  "id": "NCT02657434__stricter__ecog",
+  "base": "NCT02657434",
+  "name": "IMpower132 (NSCLC)",
+  "substitutions": [
+   {
+    "page": 17,
+    "line_index": 47,
+    "original": "•   ECOG performance status of 0 or 1",
+    "modified": "•   ECOG performance status of 0"
+   }
+  ]
+ },
+ {
+  "id": "NCT02657434__looser__hemoglobin",
+  "base": "NCT02657434",
+  "name": "IMpower132 (NSCLC)",
+  "substitutions": [
+   {
+    "page": 19,
+    "line_index": 5,
+    "original": "         Hemoglobin ≥ 9.0 g/dL",
+    "modified": "         Hemoglobin ≥ 8.0 g/dL"
+   }
+  ]
+ },
+ {
+  "id": "NCT02657434__looser__platelets",
+  "base": "NCT02657434",
+  "name": "IMpower132 (NSCLC)",
+  "substitutions": [
+   {
+    "page": 19,
+    "line_index": 4,
+    "original": "         Platelet count ≥ 100,000/µL without transfusion",
+    "modified": "         Platelet count ≥ 75,000/µL without transfusion"
+   }
+  ]
+ },
+ {
+  "id": "NCT03164616__control",
+  "base": "NCT03164616",
+  "name": "POSEIDON (NSCLC)",
+  "substitutions": []
+ },
+ {
+  "id": "NCT03164616__stricter__hemoglobin",
+  "base": "NCT03164616",
+  "name": "POSEIDON (NSCLC)",
+  "substitutions": [
+   {
+    "page": 73,
+    "line_index": 25,
+    "original": "             !    Hemoglobin ≥9.0 g/dL without transfusion 4 weeks prior to the screening and",
+    "modified": "             !    Hemoglobin ≥11.0 g/dL without transfusion 4 weeks prior to the screening and"
+   }
+  ]
+ },
+ {
+  "id": "NCT03164616__stricter__anc",
+  "base": "NCT03164616",
+  "name": "POSEIDON (NSCLC)",
+  "substitutions": [
+   {
+    "page": 73,
+    "line_index": 27,
+    "original": "             !    Absolute neutrophil count ≥1.5 × 109/L",
+    "modified": "             !    Absolute neutrophil count ≥2.0 × 109/L"
+   }
+  ]
+ },
+ {
+  "id": "NCT03164616__stricter__platelets",
+  "base": "NCT03164616",
+  "name": "POSEIDON (NSCLC)",
+  "substitutions": [
+   {
+    "page": 73,
+    "line_index": 28,
+    "original": "             !    Platelet count ≥100 × 109/L",
+    "modified": "             !    Platelet count ≥150 × 109/L"
+   }
+  ]
+ },
+ {
+  "id": "NCT03164616__stricter__ast_alt",
+  "base": "NCT03164616",
+  "name": "POSEIDON (NSCLC)",
+  "substitutions": [
+   {
+    "page": 73,
+    "line_index": 31,
+    "original": "             !    ALT and AST ≤2.5 × ULN; for patients with hepatic metastases, ALT and AST",
+    "modified": "             !    ALT and AST ≤1.5 × ULN; for patients with hepatic metastases, ALT and AST"
+   }
+  ]
+ },
+ {
+  "id": "NCT03164616__stricter__ecog",
+  "base": "NCT03164616",
+  "name": "POSEIDON (NSCLC)",
+  "substitutions": [
+   {
+    "page": 73,
+    "line_index": 14,
+    "original": "             performance status of 0 or 1 at enrollment and randomization.",
+    "modified": "             performance status of 0 at enrollment and randomization."
+   }
+  ]
+ },
+ {
+  "id": "NCT03164616__looser__hemoglobin",
+  "base": "NCT03164616",
+  "name": "POSEIDON (NSCLC)",
+  "substitutions": [
+   {
+    "page": 73,
+    "line_index": 25,
+    "original": "             !    Hemoglobin ≥9.0 g/dL without transfusion 4 weeks prior to the screening and",
+    "modified": "             !    Hemoglobin ≥8.0 g/dL without transfusion 4 weeks prior to the screening and"
+   }
+  ]
+ },
+ {
+  "id": "NCT03164616__looser__platelets",
+  "base": "NCT03164616",
+  "name": "POSEIDON (NSCLC)",
+  "substitutions": [
+   {
+    "page": 73,
+    "line_index": 28,
+    "original": "             !    Platelet count ≥100 × 109/L",
+    "modified": "             !    Platelet count ≥75 × 109/L"
+   }
+  ]
+ },
+ {
+  "id": "NCT02358031__control",
+  "base": "NCT02358031",
+  "name": "KEYNOTE-048 (head and neck)",
+  "substitutions": []
+ },
+ {
+  "id": "NCT02358031__stricter__hemoglobin",
+  "base": "NCT02358031",
+  "name": "KEYNOTE-048 (head and neck)",
+  "substitutions": [
+   {
+    "page": 37,
+    "line_index": 21,
+    "original": "            Hemoglobin                                         ≥9 g/dL (90 g/L) or ≥5.6 mmol/L",
+    "modified": "            Hemoglobin                                         ≥11 g/dL (110 g/L) or ≥5.6 mmol/L"
+   }
+  ]
+ },
+ {
+  "id": "NCT02358031__stricter__anc",
+  "base": "NCT02358031",
+  "name": "KEYNOTE-048 (head and neck)",
+  "substitutions": [
+   {
+    "page": 37,
+    "line_index": 19,
+    "original": "            Absolute neutrophil count (ANC)                    ≥1,500/μL (1.5 x 109/L)",
+    "modified": "            Absolute neutrophil count (ANC)                    ≥2,000/μL (2.0 x 109/L)"
+   }
+  ]
+ },
+ {
+  "id": "NCT02358031__stricter__platelets",
+  "base": "NCT02358031",
+  "name": "KEYNOTE-048 (head and neck)",
+  "substitutions": [
+   {
+    "page": 37,
+    "line_index": 20,
+    "original": "            Platelets                                          ≥100,000/μL (100 x 109/L)",
+    "modified": "            Platelets                                          ≥150,000/μL (150 x 109/L)"
+   }
+  ]
+ },
+ {
+  "id": "NCT02358031__stricter__ecog",
+  "base": "NCT02358031",
+  "name": "KEYNOTE-048 (head and neck)",
+  "substitutions": [
+   {
+    "page": 37,
+    "line_index": 13,
+    "original": "            5. Have a performance status of 0 or 1 on the ECOG Performance Scale.",
+    "modified": "            5. Have a performance status of 0 on the ECOG Performance Scale."
+   }
+  ]
+ },
+ {
+  "id": "NCT02358031__looser__hemoglobin",
+  "base": "NCT02358031",
+  "name": "KEYNOTE-048 (head and neck)",
+  "substitutions": [
+   {
+    "page": 37,
+    "line_index": 21,
+    "original": "            Hemoglobin                                         ≥9 g/dL (90 g/L) or ≥5.6 mmol/L",
+    "modified": "            Hemoglobin                                         ≥8 g/dL (80 g/L) or ≥5.6 mmol/L"
+   }
+  ]
+ },
+ {
+  "id": "NCT02358031__looser__platelets",
+  "base": "NCT02358031",
+  "name": "KEYNOTE-048 (head and neck)",
+  "substitutions": [
+   {
+    "page": 37,
+    "line_index": 20,
+    "original": "            Platelets                                          ≥100,000/μL (100 x 109/L)",
+    "modified": "            Platelets                                          ≥75,000/μL (75 x 109/L)"
+   }
+  ]
+ },
+ {
+  "id": "NCT02763579__control",
+  "base": "NCT02763579",
+  "name": "IMpower133 (SCLC)",
+  "substitutions": []
+ },
+ {
+  "id": "NCT02763579__stricter__hemoglobin",
+  "base": "NCT02763579",
+  "name": "IMpower133 (SCLC)",
+  "substitutions": [
+   {
+    "page": 224,
+    "line_index": 44,
+    "original": "         Hemoglobin ≥ 9.0 g/dL",
+    "modified": "         Hemoglobin ≥ 11.0 g/dL"
+   }
+  ]
+ },
+ {
+  "id": "NCT02763579__stricter__anc",
+  "base": "NCT02763579",
+  "name": "IMpower133 (SCLC)",
+  "substitutions": [
+   {
+    "page": 224,
+    "line_index": 41,
+    "original": "         ANC ≥ 1500 cells/µL without granulocyte colony-stimulating factor support",
+    "modified": "         ANC ≥ 2000 cells/µL without granulocyte colony-stimulating factor support"
+   }
+  ]
+ },
+ {
+  "id": "NCT02763579__stricter__platelets",
+  "base": "NCT02763579",
+  "name": "IMpower133 (SCLC)",
+  "substitutions": [
+   {
+    "page": 224,
+    "line_index": 43,
+    "original": "         Platelet count ≥ 100,000/µL without transfusion",
+    "modified": "         Platelet count ≥ 150,000/µL without transfusion"
+   }
+  ]
+ },
+ {
+  "id": "NCT02763579__stricter__ast_alt",
+  "base": "NCT02763579",
+  "name": "IMpower133 (SCLC)",
+  "substitutions": [
+   {
+    "page": 225,
+    "line_index": 2,
+    "original": "          AST, ALT, and alkaline phosphatase ≤ 2.5 × ULN, with the following exceptions:",
+    "modified": "          AST, ALT, and alkaline phosphatase ≤ 1.5 × ULN, with the following exceptions:"
+   }
+  ]
+ },
+ {
+  "id": "NCT02763579__stricter__ecog",
+  "base": "NCT02763579",
+  "name": "IMpower133 (SCLC)",
+  "substitutions": [
+   {
+    "page": 224,
+    "line_index": 16,
+    "original": " • ECOG performance status of 0 or 1",
+    "modified": " • ECOG performance status of 0"
+   }
+  ]
+ },
+ {
+  "id": "NCT02763579__looser__hemoglobin",
+  "base": "NCT02763579",
+  "name": "IMpower133 (SCLC)",
+  "substitutions": [
+   {
+    "page": 224,
+    "line_index": 44,
+    "original": "         Hemoglobin ≥ 9.0 g/dL",
+    "modified": "         Hemoglobin ≥ 8.0 g/dL"
+   }
+  ]
+ },
+ {
+  "id": "NCT02763579__looser__platelets",
+  "base": "NCT02763579",
+  "name": "IMpower133 (SCLC)",
+  "substitutions": [
+   {
+    "page": 224,
+    "line_index": 43,
+    "original": "         Platelet count ≥ 100,000/µL without transfusion",
+    "modified": "         Platelet count ≥ 75,000/µL without transfusion"
+   }
+  ]
+ },
+ {
+  "id": "NCT02853331__control",
+  "base": "NCT02853331",
+  "name": "KEYNOTE-426 (renal)",
+  "substitutions": []
+ },
+ {
+  "id": "NCT02853331__stricter__hemoglobin",
+  "base": "NCT02853331",
+  "name": "KEYNOTE-426 (renal)",
+  "substitutions": [
+   {
+    "page": 41,
+    "line_index": 13,
+    "original": "     Hemoglobin                                 ≥9 g/dL or ≥5.6 mmol/L– without a red blood",
+    "modified": "     Hemoglobin                                 ≥11 g/dL or ≥5.6 mmol/L– without a red blood"
+   }
+  ]
+ },
+ {
+  "id": "NCT02853331__stricter__anc",
+  "base": "NCT02853331",
+  "name": "KEYNOTE-426 (renal)",
+  "substitutions": [
+   {
+    "page": 41,
+    "line_index": 11,
+    "original": "     Absolute neutrophil count (ANC)            ≥1,500 /mm3 or ≥ 1.5 × 109 / L",
+    "modified": "     Absolute neutrophil count (ANC)            ≥2,000 /mm3 or ≥ 2.0 × 109 / L"
+   }
+  ]
+ },
+ {
+  "id": "NCT02853331__stricter__platelets",
+  "base": "NCT02853331",
+  "name": "KEYNOTE-426 (renal)",
+  "substitutions": [
+   {
+    "page": 41,
+    "line_index": 12,
+    "original": "     Platelets                                  ≥100,000 / mm3 or ≥ 100 ×109 / L",
+    "modified": "     Platelets                                  ≥150,000 / mm3 or ≥ 150 ×109 / L"
+   }
+  ]
+ },
+ {
+  "id": "NCT02853331__stricter__ast_alt",
+  "base": "NCT02853331",
+  "name": "KEYNOTE-426 (renal)",
+  "substitutions": [
+   {
+    "page": 41,
+    "line_index": 30,
+    "original": "     AST (SGOT) and ALT (SGPT)                  ≤ 2.5 × ULN",
+    "modified": "     AST (SGOT) and ALT (SGPT)                  ≤ 1.5 × ULN"
+   }
+  ]
+ },
+ {
+  "id": "NCT02853331__stricter__washout_investigational",
+  "base": "NCT02853331",
+  "name": "KEYNOTE-426 (renal)",
+  "substitutions": [
+   {
+    "page": 42,
+    "line_index": 17,
+    "original": "      or has used an investigational device within 4 weeks prior to randomization.",
+    "modified": "      or has used an investigational device within 8 weeks prior to randomization."
+   }
+  ]
+ },
+ {
+  "id": "NCT02853331__looser__hemoglobin",
+  "base": "NCT02853331",
+  "name": "KEYNOTE-426 (renal)",
+  "substitutions": [
+   {
+    "page": 41,
+    "line_index": 13,
+    "original": "     Hemoglobin                                 ≥9 g/dL or ≥5.6 mmol/L– without a red blood",
+    "modified": "     Hemoglobin                                 ≥8 g/dL or ≥5.6 mmol/L– without a red blood"
+   }
+  ]
+ },
+ {
+  "id": "NCT02853331__looser__platelets",
+  "base": "NCT02853331",
+  "name": "KEYNOTE-426 (renal)",
+  "substitutions": [
+   {
+    "page": 41,
+    "line_index": 12,
+    "original": "     Platelets                                  ≥100,000 / mm3 or ≥ 100 ×109 / L",
+    "modified": "     Platelets                                  ≥75,000 / mm3 or ≥ 75 ×109 / L"
+   }
+  ]
+ }
+]

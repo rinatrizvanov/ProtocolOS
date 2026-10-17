@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TrialLens — Every exclusion deserves evidence</title>
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  :root { --ink:#17202b; --muted:#5b6676; --accent:#1f4e79; --soft:#e8eff7; --amber:#a35b00; --amberbg:#fff4e3; --green:#1d6b4f; --greenbg:#e6f4ee; --red:#a32020; --line:#e2e6ec; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #d9dde3; font: 20px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Arial, sans-serif; color: var(--ink); }
+  .slide { width: 1280px; height: 720px; background: #fff; margin: 24px auto; padding: 56px 72px; position: relative; overflow: hidden; page-break-after: always; break-after: page; }
+  @media print { body { background: #fff; } .slide { margin: 0; } }
+  h1 { font-size: 54px; margin: 0 0 12px; letter-spacing: -.5px; }
+  h2 { font-size: 36px; margin: 0 0 22px; letter-spacing: -.3px; }
+  .kicker { font-size: 15px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
+  .muted { color: var(--muted); }
+  .foot { position: absolute; bottom: 26px; left: 72px; right: 72px; font-size: 13px; color: #8a94a3; display: flex; justify-content: space-between; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; }
+  .cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; }
+  .box { border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+  .box h3 { margin: 0 0 8px; font-size: 20px; }
+  .big { font-size: 46px; font-weight: 800; color: var(--accent); line-height: 1.05; }
+  .quote { border-left: 4px solid var(--accent); padding: 8px 16px; background: #f7f9fc; font-style: italic; }
+  ul { margin: 6px 0 0; padding-left: 24px; } li { margin: 6px 0; }
+  .shot { width: 100%; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 20px rgba(20,30,50,.12); }
+  .tag { display: inline-block; font-size: 14px; font-weight: 700; padding: 3px 9px; border-radius: 6px; }
+  .review { color: var(--amber); background: var(--amberbg); } .retain { color: var(--green); background: var(--greenbg); } .insuf { color: #5a5f7a; background: #eeeff6; }
+  table { border-collapse: collapse; width: 100%; font-size: 17px; }
+  th { text-align: left; font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: #8a94a3; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+  td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .flow { display: flex; align-items: stretch; gap: 10px; margin-top: 18px; }
+  .flow div { flex: 1; background: var(--soft); border-radius: 10px; padding: 14px; font-size: 16px; }
+  .flow div b { display: block; color: var(--accent); margin-bottom: 4px; font-size: 17px; }
+  .arrow { flex: 0 0 18px !important; background: none !important; padding: 0 !important; display: grid; place-items: center; color: var(--accent); font-size: 24px; }
+  .title { background: linear-gradient(135deg, #10304f 0%, #1f4e79 70%, #2c6aa0 100%); color: #fff; }
+  .title .kicker { color: #a9c7e6; } .title .muted { color: #c9d8e8; }
+</style>
+</head>
+<body>
+
+<!-- 1 -->
+<section class="slide title">
+  <div class="kicker">HackHarvard 2026 · Regeneron: Reinvent Clinical Trials · Chalk</div>
+  <h1 style="font-size:72px;margin-top:120px">TrialLens</h1>
+  <div style="font-size:36px;font-weight:600">Every exclusion deserves evidence.</div>
+  <p class="muted" style="font-size:24px;max-width:900px;margin-top:26px">An evidence-grounded, challengeable reviewer for clinical-trial eligibility decisions: built on real protocols, verified sources and a measured evaluation.</p>
+  <div class="foot" style="color:#a9c7e6"><span>Research prototype · not clinical or regulatory advice</span><span>MIT licensed</span></div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="kicker">The bottleneck</div>
+  <h2>Eligibility criteria are written from precedent, and reviewed too late</h2>
+  <div class="cols">
+    <div>
+      <ul>
+        <li>Protocol teams "rarely get evidence-based feedback on their draft until it's too late to change cheaply" <span class="muted">(Regeneron, Trial by Design Pt 2)</span>.</li>
+        <li><b>57%</b> of protocols have ≥1 substantial amendment; <b>45%</b> of those judged avoidable <span class="muted">(Getz et al. 2016)</span>.</li>
+        <li>FDA finalized <b>three oncology guidances in July 2026</b> on exactly the criteria most often templated: lab values, performance status, washout periods.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="quote">"Unnecessarily restrictive eligibility criteria may slow subject accrual, limit patients' access to clinical trials, and lead to trial results that do not fully represent treatment effects…"</div>
+      <div class="muted" style="font-size:15px;margin-top:6px">FDA, Cancer Clinical Trial Eligibility Criteria: Laboratory Values (July 2026), §I, lines 37–39</div>
+    </div>
+  </div>
+  <div class="foot"><span>TrialLens</span><span>2</span></div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="kicker">Why it's hard</div>
+  <h2>"Loosen the criteria" misses most of the problem</h2>
+  <div class="cols">
+    <div class="box"><h3>Restrictions have reasons</h3>
+      <ul><li>Patient safety (e.g. myelosuppressive chemotherapy)</li><li>Predictive and prognostic enrichment</li><li>Reduced heterogeneity → statistical power</li><li>Interpretability of adverse events</li></ul>
+      <p class="muted" style="font-size:16px">FDA Enrichment Strategies (2019); Regeneron mentor insights §1.4–1.5</p></div>
+    <div class="box"><h3>The evidence is scattered</h3>
+      <p>EMPOWER-Lung 3 (Regeneron, NCT03409614): the registry text <b>never mentions</b> the neutrophil threshold. The lab criteria are on <b>page 67 of a 170-page PDF</b>. Comparable trials' thresholds sit in other sponsors' PDFs.</p>
+      <p class="muted" style="font-size:16px">Checked live by a Chalk feature resolver: <code>registry_mentions_anc = false</code></p></div>
+  </div>
+  <div class="foot"><span>TrialLens</span><span>3</span></div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="kicker">Who and where</div>
+  <h2>A reviewer for the protocol team, before the protocol is final</h2>
+  <p>Users: clinical scientists, protocol authors, medical reviewers, cross-functional protocol-review teams. TrialLens prepares the evidence; <b>the team decides</b>.</p>
+  <div class="flow">
+    <div><b>Draft protocol</b>NCT ID or posted protocol PDF</div><div class="arrow">→</div>
+    <div><b>TrialLens review</b>criteria · regimen · comparators · FDA · verifier</div><div class="arrow">→</div>
+    <div><b>Review packet</b>evidence for and against, open questions, next action</div><div class="arrow">→</div>
+    <div><b>Protocol review meeting</b>accept / reject / needs medical review / defer</div><div class="arrow">→</div>
+    <div><b>Decision record</b>rationale documented in the protocol</div>
+  </div>
+  <p class="muted" style="margin-top:22px">Output is a defensible <i>question with evidence</i>, not an automated answer.</p>
+  <div class="foot"><span>TrialLens</span><span>4</span></div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="kicker">What it does</div>
+  <h2>From protocol PDF to criterion-level evidence</h2>
+  <div class="cols3">
+    <div class="box"><h3>Read</h3>Extracts lab, ECOG and washout criteria with the <b>verbatim line and page</b>. Handles tables, Symbol-font glyphs, image-only pages.</div>
+    <div class="box"><h3>Compare</h3>Finds comparable trials (same disease, setting, histology, drug classes, <b>started earlier</b>), parses their PDFs, checks <b>regimen coverage</b>.</div>
+    <div class="box"><h3>Ground</h3>32 FDA passages (2026 eligibility guidances + 2019 enrichment), <b>verified verbatim</b> with section, page and line.</div>
+    <div class="box"><h3>Classify</h3><span class="tag review">Review recommended</span> <span class="tag retain">Evidence supports retaining</span> <span class="tag insuf">Insufficient evidence</span> plus an inferred purpose and missing evidence.</div>
+    <div class="box"><h3>Verify</h3>Factual checks + clinical-logic rules. Outcomes: Supported · Qualified · Rejected · <b>Needs medical review</b>.</div>
+    <div class="box"><h3>Decide</h3>Exportable review packet with decision fields (Markdown / PDF / JSON).</div>
+  </div>
+  <div class="foot"><span>Deterministic, auditable engine; optional model may only downgrade and is always verified</span><span>5</span></div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <div class="kicker">Real example · EMPOWER-Lung 3</div>
+  <h2 style="margin-bottom:12px">Hemoglobin ≥10 g/dL: mixed evidence, so review it, don't remove it</h2>
+  <div class="cols" style="grid-template-columns:1.35fr 1fr;gap:26px;align-items:start">
+    <img class="shot" src="../img/comparators.png" style="width:100%">
+    <div style="font-size:18px">
+      <ul>
+        <li><b>3</b> comparable PD-1 + platinum trials used <b>≥9 g/dL</b> (CheckMate 9LA, CheckMate 227, KEYNOTE-042)</li>
+        <li><b>eNERGY</b> used the same strict <b>&gt;10 g/dL</b></li>
+        <li>Protocol p.51: grade 3–4 anemia higher with pemetrexed (a safety rationale)</li>
+        <li>Toxicity justifies <i>a</i> threshold, not <i>this</i> number → <span class="tag review">Review recommended</span></li>
+        <li>Missing: no stated reason for 10 vs 9; no outcome data by threshold</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot"><span>All values link to protocol pages; comparators chosen automatically</span><span>6</span></div>
+</section>
+
+<!-- 7 -->
+<section class="slide">
+  <div class="kicker">Challengeable</div>
+  <h2 style="margin-bottom:12px">The verifier rejects a plausible argument with a true premise</h2>
+  <div class="cols" style="grid-template-columns:1fr 1.15fr;gap:26px">
+    <div style="font-size:18px">
+      <p><b>Challenge (typed example):</b> "Cemiplimab is a PD-1 inhibitor and not myelosuppressive, so lower the ANC floor to 1.0."</p>
+      <ul>
+        <li>Premise checks pass (factual)</li>
+        <li><b>regimen_contradiction</b> fails (clinical-logic): other arms contain carboplatin, cisplatin, paclitaxel, pemetrexed → <b style="color:var(--red)">Rejected</b></li>
+        <li>A regimen-matched relaxation (Hgb 9.0) is not approved either: it becomes <b>Needs medical review</b></li>
+      </ul>
+      <p class="muted" style="font-size:15px">We label which checks are factual and which are hand-written rules. Neither is clinical validation.</p>
+    </div>
+    <img class="shot" src="../img/challenge.png" style="height:470px;object-fit:cover;object-position:0 25%">
+  </div>
+  <div class="foot"><span>TrialLens</span><span>7</span></div>
+</section>
+
+<!-- 8 -->
+<section class="slide">
+  <div class="kicker">The deliverable</div>
+  <h2 style="margin-bottom:12px">A review packet the protocol team can act on</h2>
+  <div class="cols" style="grid-template-columns:1.3fr 1fr;gap:26px">
+    <img class="shot" src="../img/packet.png" style="height:480px;object-fit:cover;object-position:0 30%">
+    <div style="font-size:18px"><ul>
+      <li>Original requirement, verbatim, with page</li>
+      <li>Priority and the reason for it</li>
+      <li>Likely purpose: <i>inferred</i> unless sourced</li>
+      <li>Supporting · challenging · context evidence, by tier</li>
+      <li>Unresolved questions</li>
+      <li>Next action</li>
+      <li>Decision: accept · reject · <b>needs medical review</b> · defer</li>
+    </ul></div>
+  </div>
+  <div class="foot"><span>Export: Markdown · printable PDF · JSON</span><span>8</span></div>
+</section>
+
+<!-- 9 -->
+<section class="slide">
+  <div class="kicker">Evaluation (not clinical validation)</div>
+  <h2 style="margin-bottom:14px">Measured on real protocols, including the ones we hadn't seen</h2>
+  <table style="font-size:21px">
+    <tr><th>What</th><th>Result</th><th>Note</th></tr>
+    <tr><td>Extraction, 19 real protocols</td><td><b>122/128</b> criteria · 97.6% precision</td><td>Unseen set 1 first run <b>15/21</b> (→21/21 after fix); unseen set 2 <b>29/33</b>, single run</td></tr>
+    <tr><td>Planted stricter thresholds (24, Regeneron method)</td><td>Never "supports retaining" <b>24/24</b> · escalated <b>16–22/24</b></td><td>Depends on precedent cutoff; first run found 3 bugs, documented</td></tr>
+    <tr><td>Loosened thresholds falsely flagged</td><td><b>0/10</b></td><td>Synthetic edits of authentic protocols</td></tr>
+    <tr><td>FDA quotes / protocol source lines</td><td><b>32/32</b> · <b>157/157</b></td><td>Verbatim, page-anchored</td></tr>
+    <tr><td>Verifier, developer-designed faults</td><td><b>24/24</b> rejected · <b>0/10</b> valid rejected</td><td>Same author wrote faults and verifier. Also run on Chalk.</td></tr>
+  </table>
+  <div class="foot"><span>Single annotator; no clinician review yet. Scripts in evals/ reproduce every number.</span><span>9</span></div>
+</section>
+
+<!-- 10 -->
+<section class="slide">
+  <div class="kicker">Built on Chalk</div>
+  <h2>Chalk does real work in TrialLens</h2>
+  <div class="cols3">
+    <div class="box"><h3>Features + resolver</h3>A <code>Trial</code> feature set resolved live from ClinicalTrials.gov inside Chalk. The dashboard queries it per trial: is the threshold even in the registry? <b>Deployed; online queries succeed.</b></div>
+    <div class="box"><h3>Compute + Evaluations</h3>The verifier runs as a Chalk function over 39 cases, graded by Chalk scorers. <b>Run SUCCEEDED, 0 task errors</b>; 24/24 faults rejected remotely.</div>
+    <div class="box"><h3>Model Gateway</h3>Router-backed LLM critic (may only downgrade) and free-text challenge parsing, always gated by the verifier. <b>Implemented; awaiting event key.</b></div>
+  </div>
+  <p class="muted" style="font-size:16px;margin-top:20px">Evaluation <code>cmvco3m0n01dw01y520oc80sq</code> · environment <code>trllf247b678</code></p>
+  <div class="foot"><span>TrialLens</span><span>10</span></div>
+</section>
+
+<!-- 11 -->
+<section class="slide">
+  <div class="kicker">Honest scope and what's next</div>
+  <h2>What TrialLens is, and isn't</h2>
+  <div class="cols">
+    <div class="box"><h3>Is</h3><ul>
+      <li>A working, reproducible reviewer for lab, ECOG and washout criteria in oncology</li>
+      <li>Complementary to criteria-drafting tools (e.g. Regeneron/Keiji ISPOR 2026): they draft from precedent; we challenge individual restrictions</li>
+      <li>MIT-licensed, runs from a clean clone, 13 tests</li></ul></div>
+    <div class="box"><h3>Isn't (yet)</h3><ul>
+      <li>Clinically validated: rule-based, single-annotator gold, no clinician review</li>
+      <li>A recruitment, cost or safety predictor; we make no such claims</li>
+      <li><b>Next:</b> internal precedent and amendments · learning from team decisions · ICH M11 / USDM structured protocols · clinician review</li></ul></div>
+  </div>
+  <p style="font-size:26px;font-weight:700;margin-top:26px;color:var(--accent)">Every exclusion deserves evidence.</p>
+  <div class="foot"><span>TrialLens · HackHarvard 2026</span><span>11</span></div>
+</section>
+
+</body>
+</html>

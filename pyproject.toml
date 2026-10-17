@@ -1,0 +1,37 @@
+[project]
+name = "triallens"
+version = "0.1.0"
+description = "TrialLens: an evidence-grounded reviewer for clinical-trial eligibility criteria. Every exclusion deserves evidence."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.143.3",
+    "uvicorn>=0.54.0",
+    "httpx>=0.28.1",
+    "pandas>=3.0.6",
+    "pyarrow>=26.0.0",
+    "pypdf>=6.21.1",
+    "pydantic>=2.14.1",
+    "anthropic>=1.15.0",
+    "chalkpy>=2.163.1",
+    "chalkcompute>=2.13.7",
+]
+
+[dependency-groups]
+dev = ["pytest>=9.1.1"]
+
+[tool.uv]
+package = false
+
+[tool.pyright]
+ignore = ["."]
+
+
+[tool.mypy]
+ignore_errors = true
+
+
+[tool.ty.rules]
+all = "ignore"
+

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TrialLens — Every exclusion deserves evidence</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">⟂</span>
+      <div>
+        <div class="name">TrialLens</div>
+        <div class="tag">Every exclusion deserves evidence · research prototype</div>
+      </div>
+    </div>
+    <form id="loadForm" class="loader" autocomplete="off">
+      <label for="nct" class="sr">NCT ID</label>
+      <input id="nct" value="NCT03409614" spellcheck="false" />
+      <select id="asOf" title="Which comparators count as knowable">
+        <option value="auto">Comparators started before this trial</option>
+        <option value="none">All comparators (no cutoff)</option>
+      </select>
+      <button type="submit">Review protocol</button>
+    </form>
+    <div id="chips" class="chips"></div>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="review">Protocol review</button>
+    <button class="tab" data-tab="packet">Review packet</button>
+    <button class="tab" data-tab="evals">Evaluation</button>
+    <button class="tab" data-tab="method">Method &amp; limits</button>
+  </nav>
+
+  <main>
+    <section id="tab-review" class="tabpane active">
+      <div id="loading" class="loading hidden">Retrieving registry record, protocol PDF and comparable trials…</div>
+      <div id="error" class="error hidden"></div>
+      <div id="study"></div>
+      <div id="summary"></div>
+      <div class="layout">
+        <aside id="criteria" class="criteria"></aside>
+        <article id="detail" class="detail"></article>
+      </div>
+    </section>
+
+    <section id="tab-packet" class="tabpane"><div id="packet"></div></section>
+    <section id="tab-evals" class="tabpane"><div id="evals"></div></section>
+
+    <section id="tab-method" class="tabpane">
+      <div class="card prose">
+        <h2>What TrialLens does</h2>
+        <p><b>Every exclusion deserves evidence.</b> TrialLens helps a protocol team see which eligibility restrictions deserve reconsideration before a protocol is finalized, while keeping the safety, enrichment and statistical reasons those restrictions exist. It is built for clinical scientists, protocol authors and cross-functional protocol reviewers, not patients. It does not decide anything: it gathers the evidence, shows where it conflicts or is missing, and records the team's decision.</p>
+        <p>Eligibility criteria are deliberate trade-offs (safety, predictive or prognostic enrichment, reduced heterogeneity, interpretability). A broader criterion is not automatically better, and a peer trial that used a looser threshold is precedent, not proof.</p>
+        <h2>Where AI is and is not used</h2>
+        <p>The evidence engine (extraction, comparison, classification, verification) is <b>deterministic and auditable</b>; it is not an autonomous AI scientist. A language model, when configured (Chalk Model Gateway or Anthropic API), is used only to (a) critique a flag, and it may only downgrade it, and (b) turn a reviewer's free-text challenge into checkable claims. Every model output passes through the deterministic verifier. Documents are treated as data: text from PDFs is never executed as instructions, the model has no tools or write access, and every value shown links to its source page.</p>
+        <h2>Pipeline</h2>
+        <ol>
+          <li><b>Protocol ingestion.</b> The registry record and the protocol PDF posted to ClinicalTrials.gov are fetched and cached; the eligibility section is located and parsed with deterministic rules. Every value keeps its verbatim source line and page.</li>
+          <li><b>Regimen.</b> Drugs in every arm come from registry interventions plus protocol pages with dosing context, then a small curated class-level pharmacology table (myelosuppressive, hepatic, renal, immunotherapy).</li>
+          <li><b>Comparators.</b> Phase 3 trials in the same condition with overlapping drug classes and a posted protocol are discovered from the registry, ranked by drug-class overlap, and parsed with the same extractor. By default only trials that started before the reviewed trial are used.</li>
+          <li><b>FDA guidance.</b> Passages from the July 2026 FDA eligibility guidances (laboratory values, performance status, washout periods) are matched to criteria. Each quote is verified verbatim against the official PDF at load time, with section, page and FDA line numbers.</li>
+          <li><b>Classification.</b> A transparent rule over evidence stances: <span class="cls review">Review recommended</span>, <span class="cls retain">Evidence supports retaining</span>, <span class="cls insufficient">Insufficient evidence</span>. A toxicity rationale supports having <i>a</i> threshold, never a specific value; a more permissive comparator never proves a restriction unnecessary.</li>
+          <li><b>Verification.</b> Any proposed recommendation (from a user, an LLM, or the evaluation set) is checked deterministically: source existence, verbatim quotes, threshold values and units, direction, regimen contradictions, evidence sufficiency, and overclaims. An optional LLM critic can only downgrade.</li>
+          <li><b>Population context (secondary).</b> NHANES 2017–2018 survey-weighted estimates of adults below a laboratory threshold, with design-based confidence intervals.</li>
+        </ol>
+        <h2>What it does not do</h2>
+        <ul>
+          <li>It does not determine that any criterion is safe to relax, and does not estimate enrollment, cost or timeline effects.</li>
+          <li>NHANES numbers describe the US general population, not people with cancer, and race/ethnicity is not a proxy for Duffy-null phenotype.</li>
+          <li>Protocol PDFs on ClinicalTrials.gov are usually the final amendment, not the design-time version.</li>
+          <li>The pharmacology table is curated at class level and not re-verified against current labels.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer>Research prototype for HackHarvard 2026. Not clinical, regulatory or safety advice. Classifications are prompts for expert review.</footer>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true">
+    <div class="modal-body">
+      <button class="modal-close" aria-label="Close">×</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>

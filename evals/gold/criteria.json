@@ -1,0 +1,777 @@
+{
+ "_about": "Hand-labelled from raw protocol text (pdftotext output of the official ClinicalTrials.gov protocol PDFs), not from extractor output. Values are in normalized units: hemoglobin g/dL, anc/platelets x10^9/L, bilirubin/ast_alt xULN, renal mL/min, ecog max allowed PS, washouts days. split: dev = protocols used while developing the extractor; heldout = extractor outputs seen once, no code changed in response; unseen = labelled before the extractor was ever run on them. Only fields listed are scored; absent analytes are not scored (no claim either way). Labeller: TrialForge developer (single annotator, not independently adjudicated). unseen2 = six further protocols labelled from raw text before the extractor was run on them (planted-issue bases + CASPIAN); measured once, extractor not changed in response.",
+ "protocols": [
+  {
+   "nct": "NCT03409614",
+   "name": "EMPOWER-Lung 3",
+   "split": "dev",
+   "pages": "67-69",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     10.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "renal": [
+     ">",
+     30.0
+    ],
+    "bilirubin": [
+     "≤",
+     1.5
+    ],
+    "ast_alt": [
+     "≤",
+     3.0
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ],
+    "washout_corticosteroid": [
+     "≥",
+     14.0
+    ],
+    "washout_investigational": [
+     "≥",
+     30.0
+    ],
+    "washout_vaccine": [
+     "≥",
+     30.0
+    ],
+    "washout_surgery": [
+     "≥",
+     28.0
+    ],
+    "washout_immunomodulator": [
+     "≥",
+     180.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT03088540",
+   "name": "EMPOWER-Lung 1",
+   "split": "dev",
+   "pages": "57-58",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "renal": [
+     ">",
+     30.0
+    ],
+    "bilirubin": [
+     "≤",
+     1.5
+    ],
+    "ast_alt": [
+     "≤",
+     3.0
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT02578680",
+   "name": "KEYNOTE-189",
+   "split": "dev",
+   "pages": "30-32",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "renal": [
+     "≥",
+     50.0
+    ],
+    "bilirubin": [
+     "≤",
+     1.5
+    ],
+    "ast_alt": [
+     "≤",
+     2.5
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ],
+    "washout_investigational": [
+     "≥",
+     28.0
+    ],
+    "washout_surgery": [
+     "≥",
+     21.0
+    ],
+    "washout_radiotherapy": [
+     "≥",
+     180.0
+    ],
+    "washout_vaccine": [
+     "≥",
+     30.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT02775435",
+   "name": "KEYNOTE-407",
+   "split": "dev",
+   "pages": "31-32",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "renal": [
+     "≥",
+     60.0
+    ],
+    "bilirubin": [
+     "≤",
+     1.5
+    ],
+    "ast_alt": [
+     "≤",
+     2.5
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT03215706",
+   "name": "CheckMate 9LA",
+   "split": "dev",
+   "pages": "42 (heading pages are image-only)",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "renal": [
+     "≥",
+     50.0
+    ],
+    "bilirubin": [
+     "≤",
+     1.5
+    ],
+    "ast_alt": [
+     "≤",
+     3.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT02367781",
+   "name": "IMpower130",
+   "split": "dev",
+   "pages": "19-21",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "bilirubin": [
+     "≤",
+     1.25
+    ],
+    "ast_alt": [
+     "≤",
+     2.5
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT02366143",
+   "name": "IMpower150",
+   "split": "dev",
+   "pages": "19-20",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "bilirubin": [
+     "≤",
+     1.25
+    ],
+    "ast_alt": [
+     "≤",
+     2.5
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT03351361",
+   "name": "eNERGY",
+   "split": "heldout",
+   "pages": "8",
+   "criteria": {
+    "hemoglobin": [
+     ">",
+     10.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "bilirubin": [
+     "≤",
+     1.5
+    ],
+    "ast_alt": [
+     "≤",
+     3.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT02864251",
+   "name": "CheckMate 722",
+   "split": "heldout",
+   "pages": "48-49",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "renal": [
+     "≥",
+     50.0
+    ],
+    "bilirubin": [
+     "≤",
+     1.5
+    ],
+    "ast_alt": [
+     "≤",
+     3.0
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT02220894",
+   "name": "KEYNOTE-042",
+   "split": "heldout",
+   "pages": "32-33",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "renal": [
+     "≥",
+     50.0
+    ],
+    "bilirubin": [
+     "≤",
+     1.0
+    ],
+    "ast_alt": [
+     "≤",
+     2.5
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT02819518",
+   "name": "KEYNOTE-355 (TNBC)",
+   "split": "unseen",
+   "pages": "39",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "renal": [
+     "≥",
+     30.0
+    ],
+    "bilirubin": [
+     "≤",
+     1.5
+    ],
+    "ast_alt": [
+     "≤",
+     2.5
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT02872116",
+   "name": "CheckMate 649 (gastric)",
+   "split": "unseen",
+   "pages": "54-55",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "renal": [
+     ">",
+     50.0
+    ],
+    "bilirubin": [
+     "≤",
+     1.5
+    ],
+    "ast_alt": [
+     "≤",
+     3.0
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT03434379",
+   "name": "IMbrave150 (HCC)",
+   "split": "unseen",
+   "pages": "52",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     75.0
+    ],
+    "renal": [
+     "≥",
+     50.0
+    ],
+    "bilirubin": [
+     "≤",
+     3.0
+    ],
+    "ast_alt": [
+     "≤",
+     5.0
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT02657434",
+   "name": "IMpower132 (NSCLC)",
+   "split": "unseen2",
+   "pages": "17-19",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "ast_alt": [
+     "≤",
+     2.5
+    ],
+    "bilirubin": [
+     "≤",
+     1.25
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT03164616",
+   "name": "POSEIDON (NSCLC)",
+   "split": "unseen2",
+   "pages": "72-73",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "bilirubin": [
+     "≤",
+     1.5
+    ],
+    "ast_alt": [
+     "≤",
+     2.5
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT02358031",
+   "name": "KEYNOTE-048 (head and neck)",
+   "split": "unseen2",
+   "pages": "37",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ]
+   },
+   "known_wrong_unlabelled": [
+    "bilirubin",
+    "ast_alt"
+   ],
+   "note": "Total bilirubin and AST/ALT values sit in wrapped table cells whose values are not recoverable from the text layout; the extractor returned '>1.5' (a conditional clause) and 5.0 (the liver-metastasis value), both known wrong."
+  },
+  {
+   "nct": "NCT02763579",
+   "name": "IMpower133 (SCLC)",
+   "split": "unseen2",
+   "pages": "224-225",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "ast_alt": [
+     "≤",
+     2.5
+    ],
+    "bilirubin": [
+     "≤",
+     1.25
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ]
+   }
+  },
+  {
+   "nct": "NCT02853331",
+   "name": "KEYNOTE-426 (renal)",
+   "split": "unseen2",
+   "pages": "40-42",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "bilirubin": [
+     "≤",
+     1.5
+    ],
+    "ast_alt": [
+     "≤",
+     2.5
+    ],
+    "washout_investigational": [
+     "≥",
+     28.0
+    ]
+   },
+   "note": "Uses Karnofsky (KPS ≥70%), not ECOG; no ECOG criterion expected."
+  },
+  {
+   "nct": "NCT03043872",
+   "name": "CASPIAN (SCLC)",
+   "split": "unseen2",
+   "pages": "56 (labs)",
+   "criteria": {
+    "hemoglobin": [
+     "≥",
+     9.0
+    ],
+    "anc": [
+     "≥",
+     1.5
+    ],
+    "platelets": [
+     "≥",
+     100.0
+    ],
+    "bilirubin": [
+     "≤",
+     1.5
+    ],
+    "ecog": [
+     "≤",
+     1.0
+    ]
+   }
+  }
+ ],
+ "regimens": {
+  "_about": "Reference regimens (all arms, including control) curated by the developer from registry arm descriptions and protocol treatment sections; not independently adjudicated.",
+  "NCT03409614": [
+   "cemiplimab",
+   "ipilimumab",
+   "paclitaxel",
+   "pemetrexed",
+   "carboplatin",
+   "cisplatin"
+  ],
+  "NCT03088540": [
+   "cemiplimab",
+   "paclitaxel",
+   "gemcitabine",
+   "pemetrexed",
+   "carboplatin",
+   "cisplatin"
+  ],
+  "NCT02578680": [
+   "pembrolizumab",
+   "pemetrexed",
+   "carboplatin",
+   "cisplatin"
+  ],
+  "NCT02775435": [
+   "pembrolizumab",
+   "carboplatin",
+   "paclitaxel",
+   "nab-paclitaxel"
+  ],
+  "NCT03215706": [
+   "nivolumab",
+   "ipilimumab",
+   "carboplatin",
+   "cisplatin",
+   "pemetrexed",
+   "paclitaxel"
+  ],
+  "NCT02367781": [
+   "atezolizumab",
+   "carboplatin",
+   "nab-paclitaxel",
+   "pemetrexed"
+  ],
+  "NCT02366143": [
+   "atezolizumab",
+   "bevacizumab",
+   "carboplatin",
+   "paclitaxel"
+  ],
+  "NCT02864251": [
+   "nivolumab",
+   "ipilimumab",
+   "pemetrexed",
+   "carboplatin",
+   "cisplatin"
+  ],
+  "NCT02220894": [
+   "pembrolizumab",
+   "carboplatin",
+   "paclitaxel",
+   "pemetrexed"
+  ],
+  "NCT02819518": [
+   "pembrolizumab",
+   "nab-paclitaxel",
+   "paclitaxel",
+   "gemcitabine",
+   "carboplatin"
+  ],
+  "NCT02872116": [
+   "nivolumab",
+   "ipilimumab",
+   "oxaliplatin",
+   "fluorouracil",
+   "capecitabine"
+  ],
+  "NCT03434379": [
+   "atezolizumab",
+   "bevacizumab",
+   "sorafenib"
+  ]
+ },
+ "expected_classification": {
+  "_about": "Hand-written expectations for the demo trial and two comparators. NOT blind: written after the classification rules were calibrated on NCT03409614. Reported for transparency, not as a validation metric.",
+  "NCT03409614": {
+   "hemoglobin": "Review recommended",
+   "anc": "Review recommended",
+   "platelets": "Evidence supports retaining",
+   "ecog": "Review recommended",
+   "ast_alt": "Evidence supports retaining"
+  },
+  "NCT02578680": {
+   "hemoglobin": "Evidence supports retaining",
+   "platelets": "Evidence supports retaining",
+   "ecog": "Review recommended"
+  },
+  "NCT03088540": {
+   "hemoglobin": "Evidence supports retaining",
+   "anc": "Review recommended"
+  }
+ }
+}
