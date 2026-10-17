@@ -1,0 +1,14 @@
+# Railway config as code (Dockerfile builder, one replica). Deploys need the user's confirmation; see docs/DEPLOY.md.
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+# the startup prewarm runs before the server listens; a warm EL3 review answers in well under a second
+healthcheckPath = "/api/review/NCT03409614"
+healthcheckTimeout = 600
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
+
+[deploy.multiRegionConfig.us-east4-eqdc4a]
+numReplicas = 1

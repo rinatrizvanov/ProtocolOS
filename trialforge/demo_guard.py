@@ -195,3 +195,15 @@ def install(app) -> None:
         return
     app.add_middleware(DemoGuard)
     app.state.demo_guard_installed = True
+
+
+if __name__ == "__main__":
+    # Container entry point: the guard is on with TRIALLENS_PUBLIC=1 even before the routes_graph hook exists.
+    import uvicorn
+
+    from trialforge import api as _app_module
+
+    if os.environ.get("TRIALLENS_PUBLIC") == "1":
+        install(_app_module.app)
+    print(f"TrialLens: demo guard {'on' if getattr(_app_module.app.state, 'demo_guard_installed', False) else 'OFF'}", flush=True)
+    uvicorn.run(_app_module.app, host=os.environ.get("HOST", "0.0.0.0"), port=int(os.environ.get("PORT", "8765")), workers=1)
