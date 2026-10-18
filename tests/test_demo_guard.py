@@ -206,3 +206,10 @@ def test_draft_idea_as_of_passes_guard(public, monkeypatch, as_of):
     r = client.post("/api/draft", json=idea)
     assert r.status_code == 200, r.text
     assert seen and seen[0]["as_of"] == as_of
+
+
+@pytest.mark.parametrize("nct", ["NCT%D9%A0%D9%A0%D9%A0%D9%A0%D9%A0%D9%A0%D9%A0%D9%A1", "NCT0340961", "nct03409614x"])
+def test_rationale_path_nct_validated_by_guard(public, nct):
+    """Non-ASCII digits and malformed ids never reach a cold review through /api/rationale."""
+    client, _ = public
+    assert client.get(f"/api/rationale/{nct}").status_code == 400
