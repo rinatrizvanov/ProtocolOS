@@ -67,6 +67,11 @@ BASE_URL=http://localhost:8765 /tmp/pw/bin/python scripts/e2e_demo.py
 scripts/smoke_deploy.sh http://localhost:8765
 ```
 
+`e2e_demo.py` step 7 records a test decision ("e2e script") for hemoglobin. Against a local server it backs up
+`data/decisions/NCT03409614.json` first and restores it byte for byte afterwards (it prints `decisions: restored ...`
+or `deleted ...`); run it from the checkout the server runs from, or set `E2E_DECISIONS_DIR` to that server's
+`data/decisions`.
+
 Secrets scan (plan.md 5.8) before the repo goes public. Report only redacted findings.
 
 ```bash
@@ -92,7 +97,9 @@ hit; a hit with an actual value after `=`, or `ck-`/`sk-ant-` followed by a key,
 3. Set the variables of section 3.
 4. Deploy; wait for the health check to pass.
 5. `scripts/smoke_deploy.sh https://<demo-url>` and `BASE_URL=https://<demo-url> /tmp/pw/bin/python scripts/e2e_demo.py`
-   (step 9 checks that `refresh=1` is refused on the deployed URL).
+   (step 9 checks that `refresh=1` is refused on the deployed URL). Against a deployed URL the script skips step 7 and
+   leaves no test decision behind; `--write-decision` records one, and it then stays on the server (no API clears a
+   decision; section 6 says when it is lost).
 6. Put the URL in the README and Devpost (collaborator).
 
 ## 6. Decisions and audit log on Railway

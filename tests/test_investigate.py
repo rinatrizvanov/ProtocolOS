@@ -210,7 +210,7 @@ def _find(resp, pred):
 
 
 def _looser(s):
-    return s["polarity"] == "challenges" and "looser-comparators rule" in s["text"]
+    return s["polarity"] == "challenges" and "counted once for the group" in s["text"]
 
 
 def test_base_answer_passes_check_answer(base):
@@ -255,7 +255,7 @@ def mut_causal(resp):
 
 
 def mut_drop_counter_statement(resp):
-    resp["answer"]["statements"] = [s for s in resp["answer"]["statements"] if not s["text"].startswith("Counterevidence:")]
+    resp["answer"]["statements"] = [s for s in resp["answer"]["statements"] if not s["text"].startswith(inv.OTHER_SIDE)]
     return None
 
 
@@ -571,6 +571,34 @@ def test_what_would_change_lists_missing_items(env):
     assert any("no scoring rule" in t for t in texts)
     assert not _no_unsupported(resp) and not fails(resp["checks"])
     assert resp["answer"]["overall"] == "uncertain"
+
+
+# Engine vocabulary the Ask tab must not show in the investigator's own words (the UI shows display labels).
+JARGON = ("Counterevidence", "Evidence supports retaining", "rule:", "group maximum", "Regimen coverage", "is in the graph",
+          "support score", "challenge score", "support-side", "challenge-side")
+
+
+@pytest.mark.parametrize("question", inv.QUESTIONS)
+def test_statements_use_display_wording(env, question):
+    resp = inv.investigate(NCT, CID, question)
+    texts = [s["text"] for s in resp["answer"]["statements"]] + [resp["answer"]["summary"]]
+    assert not [(j, t) for t in texts for j in JARGON if j in t]
+    assert texts[0].startswith(f"ProtocolOS classified Hemoglobin ≥10 g/dL as 'Review recommended' (score: 1 for, 2 against).")
+    opp = [s for s in resp["answer"]["statements"] if s["text"].startswith(inv.OTHER_SIDE)]
+    assert opp and {i for s in opp for i in s["evidence_ids"]} & set(resp["counterevidence"])
+    assert not fails(resp["checks"])
+    looser = [s["text"] for s in resp["answer"]["statements"] if "counted once for the group" in s["text"]]
+    if question != "what_would_change":
+        assert looser and all("+2 against" in t and "Their regimens share this trial's flagged drug classes." in t for t in looser)
+
+
+def test_retaining_classification_shows_display_label(env, review):
+    env["review"], env["graph"] = retain_variant(review, env["graph"])
+    resp = inv.investigate(NCT, CID, "support_retaining")
+    first = resp["answer"]["statements"][0]["text"]
+    assert first.startswith("ProtocolOS classified Hemoglobin ≥10 g/dL as 'Rationale supports keeping' (score: 2 for, 0 against).")
+    assert "Evidence supports retaining" not in json.dumps(resp["answer"])
+    assert not fails(resp["checks"])
 
 
 def test_what_would_change_insufficient(env):

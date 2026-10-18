@@ -30,6 +30,15 @@ ARM_METHOD = ("Rule over registry arm labels and intervention names: an arm list
               "Registry arm type EXPERIMENTAL counts as investigational; ACTIVE_COMPARATOR, PLACEBO_COMPARATOR, "
               "SHAM_COMPARATOR and NO_INTERVENTION count as comparator; other types are not assigned.")
 LABELS = {"safety": "Safety", "enrichment": "Efficacy enrichment", "precedent": "Precedent"}
+# FDA Enrichment Strategies (2019) section III, "Decreasing Variability": the label for the enrichment badge when the
+# basis is tolerability, heterogeneity or completion; predictive or interpretability bases keep LABELS["enrichment"].
+VARIABILITY_LABEL = "Enrichment: lower variability"
+VARIABILITY = {"tolerability", "heterogeneity", "completion"}
+EFFICACY = {"predictive", "interpretability"}
+# Safety purposes that name regimen agents (review.PURPOSE_RULES) for a criterion druglib.LAB_RELEVANCE does not cover;
+# the arm line attributes the same agents the Safety badge lists.
+SAFETY_RELEVANCE = {"washout_vaccine": ("immunotherapy", "live vaccines with immunomodulating therapy may pose infection "
+                                                         "or immune risk")}
 INVESTIGATIONAL_TYPES = {"EXPERIMENTAL"}
 COMPARATOR_TYPES = {"ACTIVE_COMPARATOR", "PLACEBO_COMPARATOR", "SHAM_COMPARATOR", "NO_INTERVENTION"}
 CHEMO = re.compile(r"chemo", re.I)
@@ -64,6 +73,19 @@ def _acronyms(review: dict) -> dict[str, str | None]:
     return {c["study"]["nct_id"]: c["study"].get("acronym") for c in review.get("comparators", [])}
 
 
+def _qualifiers(purpose: str) -> set[str]:
+    """{"tolerability", "heterogeneity"} for "Statistical design (tolerability / heterogeneity)"."""
+    m = re.search(r"\(([^)]*)\)", purpose or "")
+    return {q.strip().lower() for q in m.group(1).split("/")} if m else set()
+
+
+def _enrichment_label(enrich: list[dict]) -> str:
+    quals = set().union(*(_qualifiers(p.get("purpose", "")) for p in enrich))
+    if quals & EFFICACY or any(p.get("purpose") == "Predictive enrichment" for p in enrich):
+        return LABELS["enrichment"]
+    return VARIABILITY_LABEL if quals & VARIABILITY else LABELS["enrichment"]
+
+
 def categories(item: dict, review: dict) -> list[dict]:
     """RationaleCategory dicts (plan-v2 section 6.1) for one `review_criterion` output."""
     status = _status(item)
@@ -95,7 +117,7 @@ def categories(item: dict, review: dict) -> list[dict]:
         named = any("predictive" in p["purpose"] for p in enrich if p.get("purpose") != "Predictive enrichment")
         basis = " ".join(f"{p['purpose']}: {p['basis']}" for p in enrich
                          if not (named and p.get("purpose") == "Predictive enrichment"))
-        out.append({"key": "enrichment", "label": LABELS["enrichment"], "status": status, "basis": basis,
+        out.append({"key": "enrichment", "label": _enrichment_label(enrich), "status": status, "basis": basis,
                     "sources": sources})
 
     acr = _acronyms(review)
@@ -160,6 +182,10 @@ def _driver(has: list[bool], roles: list[str | None]) -> str:
     return "mixed"
 
 
+def _and(xs: list[str]) -> str:
+    return ", ".join(xs[:-1]) + " and " + xs[-1] if len(xs) > 1 else "".join(xs)
+
+
 def _labels(arms: list[dict]) -> str:
     return "; ".join(f"'{a['label']}'" for a in arms)
 
@@ -173,7 +199,7 @@ def arm_attribution(review: dict, criterion_id: str) -> dict:
     raw_arms = regimen.get("arms") or []
     base = {"criterion_id": criterion_id, "property": None, "agents": [], "arms": [], "method": ARM_METHOD}
 
-    rel = druglib.LAB_RELEVANCE.get(analyte)
+    rel = druglib.LAB_RELEVANCE.get(analyte) or SAFETY_RELEVANCE.get(analyte)
     if not rel:
         return {**base, "driver": "not_applicable", "arms": [
             {"label": a.get("label") or "", "type": a.get("type"), "has_agent": False, "matched_by": "none"} for a in raw_arms],
@@ -185,8 +211,8 @@ def arm_attribution(review: dict, criterion_id: str) -> dict:
     if not flagged:
         return {**base, "driver": "not_applicable", "arms": [
             {"label": a.get("label") or "", "type": a.get("type"), "has_agent": False, "matched_by": "none"} for a in raw_arms],
-            "text": f"No agent in the regimen is flagged for {why} in the curated pharmacology table, so arm "
-                    "attribution does not apply."}
+            "text": f"Pharmacology link: {why}. No agent in the regimen is flagged for it in the curated pharmacology "
+                    "table, so arm attribution does not apply."}
 
     cytotoxic = {n for n in flagged if druglib.BY_NAME[n].myelosuppressive}
     per_agent: dict[str, list[bool]] = {n: [] for n in flagged}
@@ -215,9 +241,9 @@ def arm_attribution(review: dict, criterion_id: str) -> dict:
     chemo_only = [a for a in with_arms if a["matched_by"] == "arm text 'chemo'"]
     one = len(listed) == 1
     # Subject of the arm sentence: only the agents some arm matched, so an unmatched agent is never placed in an arm.
-    subject = ("It is" if one else "They are") if not unmatched else f"Of these, {', '.join(listed)} {'is' if one else 'are'}"
+    subject = ("It is" if one else "They are") if not unmatched else f"Of these, {_and(listed)} {'is' if one else 'are'}"
     them = "it" if one else "them"
-    lead = f"Regimen agents flagged for this criterion ({why}): {', '.join(flagged)}. "
+    lead = f"Pharmacology link: {why}. Regimen agents flagged: {', '.join(flagged)}. "
     if not raw_arms:
         body = "The registry lists no arms, so the arm that lists them could not be determined."
     elif not with_arms:
@@ -227,7 +253,7 @@ def arm_attribution(review: dict, criterion_id: str) -> dict:
         span = "both arms" if len(arms) == 2 else f"all {len(arms)} arms"
         if all(all(named_hits[n]) for n in listed):
             each = (("It is" if one else "Each is") if not unmatched
-                    else f"Of these, {', '.join(listed)} {'is' if one else 'are each'}")
+                    else f"Of these, {_and(listed)} {'is' if one else 'are each'}")
             body = f"{each} listed in {span}{alike}."
         elif len(chemo_only) == len(arms):
             body = (f"Every arm's label or intervention names mention chemotherapy ({_labels(arms)}), but the registry "
@@ -253,7 +279,8 @@ def arm_attribution(review: dict, criterion_id: str) -> dict:
         body += (f" {_labels(chemo_only)} {'matches' if single else 'match'} only through the arm text 'chemo': the "
                  f"registry does not name which chemotherapy agents {'that arm uses' if single else 'those arms use'}.")
     if with_arms and unmatched:
-        body += f" The curated drug table matched no registry arm label or intervention name to {', '.join(unmatched)}."
+        body += (f" The regimen includes {_and(unmatched)}, but no arm label or intervention names "
+                 f"{'it' if len(unmatched) == 1 else 'them'}.")
     text = lead + body
     return {**base, "driver": driver if raw_arms else "undetermined", "agents": agents, "arms": arms, "text": text}
 

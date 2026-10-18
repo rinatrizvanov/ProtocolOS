@@ -526,6 +526,16 @@ PLANNER = plan_steps  # tests replace this to show the budget holds
 
 # ----------------------------------------------------------------------------- answer templates
 
+# Engine labels as the UI shows them (draft.DISPLAY_CLASSIFICATION, web-next DISPLAY_CLASSIFICATION).
+DISPLAY_CLASSIFICATION = {CLASS_REVIEW: "Review recommended", CLASS_RETAIN: "Rationale supports keeping",
+                          CLASS_INSUFFICIENT: "Insufficient evidence"}
+# Prefix of the statements from the opposite side of the question (the counterevidence).
+OTHER_SIDE = "On the other side: "
+# comparators.coverage() status of a comparator's regimen against the target's flagged drug classes
+COVERAGE_TEXT = {"full": "this trial's flagged drug classes", "partial": "some of this trial's flagged drug classes",
+                 "none": "none of this trial's flagged drug classes"}
+
+
 def _fv(v) -> str:
     if v is None:
         return "?"
@@ -592,7 +602,8 @@ def _stmt(lead: str, rest: str, polarity: str, ids: list[str]) -> dict:
 
 def _classification_statement(c: _Ctx) -> dict:
     sc = c.item.get("scores") or {}
-    lead = f"ProtocolOS classified {_crit_text(c.crit)} as '{c.classification}' (support score {sc.get('support')}, challenge score {sc.get('challenge')})."
+    shown = DISPLAY_CLASSIFICATION.get(c.classification, c.classification)
+    lead = f"ProtocolOS classified {_crit_text(c.crit)} as '{shown}' (score: {sc.get('support')} for, {sc.get('challenge')} against)."
     rest = {CLASS_REVIEW: "This is a question for the protocol team to review, not a finding that the threshold is wrong.",
             CLASS_INSUFFICIENT: "The retrieved sources do not settle this threshold either way."}.get(c.classification, "")
     ids = [i for i in (c.assess, c.class_id) if i in c.nodes] + c.anchors()
@@ -606,7 +617,7 @@ def _rule_statement(c: _Ctx, rule_id: str, stance: str) -> dict:
     pts = d.get("points", c.points.get(rule_id))
     axis = d.get("axis") or {"supports": "support", "challenges": "challenge"}.get(stance)
     members = [c.nodes[m] for m in c.members.get(rule_id, []) if m in c.nodes]
-    score = f"+{_fv(pts)} {axis}"
+    score = f"+{_fv(pts)} {'against' if axis == 'challenge' else 'for'}"
     crit = _crit_text(c.crit)
     ids = [rule_id] + [m["id"] for m in members] + c.anchors()
     if group in ("looser_comparators", "same_comparators", "stricter_comparators"):
@@ -614,31 +625,32 @@ def _rule_statement(c: _Ctx, rule_id: str, stance: str) -> dict:
         values = sorted({_cmp_value(m) for m in cmps})
         names = _join([_cmp_name(m) for m in cmps]) if cmps else "Comparable trials"
         if group == "looser_comparators":
-            cov = sorted({((m.get("data") or {}).get("coverage") or {}).get("status") for m in cmps} - {None})
-            lead = f"{names} used {_join(values)}, more permissive than {crit} (looser-comparators rule: {score}, group maximum)."
-            rest = (f"Regimen coverage: {_join(cov)}. " if cov else "") + \
+            cov = sorted({((m.get("data") or {}).get("coverage") or {}).get("status") for m in cmps} & set(COVERAGE_TEXT))
+            lead = f"{names} used {_join(values)}, more permissive than {crit} ({score}, counted once for the group)."
+            share = "Its regimen shares" if len(cmps) == 1 else "Their regimens share"
+            rest = (f"{share} {_join([COVERAGE_TEXT[x] for x in cov])}. " if cov else "") + \
                 "A more permissive threshold in a comparable trial shows the value was used, not that it was safe for this regimen."
         elif group == "same_comparators":
-            lead = f"{names} used the same value as {crit} (same-threshold rule: {score})."
+            lead = f"{names} used the same value as {crit} ({score})."
             rest = "Agreement may reflect template carry-forward rather than independent justification."
         else:
-            lead = f"{names} used a stricter threshold ({_join(values)}) than {crit} (stricter-comparators rule: {score})."
+            lead = f"{names} used a stricter threshold ({_join(values)}) than {crit} ({score})."
             rest = ""
         return _stmt(lead, rest, stance, ids)
     if group in ("regimen_support", "regimen_challenge"):
         facts = [m for m in members if m["type"] == "CuratedFact"]
         summary = " ".join(str((m.get("data") or {}).get("summary", "")).strip() for m in facts).strip()
-        scope = "; it supports having a threshold, not its value" if group == "regimen_support" else ""
+        scope = ": it supports having a threshold, not its value" if group == "regimen_support" else ""
         lead = f"Regimen rule from the curated pharmacology table ({score}{scope})."
         return _stmt(lead, summary, stance, ids)
     if group == "protocol_value_specific":
         pages = sorted({(m.get("source") or {}).get("page") for m in members} - {None})
         where = f" (p. {_join([str(p) for p in pages])})" if pages else ""
-        return _stmt(f"Protocol text references the threshold value{where} (value-specific rationale rule: {score}).", "", stance, ids)
+        return _stmt(f"Protocol text references the threshold value{where} ({score}).", "", stance, ids)
     if group == "specific_fda":
         fda = [m for m in members if m["type"] == "GuidancePassage"]
-        return _stmt(f"FDA guidance makes a specific recommendation for this criterion (specific-FDA rule: {score}).", _timing(fda).strip(), stance, ids)
-    return _stmt(f"Scoring rule {group} applies ({score}).", "", stance, ids)
+        return _stmt(f"FDA guidance makes a specific recommendation for this criterion ({score}).", _timing(fda).strip(), stance, ids)
+    return _stmt(f"Scoring rule {str(group).replace('_', ' ')} applies ({score}).", "", stance, ids)
 
 
 def _loose_statements(c: _Ctx, stance: str, nodes: list[dict]) -> list[dict]:
@@ -707,7 +719,7 @@ def _side_statements(c: _Ctx, stance: str, include_fda: bool = True) -> list[dic
 
 
 RULE_EFFECT = {
-    "protocol_value_specific": "the value-specific protocol rule, which adds to the support score; under the classification rule a criterion with a value-specific rationale is not classified 'Review recommended'",
+    "protocol_value_specific": "the value-specific protocol rule, which adds points for the criterion as written; under the classification rule a criterion with a value-specific rationale is not classified 'Review recommended'",
     "looser_comparators": "the comparator rules",
     "same_comparators": "the comparator rules",
     "stricter_comparators": "the comparator rules",
@@ -749,15 +761,15 @@ def _compose(question: str, c: _Ctx) -> tuple[list[dict], list[str], set]:
     else:
         main = _side_statements(c, primary)
         if not main:
-            label = {"supports": "support-side", "challenges": "challenge-side"}[primary]
-            stmts.append(_stmt(f"No {label} source for {crit} is in the graph.",
+            side = {"supports": "supporting", "challenges": "challenging"}[primary]
+            stmts.append(_stmt(f"No source {side} {crit} was found.",
                                "Insufficient evidence: without comparable precedent or protocol rationale on this side there is nothing to cite.",
                                "neutral", [c.assess]))
         stmts += main
         if question == "why_flagged":
             stmts += _side_statements(c, "context", include_fda=False)
     if opp:
-        stmts += [dict(s, lead="Counterevidence: " + s["lead"], text="Counterevidence: " + s["text"]) for s in _side_statements(c, opp)]
+        stmts += [dict(s, lead=OTHER_SIDE + s["lead"], text=OTHER_SIDE + s["text"]) for s in _side_statements(c, opp)]
     if question == "why_flagged":
         stmts += _missing_statements(c, per_item=False)
     for k, s in enumerate(stmts, start=1):

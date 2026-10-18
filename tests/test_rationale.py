@@ -115,7 +115,7 @@ def test_arm_text_names_only_matched_agents_and_other_arms():
     assert "Of these, carboplatin is listed in the comparator / standard-of-care arm(s) only ('Carboplatin doublet')" in arm["text"]
     assert "the other arm(s) ('Pembrolizumab'; 'Placebo') do not list it" in arm["text"]
     assert "investigational arm(s) (" not in arm["text"]
-    assert arm["text"].endswith("matched no registry arm label or intervention name to cisplatin.")
+    assert arm["text"].endswith("The regimen includes cisplatin, but no arm label or intervention names it.")
     assert {a["name"]: a["arms"] for a in arm["agents"]} == {"carboplatin": "comparator", "cisplatin": "undetermined"}
 
 
@@ -247,3 +247,53 @@ def test_precedent_badge_needs_more_than_a_challenging_fda_passage():
     assert "precedent" not in {c["key"] for c in rationale.categories(item, review)}
     item["evidence"][0]["stance"] = "context"
     assert "precedent" in {c["key"] for c in rationale.categories(item, review)}
+
+
+def test_enrichment_label_follows_the_basis(el3):
+    """Tolerability / heterogeneity / completion bases read as FDA's 'decreasing variability' enrichment, not as
+    efficacy enrichment (the packet lists 'Predictive enrichment [not indicated]' for them)."""
+    rep = rationale.rationale_report(el3)
+
+    def label(cid):
+        return next(c["label"] for c in rep["criteria"][cid]["categories"] if c["key"] == "enrichment")
+
+    assert label("hemoglobin") == label("ecog") == "Enrichment: lower variability"
+    assert label("washout_corticosteroid") == "Efficacy enrichment"  # interpretability / predictive
+    assert label("bilirubin") == "Efficacy enrichment"  # interpretability
+    item = {"purposes": [{"purpose": "Statistical design (tolerability / heterogeneity)", "status": "inferred", "basis": "x"},
+                         {"purpose": "Predictive enrichment", "status": "possible (inferred)", "basis": "y"}], "evidence": []}
+    review = {"target": {"study": {"nct_id": "NCT00000000"}, "criteria": []}, "comparators": []}
+    assert next(c for c in rationale.categories(item, review) if c["key"] == "enrichment")["label"] == "Efficacy enrichment"
+
+
+def test_safety_purpose_agents_are_attributed_to_arms(el3):
+    """The live-vaccine washout's Safety badge names the immunotherapy agents, so the arm line attributes them."""
+    rep = rationale.rationale_report(el3)
+    v = rep["criteria"]["washout_vaccine"]
+    safety = next(c for c in v["categories"] if c["key"] == "safety")
+    arm = v["arm_attribution"]
+    assert "Relevant agents: cemiplimab, ipilimumab." in safety["basis"]
+    assert arm["driver"] == "investigational" and [a["name"] for a in arm["agents"]] == ["cemiplimab", "ipilimumab"]
+    assert "Of these, cemiplimab is listed in the investigational arm(s) only" in arm["text"]
+    assert arm["text"].endswith("The regimen includes ipilimumab, but no arm label or intervention names it.")
+    assert "does not apply" not in arm["text"]
+
+
+def test_every_agent_naming_safety_purpose_has_arm_relevance():
+    from trialforge import druglib
+    from trialforge.review import PURPOSE_RULES
+
+    for analyte, rules in PURPOSE_RULES.items():
+        for rule in rules:
+            if rule[0] == "Safety" and rule[1]:
+                rel = druglib.LAB_RELEVANCE.get(analyte) or rationale.SAFETY_RELEVANCE.get(analyte)
+                assert rel and rel[0] == rule[1], analyte
+
+
+@pytest.mark.parametrize("nct", CACHED)
+def test_arm_text_has_no_nested_parentheses(nct):
+    import re
+
+    rep = rationale.rationale_report(_cached(nct))
+    nested = re.compile(r"\([^()]*\(")
+    assert not [v["arm_attribution"]["text"] for v in rep["criteria"].values() if nested.search(v["arm_attribution"]["text"])]
