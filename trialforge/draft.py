@@ -278,6 +278,7 @@ def _rewrite(s: str) -> str:
     s = s.replace("not evidence that a lower value is safe for this regimen", "not evidence about the safety of a lower value for this regimen")
     s = s.replace("This is a clinical review question, not a finding that the threshold is wrong.",
                   "This is a clinical review question for the draft.")
+    s = s.replace("Keep the existing rationale documented.", "Document the rationale in the draft protocol.")
     return s
 
 
@@ -299,7 +300,12 @@ def verify_draft_criterion(dcrit: dict, claims: list[dict], precedents: list[dic
     return res
 
 
-def _fallback_categories(item: dict, comp_rows: list[dict]) -> list[dict]:
+def _link(**kw) -> dict:
+    """SourceLink without null keys (contracts.ts declares page and url optional, not nullable)."""
+    return {k: v for k, v in kw.items() if v is not None}
+
+
+def _fallback_categories(item: dict) -> list[dict]:
     cats: list[dict] = []
     purposes = item.get("purposes", [])
     safety = [p for p in purposes if p["purpose"] == "Safety" and p["status"] == "inferred"]
@@ -309,7 +315,7 @@ def _fallback_categories(item: dict, comp_rows: list[dict]) -> list[dict]:
     enr = [p for p in purposes if p["purpose"].startswith("Statistical design")
            or (p["purpose"] == "Predictive enrichment" and p["status"] == "possible (inferred)")]
     if enr:
-        src = [{"kind": "fda", "label": p["fda_context"]["citation"], "url": p["fda_context"]["link"]}
+        src = [_link(kind="fda", label=p["fda_context"]["citation"], url=p["fda_context"].get("link"))
                for p in enr if p.get("fda_context")]
         cats.append({"key": "enrichment", "label": CATEGORY_LABELS["enrichment"], "status": "inferred",
                      "basis": enr[0]["basis"], "sources": src})
@@ -317,8 +323,8 @@ def _fallback_categories(item: dict, comp_rows: list[dict]) -> list[dict]:
     comp = [e for e in ev if e["kind"] == "comparator" and e["stance"] in ("supports", "context")]
     fda = [e for e in ev if e["kind"] == "fda" and e["strength"] == "specific"]
     if comp or fda:
-        src = [{"kind": "comparator", "label": e["nct_id"], "nct_id": e["nct_id"], "page": e.get("page"), "url": e.get("url")}
-               for e in comp] + [{"kind": "fda", "label": e["citation"], "url": e.get("link")} for e in fda]
+        src = [_link(kind="comparator", label=e["nct_id"], nct_id=e["nct_id"], page=e.get("page"), url=e.get("url"))
+               for e in comp] + [_link(kind="fda", label=e["citation"], url=e.get("link")) for e in fda]
         basis = (f"{len(comp)} comparable precedent(s) used the same or a stricter threshold" if comp else
                  "FDA guidance makes a specific recommendation for this criterion type")
         cats.append({"key": "precedent", "label": CATEGORY_LABELS["precedent"], "status": "inferred",
@@ -435,8 +441,7 @@ def draft_criteria(idea: dict, fixed_precedents: list[dict] | None = None, exclu
         else:
             reason = "No precedent's regimen covers the idea's agents for this criterion, so none is eligible to supply a value."
         staged.append({"cid": cid, "analyte": analyte, "category": category, "rel": rel, "pvals": pvals,
-                       "distribution": distribution, "elig": elig, "default": default, "tie": tie, "reason": reason,
-                       "sample": sample})
+                       "distribution": distribution, "elig": elig, "default": default, "tie": tie, "reason": reason})
 
     # draft criteria (for compare/critique) use the default when present, else the most common value
     for s in staged:
@@ -516,14 +521,13 @@ def draft_criteria(idea: dict, fixed_precedents: list[dict] | None = None, exclu
 
         why.extend(t for _, t in sorted(fda_why, key=lambda x: x[0])[:2])
         # self-critique with the unchanged review engine (doc=None, no eligibility pages)
+        item = review.review_criterion(dcrit, target, table[dcrit["id"]], None, set())
         if status == "drafted":
-            item = review.review_criterion(dcrit, target, table[dcrit["id"]], None, set())
             critique = {"classification": item["classification"], "explanation": _rewrite(item["explanation"]),
                         "scores": item["scores"], "missing_evidence": [_rewrite(m) for m in item["missing_evidence"]],
                         "suggested_action": {"action": item["suggested_action"]["action"],
                                              "text": _rewrite(item["suggested_action"]["text"])}}
         else:
-            item = review.review_criterion(dcrit, target, table[dcrit["id"]], None, set())
             critique = {"classification": review.CLASS_INSUFFICIENT,
                         "explanation": f"{review.CLASS_INSUFFICIENT}: no value was proposed; {insufficient_reason}",
                         "scores": {"support": 0, "challenge": 0}, "missing_evidence": [insufficient_reason],
@@ -539,9 +543,11 @@ def draft_criteria(idea: dict, fixed_precedents: list[dict] | None = None, exclu
             try:
                 cats = _categories(item, review_ctx)
             except Exception:
-                cats = _fallback_categories(item, table[dcrit["id"]])
+                cats = _fallback_categories(item)
         else:
-            cats = _fallback_categories(item, table[dcrit["id"]])
+            cats = _fallback_categories(item)
+        if status != "drafted":  # the precedent basis describes a value that was never proposed
+            cats = [c for c in cats if c["key"] != "precedent"]
 
         prec_vals = []
         default_op = s["default"][1]["operator"] if s["default"] else None
@@ -652,10 +658,11 @@ def get_or_draft(idea: dict, exclude=(), preset: bool = False) -> dict:
         if not preset and settings.flag("PUBLIC") and cap is not None and _COLD_COUNT >= cap:
             raise ColdCapReached()
         d = draft_criteria(idea, exclude=tuple(exclude))
-        if not preset:
+        if d["status"] == "retrieval_failed":  # never cached and never counted: an outage must not use up the cap
+            return d
+        _write(d)
+        if not preset and d["status"] != "unrecognized_regimen":  # a slot is counted only when a search ran
             _COLD_COUNT += 1
-        if d["status"] != "retrieval_failed":
-            _write(d)
         return d
 
 

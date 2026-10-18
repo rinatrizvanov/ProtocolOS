@@ -59,6 +59,20 @@ def test_no_overclaim_and_protocolos_notes(el3):
     assert any("ProtocolOS" in n for n in el3["notes"])
 
 
+def test_no_protocol_specific_phrases(el3):
+    # a draft has no protocol of its own yet, so review-engine phrases about one are rewritten
+    for s in draft._strings(el3["criteria"]):
+        assert "existing rationale" not in s, s
+        assert "found in the protocol" not in s, s
+
+
+def test_source_links_have_no_null_keys(el3):
+    for c in el3["criteria"]:
+        for cat in c["rationale"]["categories"]:
+            for src in cat["sources"]:
+                assert None not in src.values(), (c["id"], src)
+
+
 def test_mutated_claim_is_rejected(el3):
     c = next(c for c in el3["criteria"] if c["status"] == "drafted" and c["category"] == "lab")
     precs = _precedents()
@@ -87,6 +101,7 @@ def test_operator_mismatch_gives_insufficient(el3):
     hb2 = next(c for c in out["criteria"] if c["id"] == "hemoglobin")
     assert hb2["status"] == "insufficient_evidence"
     assert hb2["proposed"] is None
+    assert all(cat["key"] != "precedent" for cat in hb2["rationale"]["categories"])
 
 
 def test_retrieval_failure_is_not_no_precedents():
@@ -95,6 +110,21 @@ def test_retrieval_failure_is_not_no_precedents():
     with mock.patch.object(comparators, "_cached_search", side_effect=ConnectionError("offline")):
         out = draft.draft_criteria(idea)
     assert out["status"] == "retrieval_failed"
+
+
+def test_retrieval_failure_is_not_cached_or_counted(monkeypatch, tmp_path):
+    monkeypatch.setenv("TRIALLENS_PUBLIC", "1")
+    monkeypatch.setenv("TRIALLENS_MAX_COLD_DRAFTS", "1")
+    monkeypatch.delenv("PROTOCOLOS_PUBLIC", raising=False)
+    monkeypatch.delenv("PROTOCOLOS_MAX_COLD_DRAFTS", raising=False)
+    monkeypatch.setattr(draft, "DRAFTS_DIR", tmp_path)
+    monkeypatch.setattr(draft, "_COLD_COUNT", 0)
+    idea = {"condition": "small cell lung cancer", "drugs": ["etoposide"], "setting": [], "phase": "PHASE3"}
+    with mock.patch.object(comparators, "_cached_search", side_effect=ConnectionError("offline")):
+        for _ in range(3):
+            assert draft.get_or_draft(idea)["status"] == "retrieval_failed"
+    assert draft._COLD_COUNT == 0
+    assert list(tmp_path.iterdir()) == []
 
 
 def test_public_cap_returns_429(monkeypatch, tmp_path):
@@ -124,5 +154,6 @@ def test_public_cap_returns_429(monkeypatch, tmp_path):
     assert client.post("/api/draft", json=a).status_code == 200  # cached ideas still answer
     assert client.post("/api/draft", json=c).status_code == 429
     assert client.post("/api/draft", json={**a, "extra": 1}).status_code == 422
+    assert client.post("/api/draft", json={**a, "condition": "   "}).status_code == 422
     assert client.get("/api/draft/not-an-id").status_code == 400
     assert client.get("/api/draft/d-000000000000").status_code == 404

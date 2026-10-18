@@ -19,7 +19,7 @@ _AS_OF_RE = re.compile(r"^\d{4}-\d{2}(-\d{2})?$")
 
 
 class Idea(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     condition: str = Field(min_length=3, max_length=120)
     drugs: list[str] = Field(min_length=1, max_length=8)
     setting: list[Literal["first-line", "metastatic", "non-squamous", "squamous",
