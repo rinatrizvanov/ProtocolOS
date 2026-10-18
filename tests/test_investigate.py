@@ -526,6 +526,31 @@ def test_real_why_flagged_el3_hemoglobin(real, review):
     assert not fails(resp["checks"]), fails(resp["checks"])
 
 
+@pytest.mark.parametrize("new", ["≥14", "≥6", "≥42"])
+def test_real_changed_number_not_rescued_by_url_or_page(real, review, new):
+    """Digits in a source URL (large-docs/14/...) or a page number must not make a changed threshold pass."""
+    from trialforge.graph import build_graph
+
+    resp = inv.investigate(NCT, CID, "why_flagged")
+    g = build_graph(review, None, CID)
+    m = copy.deepcopy(resp)
+    s = _find(m, lambda s: "≥9" in s["text"])
+    s["text"] = s["text"].replace("≥9", new)
+    assert any(c["check"] == "numbers" and c["statement_id"] == s["id"] for c in fails(inv.check_answer(m, g, review)))
+
+
+@pytest.mark.parametrize("phrase", ["Loosening this threshold improves enrollment.", "This lowers cost."])
+def test_real_benefit_claims_rejected(real, review, phrase):
+    from trialforge.graph import build_graph
+
+    resp = inv.investigate(NCT, CID, "why_flagged")
+    g = build_graph(review, None, CID)
+    m = copy.deepcopy(resp)
+    s = m["answer"]["statements"][0]
+    s["text"] += " " + phrase
+    assert any(c["check"] == "benefit_claim" and c["statement_id"] == s["id"] for c in fails(inv.check_answer(m, g, review)))
+
+
 @pytest.mark.parametrize("question", inv.QUESTIONS)
 def test_real_all_el3_criteria(real, review, question):
     for item in review["reviews"]:
