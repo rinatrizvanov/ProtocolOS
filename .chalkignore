@@ -29,7 +29,7 @@ idea
 .git
 .github
 
-# TrialLens app code, data and docs are not part of the Chalk feature deployment
+# ProtocolOS app code, data and docs are not part of the Chalk feature deployment
 trialforge/
 web/
 evals/

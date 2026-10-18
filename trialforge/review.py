@@ -44,7 +44,7 @@ TIERS = {
     "model": "Model inference",
 }
 
-# Likely scientific purpose of each criterion type. These are INFERRED by TrialLens from the criterion
+# Likely scientific purpose of each criterion type. These are INFERRED by ProtocolOS from the criterion
 # type and the regimen; the FDA passage key (when present) shows FDA describing this kind of exclusion,
 # not this protocol's intent.
 PURPOSE_RULES = {

@@ -26,7 +26,7 @@ async function loadStatus() {
   $("#chips").innerHTML = [
     `<span class="chip on" title="Quotes verified verbatim against the FDA PDFs at startup">FDA passages verified: ${s.fda_passages.verified}${s.fda_passages.failed.length ? ` (${s.fda_passages.failed.length} failed)` : ""}</span>`,
     `<span class="chip ${s.llm.available ? "on" : "off"}">LLM critic: ${s.llm.available ? esc(s.llm.model) : "not configured"}</span>`,
-    `<span class="chip ${(chalk.status || "").startsWith("operational") ? "on" : "off"}" title="${esc(chalk.detail || "")}">Chalk: ${esc(chalk.status || "unknown")}</span>`,
+    `<span class="chip ${chalk.ok || (chalk.status || "").startsWith("operational") ? "on" : "off"}" title="${esc(chalk.detail || "")}">Chalk: ${esc(chalk.status || "unknown")}</span>`,
   ].join("");
 }
 
@@ -148,7 +148,7 @@ function renderDetail() {
   const rows = state.review.comparison[c.id] || [];
   const dirCls = (d) => (d.includes("looser") ? "looser" : d.includes("stricter") ? "stricter" : "same");
 
-  const compTable = `<table>
+  const compTable = !rows.length ? state.review.comparators.length ? `<div class="empty-comp"><b>No comparable trial states this criterion.</b></div>` : `<div class="empty-comp"><b>No comparable trials found.</b> <span class="src">No phase 3 trial in the same condition with overlapping drug classes and a posted protocol${state.asOf === "auto" ? " started before this trial" : ""}. Without peer precedent this criterion rests on the protocol text and FDA guidance.</span></div>` : `<table>
     <thead><tr><th>Trial</th><th>Regimen</th><th>Threshold</th><th>vs target</th><th>Regimen coverage</th><th>Source</th></tr></thead>
     <tbody>
       <tr class="target"><td>${esc(nct)} (reviewed)</td><td>${esc(Object.keys(state.review.target.regimen.drugs).join(", "))}</td><td>${esc(fmtCrit(c))}</td><td>—</td><td>—</td><td>${srcLink(nct, c.source.page, c.source.text)}</td></tr>
@@ -192,7 +192,7 @@ function renderDetail() {
       <div id="critic" style="margin-top:10px"></div>
     </div>
 
-    <div class="card"><h3>Likely scientific purpose of this restriction <span class="src" style="text-transform:none;letter-spacing:0">(inferred by TrialLens unless a source is cited)</span></h3>
+    <div class="card"><h3>Likely scientific purpose of this restriction <span class="src" style="text-transform:none;letter-spacing:0">(inferred by ProtocolOS unless a source is cited)</span></h3>
       <div class="purposes">${(r.purposes || []).map((p) => `<div class="purpose"><span class="ptag ${p.status === "not indicated" ? "muted" : ""}">${esc(p.purpose)}</span><span class="pstatus">${esc(p.status)}</span><div>${esc(p.basis)}</div>
         ${p.fda_context ? `<div class="src">FDA describes this kind of exclusion: “${esc(p.fda_context.quote)}” — <a class="src-link" href="${esc(p.fda_context.link)}" target="_blank" rel="noopener">${esc(p.fda_context.citation)}</a>. ${esc(p.fda_context.note)}</div>` : ""}</div>`).join("")}</div>
       <div class="src" style="margin-top:6px">Restrictions can protect safety, enrich for prognosis or response, or reduce heterogeneity. Loosening one is never judged on enrollment alone.</div></div>
@@ -200,10 +200,10 @@ function renderDetail() {
     <div class="card"><h3>Side-by-side with comparable trials</h3>${compTable}
       <div class="src" style="margin-top:6px">Coverage = whether the comparator's regimen contains the same toxicity-relevant drug classes as this trial (e.g. myelosuppressive classes for hematologic criteria). Partial coverage weakens the comparison.</div></div>
 
-    <div class="card"><h3>Evidence</h3><div class="ev-grid">${evCols}</div>
+    <div class="card"><h3>Rationale</h3><div class="ev-grid">${evCols}</div>
       ${(() => { const g = r.evidence.filter((e) => e.kind === "fda" && e.strength !== "specific"); return g.length ? `<details style="margin-top:8px"><summary class="src">General FDA principles that apply to this criterion (${g.length} verified passages)${g.some((e) => e.retrospective) ? "; issued after this trial started, so applied retrospectively" : ""}</summary>${g.map((e) => `<div class="ev fda"><div class="k">FDA guidance · general · ${esc(e.stance)}</div><q>${esc(e.quote)}</q><div><a class="src-link" href="${esc(e.link)}" target="_blank" rel="noopener">${esc(e.citation)}</a></div></div>`).join("")}</details>` : ""; })()}</div>
 
-    <div class="card"><h3>Evidence that is missing</h3><ul class="missing">${r.missing_evidence.map((m) => `<li>${esc(m)}</li>`).join("") || "<li>none recorded</li>"}</ul></div>
+    <div class="card"><h3>Rationale that is missing</h3><ul class="missing">${r.missing_evidence.map((m) => `<li>${esc(m)}</li>`).join("") || "<li>none recorded</li>"}</ul></div>
 
     <div class="card" id="whatifCard"><h3>Inspect an alternative threshold</h3>
       ${c.value_norm != null ? `<div class="form-row"><label>Alternative value (${esc(c.unit_norm)})</label>
@@ -361,7 +361,7 @@ async function loadPacket() {
   el.innerHTML = `<div class="loading">Building review packet…</div>`;
   try {
     const p = await api(`/api/packet/${encodeURIComponent(state.nct)}?as_of=${state.asOf}`);
-    const opts = [["needs_medical_review", "Needs medical review"], ["accept", "Accept suggested action"], ["reject", "Reject (keep as written)"], ["defer", "Defer / need more evidence"]];
+    const opts = [["needs_medical_review", "Needs medical review"], ["accept", "Accept suggested action"], ["reject", "Reject (keep as written)"], ["defer", "Defer / needs more information"]];
     el.innerHTML = `<div class="card">
         <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
           <div><h2 style="margin:0">${esc(p.title)}</h2><div class="src">${esc(p.trial.acronym || "")} ${esc(p.trial.title)} · comparator cutoff ${esc(p.comparator_cutoff || "none")} · generated ${esc(p.generated_at)}</div></div>
@@ -528,7 +528,7 @@ async function loadEvals() {
     const row = (name, x) => `<tr><td>${esc(name)}</td><td>${pct(x?.fault_catch_rate)}</td><td>${pct(x?.false_rejection_rate)}</td><td>${pct(x?.ambiguous_agreement)}</td><td>${esc(x?.note || "")}</td></tr>`;
     vhtml = `<div class="card"><h3>C · Developer-designed verifier faults — injected-error detection and false rejections</h3>
       <table><thead><tr><th>Verifier</th><th>Injected faults rejected</th><th>Valid/cautious recs rejected</th><th>Ambiguous cases flagged (warn or reject)</th><th>Notes</th></tr></thead>
-      <tbody>${row("No verifier (baseline)", v.no_verifier)}${row("Deterministic verifier (TrialLens), local", v.deterministic)}
+      <tbody>${row("No verifier (baseline)", v.no_verifier)}${row("Deterministic verifier (ProtocolOS), local", v.deterministic)}
       ${r.chalk && r.chalk.n_fault ? `<tr><td>Deterministic verifier, executed on <b>Chalk Compute</b> (Chalk Evaluations)</td><td>${pct(r.chalk.fault_rejected / r.chalk.n_fault)}</td><td>${pct(r.chalk.valid_rejected / r.chalk.n_valid)}</td><td>${pct(r.chalk.ambiguous_flagged / r.chalk.n_ambiguous)}</td><td>evaluation ${esc(r.chalk.evaluation_id)} · run ${esc(r.chalk.run_id)} · ${esc(r.chalk.status)} · ${esc(r.chalk.task_errors)} task errors · Chalk scorer verdict_correct mean ${esc(r.chalk.verdict_correct_mean)} (n=${esc(r.chalk.verdict_correct_n)})</td></tr>` : ""}
       ${row("LLM-only verifier", v.llm_only)}</tbody></table>
       <div class="src">${v.n_faults} injected faults, ${v.n_valid} valid or clinically cautious recommendations, ${v.n_ambiguous} ambiguous cases (expected: warnings, not a pass).
