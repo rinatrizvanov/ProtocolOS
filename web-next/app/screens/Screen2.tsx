@@ -105,14 +105,15 @@ export default function Screen2({ nct, criterionId }: Selection) {
         <div
           data-testid="target-marker"
           data-value={targetValue}
-          className="absolute top-10 -translate-x-1/2 text-center"
+          className="absolute top-8 -translate-x-1/2 text-center"
           style={{ left: `calc(2rem + (100% - 4rem) * ${pct(targetValue) / 100})` }}
         >
+          <p className="text-sm text-muted">this trial</p>
           <p className="text-3xl font-semibold tabular-nums text-ink">
             {target.operator} {targetValue}
           </p>
-          <div className="mx-auto mt-1 h-16 w-1.5 bg-ink" />
-          <p className="text-sm text-muted">this trial</p>
+          {/* Stops at the axis so comparator dots with the same value stay readable below it. */}
+          <div className="mx-auto h-4 w-1.5 bg-ink" />
         </div>
         {plotted.map((r, i) => {
           // Trials that used the same value stack in their own rows so each dot stays clickable.
