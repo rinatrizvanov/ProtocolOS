@@ -69,6 +69,8 @@ export default function IdeaForm({
     }
   }
 
+  // Typed text becomes a chip on Enter, comma or submit, never on blur: a chip added on blur can wrap the regimen box
+  // and move the control under the pointer between mousedown and mouseup, so that click would be lost.
   function submit(e: FormEvent) {
     e.preventDefault();
     const all = pending.trim() ? addDrugs(pending) : drugs;
@@ -131,7 +133,6 @@ export default function IdeaForm({
             value={pending}
             onChange={(e) => setPending(e.target.value)}
             onKeyDown={onKey}
-            onBlur={() => pending.trim() && addDrugs(pending)}
             placeholder={drugs.length ? "" : "pembrolizumab, carboplatin"}
             list="drug-vocabulary"
             className="min-w-[8rem] flex-1 bg-transparent py-0.5 text-ink outline-none"
@@ -188,12 +189,9 @@ export default function IdeaForm({
         ))}
       </fieldset>
 
-      {/* Keeping focus in the drug input on mousedown stops its blur from adding a chip, which would move the button
-          before mouseup and lose the click; submit() commits the pending text itself. */}
       <button
         type="submit"
         data-testid="draft-submit"
-        onMouseDown={(e) => e.preventDefault()}
         disabled={busy || !ready}
         className="rounded-md bg-ink px-3 py-2 text-sm font-medium text-paper disabled:cursor-not-allowed disabled:opacity-50"
       >
