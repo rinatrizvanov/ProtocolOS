@@ -9,7 +9,7 @@ export function Icon({ d, className = "" }: { d: string; className?: string }) {
     </svg>
   );
 }
-export const CHECK = "M3 8.5l3 3 7-7";
+const CHECK = "M3 8.5l3 3 7-7";
 export const WARN = "M8 2l6.5 11.5h-13zM8 6.5v3M8 11.5v.01";
 const CROSS = "M4 4l8 8M12 4l-8 8";
 const QUESTION = "M6 6a2 2 0 1 1 2.8 1.8c-.5.3-.8.7-.8 1.2v.5M8 12v.01";
@@ -24,13 +24,13 @@ export const VERDICT: Record<EngineClassification, { icon: string; chip: string;
 // Verdict order on the page: what needs a look first, what is kept last.
 export const DISPLAY_ORDER: EngineClassification[] = ["Review recommended", "Insufficient evidence", "Evidence supports retaining"];
 
-export function verdictLabel(c: DraftCriterion): string {
+function verdictLabel(c: DraftCriterion): string {
   const cls = c.critique.classification;
   // A drafted value can still get this verdict: one precedent used it, but nothing explains this exact value.
   return cls === "Insufficient evidence" && c.status === "drafted" ? "Insufficient evidence for this value" : DISPLAY_CLASSIFICATION[cls];
 }
 
-export function VerdictChip({ c }: { c: DraftCriterion }) {
+function VerdictChip({ c }: { c: DraftCriterion }) {
   const v = VERDICT[c.critique.classification];
   return (
     <span data-testid="draft-verdict" className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-ink ${v.chip}`}>
