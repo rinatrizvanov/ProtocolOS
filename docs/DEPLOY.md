@@ -82,7 +82,8 @@ hit; a hit with an actual value after `=`, or `ck-`/`sk-ant-` followed by a key,
 ## 5. Railway steps (user confirms each)
 
 1. Pick the account/workspace and spend limit (plan.md section 10 question).
-2. Create a project and one service from the GitHub repo (or `railway up` from a local checkout; see 7).
+2. Create a project and one service with `railway up` from a local checkout whose `data/` caches are filled (see 7 and 9);
+   a GitHub-linked service would ship no caches.
    Railway reads `railway.toml`: Dockerfile builder, health check path and timeout, restart on failure,
    one replica (`[deploy.multiRegionConfig.us-east4-eqdc4a] numReplicas = 1`).
    Railway's docs (checked 2026-10-17) call config as code deprecated but supported for existing services
@@ -117,8 +118,8 @@ review and draft preset cached, and the health check passes without network acce
 
 - Railway keeps earlier deployments: redeploy the last good one from the service's Deployments list (user confirms).
 - Or revert the commit on the deployed branch and let Railway rebuild (user confirms the push).
-- If no deployment serves EL3 by 01:30 ET (plan.md section 10): submit with the repo and the video, demo from
-  localhost, and say in Devpost that no demo URL is live.
+- If no deployment serves EL3 by the 04:30 ET deploy freeze (plan-v2.md section 2): submit with the repo and the video,
+  demo from localhost, and say in Devpost that no demo URL is live.
 - After any rollback: `scripts/smoke_deploy.sh https://<demo-url>`.
 
 ## 9. Live deploys and redeploy commands (2026-10-18)

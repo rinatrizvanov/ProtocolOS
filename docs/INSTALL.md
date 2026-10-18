@@ -5,7 +5,7 @@ ProtocolOS (formerly TrialLens) is a Python + FastAPI engine with two UIs: the v
 
 ## 1. Engine (pip, no uv needed)
 
-Python 3.13 and poppler (`pdftotext`) are required: `poppler-utils` on Debian/Ubuntu, `brew install poppler` on macOS.
+Python 3.12 or newer (tested on 3.13) and, preferably, poppler (`pdftotext`, used for protocol text when present): `poppler-utils` on Debian/Ubuntu, `brew install poppler` on macOS.
 
 ```bash
 python3.13 -m venv .venv
@@ -63,7 +63,7 @@ proxies `/api/*` to the Railway URL. Exact deploy and redeploy commands: `docs/D
 - `.env` (model and Chalk keys) is gitignored and never shipped: `.railwayignore` and `.dockerignore` exclude `.env`,
   `.env.*`, `.venv/`, `*.pem` and `.chalk.yml`. The public deploys carry no model keys (`CHALK_ROUTER_*`,
   `ANTHROPIC_API_KEY` and `*_ALLOW_MODEL` are unset), so model mode reports "not configured" and every answer comes
-  from the deterministic verifier.
+  from the deterministic engine, with the deterministic verifier as the authority on suggested changes.
 - `PROTOCOLOS_PUBLIC=1` turns on the public-demo guard (`trialforge/demo_guard.py`): input validation, a 16 KB body
   limit, no `refresh=1`, `/api/parse` and `/api/critique` disabled, investigations forced to deterministic mode.
 - Decisions recorded on the public demo are open to anyone with the URL and ephemeral: they are written inside the

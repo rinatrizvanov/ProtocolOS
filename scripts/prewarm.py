@@ -118,7 +118,11 @@ def build_drafts() -> list[str]:
     if importlib.util.find_spec("trialforge.draft") is None:
         print("prewarm: drafts skipped (trialforge.draft not installed)")
         return []
-    from trialforge import draft  # imported after build_reviews: it reads the EL3 review cache at import
+    try:
+        from trialforge import draft  # imported after build_reviews: it reads the EL3 review cache at import
+    except Exception as e:  # noqa: BLE001  prewarm always exits 0; the startup prewarm retries
+        print(f"  FAILED draft import: {type(e).__name__}: {e}", flush=True)
+        return ["draft/import"]
 
     print("prewarm: draft presets one at a time", flush=True)
     failed = []
