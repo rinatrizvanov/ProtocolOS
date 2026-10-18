@@ -190,3 +190,19 @@ def test_settings_alias_prefers_new_name(monkeypatch):
     assert not settings.flag("PUBLIC")
     monkeypatch.delenv("TRIALLENS_PUBLIC")
     assert settings.env("PUBLIC", "x") == "x"
+
+
+
+@pytest.mark.parametrize("as_of", [None, "2018-03", "2018-03-06"])
+def test_draft_idea_as_of_passes_guard(public, monkeypatch, as_of):
+    """The guard's review as_of rule must not reject a draft idea; routes_draft validates the idea's own as_of."""
+    pytest.importorskip("trialforge.routes_draft")
+    from trialforge import draft
+
+    client, _ = public
+    seen = []
+    monkeypatch.setattr(draft, "get_or_draft", lambda idea, **kw: seen.append(idea) or {"status": "ok", "draft_id": "d-000000000000"})
+    idea = dict(draft.PRESETS["nsclc-pd1-chemo"]["idea"], as_of=as_of)
+    r = client.post("/api/draft", json=idea)
+    assert r.status_code == 200, r.text
+    assert seen and seen[0]["as_of"] == as_of
