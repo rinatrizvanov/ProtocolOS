@@ -62,10 +62,13 @@ def test_category_rules(el3):
     item["evidence"] = [{"kind": "fda", "stance": "challenges", "strength": "specific", "citation": "FDA x", "link": "u"},
                         {"kind": "protocol", "stance": "supports", "page": 3, "url": "p"}]
     cats = {c["key"]: c for c in rationale.categories(item, el3)}
-    assert set(cats) == {"enrichment", "precedent"}
+    assert set(cats) == {"enrichment"}  # a challenging FDA passage alone earns no Precedent badge
     assert cats["enrichment"]["status"] == "stated in protocol"
+    item["evidence"].append({"kind": "fda", "stance": "context", "strength": "specific", "citation": "FDA y", "link": "v"})
+    cats = {c["key"]: c for c in rationale.categories(item, el3)}
+    assert set(cats) == {"enrichment", "precedent"}
     assert {s["kind"] for s in cats["precedent"]["sources"]} == {"fda"}
-    assert cats["precedent"]["basis"].startswith("1 criterion-specific FDA passage(s) address this criterion, 1 of them "
+    assert cats["precedent"]["basis"].startswith("2 criterion-specific FDA passage(s) address this criterion, 1 of them "
                                                  "challenging it as written")
     item["purposes"] = [{"purpose": "Predictive enrichment", "status": "not indicated", "basis": "b"}]
     item["evidence"] = [{"kind": "comparator", "stance": "challenges", "strength": "moderate", "nct_id": "NCT1"},
@@ -232,3 +235,15 @@ def test_installed_on_the_api_app(el3):
     import trialforge.api as api
 
     assert any(getattr(r, "path", "") == "/api/rationale/{nct}" for r in api.app.routes)
+
+
+def test_precedent_badge_needs_more_than_a_challenging_fda_passage():
+    """A criterion whose only rationale source is an FDA passage that challenges it gets no Precedent badge."""
+    from trialforge import rationale
+
+    item = {"criterion": {"id": "anc"}, "purposes": [],
+            "evidence": [{"kind": "fda", "strength": "specific", "stance": "challenges", "citation": "FDA lab guidance"}]}
+    review = {"target": {"study": {"nct_id": "NCT00000000"}, "criteria": []}, "comparators": [], "comparison": {}}
+    assert "precedent" not in {c["key"] for c in rationale.categories(item, review)}
+    item["evidence"][0]["stance"] = "context"
+    assert "precedent" in {c["key"] for c in rationale.categories(item, review)}

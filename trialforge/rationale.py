@@ -101,7 +101,8 @@ def categories(item: dict, review: dict) -> list[dict]:
     acr = _acronyms(review)
     comps = [e for e in evidence if e.get("kind") == "comparator" and e.get("stance") in ("supports", "context")]
     fda = [e for e in evidence if e.get("kind") == "fda" and e.get("strength") == "specific"]
-    if comps or fda:
+    # A badge reads as support, so FDA passages that only challenge the criterion do not earn it on their own.
+    if comps or any(e.get("stance") != "challenges" for e in fda):
         sources = []
         for e in comps:
             src = {"kind": "comparator", "label": acr.get(e.get("nct_id")) or e.get("nct_id") or "Comparable trial",
