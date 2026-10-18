@@ -87,7 +87,7 @@ function ExampleCard({ nct, example }: { nct: string; example: (typeof HEMOGLOBI
 
   return (
     <li className="flex flex-col gap-4 rounded-md border border-line p-5">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">{example.title}</h2>
+      <h2 className="text-base font-semibold text-ink">{example.title}</h2>
       <blockquote className="border-l-4 border-line pl-4 text-lg font-medium text-ink">{example.body.text}</blockquote>
       <button
         type="button"
