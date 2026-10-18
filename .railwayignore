@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+.venv/
+*.pem
+.chalk.yml
+.git/
+web-next/
+data/decisions/
+data/investigations/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+Regeneron starter-kit/
