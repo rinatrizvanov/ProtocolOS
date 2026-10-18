@@ -34,8 +34,8 @@ dev resources for `127.0.0.1`, and the page does not hydrate.
 
 1. Open the app and pick "Finishing a trial". Choose NCT03409614 (EMPOWER-Lung 3).
 2. Click the hemoglobin criterion in the list.
-3. Read the Rationale badges (safety, efficacy enrichment, precedent) and the arm line. The arm line says
-   which arm (investigational or comparator) drives the safety rationale.
+3. Read the Rationale badges (for hemoglobin: Safety, Enrichment: lower variability, Precedent) and the
+   arm line. The arm line says which arm (investigational or comparator) drives the safety rationale.
 4. Compare tab: earlier comparable trials and the threshold each one used. A looser comparator shows a
    threshold was used, not that it was safe.
 5. Ask tab: pick a question ("Why was it flagged?"). Every statement in the answer is checked against

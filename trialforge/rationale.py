@@ -3,8 +3,8 @@
 Pure functions over a `review.run_review` result; nothing here changes classification or scores, and the
 deterministic verifier stays the authority on any suggested change.
 
-- `categories(item, review)`: which kinds of rationale a criterion plausibly has (safety, efficacy
-  enrichment, precedent), from `review_criterion`'s inferred purposes and its evidence items.
+- `categories(item, review)`: which kinds of rationale a criterion plausibly has (safety, enrichment,
+  precedent), from `review_criterion`'s inferred purposes and its evidence items.
 - `arm_attribution(review, criterion_id)`: which arms list the agents behind a regimen safety rationale.
   `extract.py` pools drugs across arms, so this is a rule over the registry arm labels and intervention
   names. The text says "listed in", never that an agent caused anything.
@@ -30,11 +30,16 @@ ARM_METHOD = ("Rule over registry arm labels and intervention names: an arm list
               "Registry arm type EXPERIMENTAL counts as investigational; ACTIVE_COMPARATOR, PLACEBO_COMPARATOR, "
               "SHAM_COMPARATOR and NO_INTERVENTION count as comparator; other types are not assigned.")
 LABELS = {"safety": "Safety", "enrichment": "Efficacy enrichment", "precedent": "Precedent"}
-# FDA Enrichment Strategies (2019) section III, "Decreasing Variability": the label for the enrichment badge when the
-# basis is tolerability, heterogeneity or completion; predictive or interpretability bases keep LABELS["enrichment"].
+# The enrichment badge names the kind of basis. Only a predictive basis (the qualifier "predictive", or a Predictive
+# enrichment purpose with status "possible (inferred)") keeps LABELS["enrichment"]. Tolerability, heterogeneity or
+# completion bases follow FDA Enrichment Strategies (2019) section III, "Decreasing Variability"; interpretability-only
+# bases (attributing effects or adverse events to the study drug) read "clearer attribution".
 VARIABILITY_LABEL = "Enrichment: lower variability"
+ATTRIBUTION_LABEL = "Enrichment: clearer attribution"
+NEUTRAL_ENRICHMENT_LABEL = "Enrichment"
 VARIABILITY = {"tolerability", "heterogeneity", "completion"}
-EFFICACY = {"predictive", "interpretability"}
+PREDICTIVE = "predictive"
+INTERPRETABILITY = "interpretability"
 # Safety purposes that name regimen agents (review.PURPOSE_RULES) for a criterion druglib.LAB_RELEVANCE does not cover;
 # the arm line attributes the same agents the Safety badge lists.
 SAFETY_RELEVANCE = {"washout_vaccine": ("immunotherapy", "live vaccines with immunomodulating therapy may pose infection "
@@ -81,9 +86,12 @@ def _qualifiers(purpose: str) -> set[str]:
 
 def _enrichment_label(enrich: list[dict]) -> str:
     quals = set().union(*(_qualifiers(p.get("purpose", "")) for p in enrich))
-    if quals & EFFICACY or any(p.get("purpose") == "Predictive enrichment" for p in enrich):
+    if PREDICTIVE in quals or any(p.get("purpose") == "Predictive enrichment" and p.get("status") == "possible (inferred)"
+                                  for p in enrich):
         return LABELS["enrichment"]
-    return VARIABILITY_LABEL if quals & VARIABILITY else LABELS["enrichment"]
+    if quals & VARIABILITY:
+        return VARIABILITY_LABEL
+    return ATTRIBUTION_LABEL if INTERPRETABILITY in quals else NEUTRAL_ENRICHMENT_LABEL
 
 
 def categories(item: dict, review: dict) -> list[dict]:
@@ -279,8 +287,11 @@ def arm_attribution(review: dict, criterion_id: str) -> dict:
         body += (f" {_labels(chemo_only)} {'matches' if single else 'match'} only through the arm text 'chemo': the "
                  f"registry does not name which chemotherapy agents {'that arm uses' if single else 'those arms use'}.")
     if with_arms and unmatched:
-        body += (f" The regimen includes {_and(unmatched)}, but no arm label or intervention names "
-                 f"{'it' if len(unmatched) == 1 else 'them'}.")
+        # The rule only knows that no arm text matched the curated names and aliases; an arm may still use an
+        # abbreviation (EL3's 'REGN2810+AbbrevChemo+ipi'), so the line never says no arm names the agent.
+        single = len(unmatched) == 1
+        body += (f" The regimen includes {_and(unmatched)}, but no arm label or intervention name spells "
+                 f"{'it' if single else 'them'} out, so {'its arm is' if single else 'their arms are'} not determined.")
     text = lead + body
     return {**base, "driver": driver if raw_arms else "undetermined", "agents": agents, "arms": arms, "text": text}
 

@@ -115,7 +115,8 @@ def test_arm_text_names_only_matched_agents_and_other_arms():
     assert "Of these, carboplatin is listed in the comparator / standard-of-care arm(s) only ('Carboplatin doublet')" in arm["text"]
     assert "the other arm(s) ('Pembrolizumab'; 'Placebo') do not list it" in arm["text"]
     assert "investigational arm(s) (" not in arm["text"]
-    assert arm["text"].endswith("The regimen includes cisplatin, but no arm label or intervention names it.")
+    assert arm["text"].endswith("The regimen includes cisplatin, but no arm label or intervention name spells it out, "
+                                "so its arm is not determined.")
     assert {a["name"]: a["arms"] for a in arm["agents"]} == {"carboplatin": "comparator", "cisplatin": "undetermined"}
 
 
@@ -250,8 +251,9 @@ def test_precedent_badge_needs_more_than_a_challenging_fda_passage():
 
 
 def test_enrichment_label_follows_the_basis(el3):
-    """Tolerability / heterogeneity / completion bases read as FDA's 'decreasing variability' enrichment, not as
-    efficacy enrichment (the packet lists 'Predictive enrichment [not indicated]' for them)."""
+    """Tolerability / heterogeneity / completion bases read as FDA's 'decreasing variability' enrichment and
+    interpretability-only bases as 'clearer attribution', not as efficacy enrichment (the packet lists 'Predictive
+    enrichment [not indicated]' for them); only a predictive basis reads 'Efficacy enrichment'."""
     rep = rationale.rationale_report(el3)
 
     def label(cid):
@@ -259,11 +261,38 @@ def test_enrichment_label_follows_the_basis(el3):
 
     assert label("hemoglobin") == label("ecog") == "Enrichment: lower variability"
     assert label("washout_corticosteroid") == "Efficacy enrichment"  # interpretability / predictive
-    assert label("bilirubin") == "Efficacy enrichment"  # interpretability
-    item = {"purposes": [{"purpose": "Statistical design (tolerability / heterogeneity)", "status": "inferred", "basis": "x"},
-                         {"purpose": "Predictive enrichment", "status": "possible (inferred)", "basis": "y"}], "evidence": []}
+    # Interpretability-only bases: the packet lists 'Predictive enrichment [not indicated]' for them.
+    assert label("washout_investigational") == label("bilirubin") == label("ast_alt") == "Enrichment: clearer attribution"
+    labels = {c["label"] for v in rep["criteria"].values() for c in v["categories"] if c["key"] == "enrichment"}
+    assert labels == {"Enrichment: lower variability", "Efficacy enrichment", "Enrichment: clearer attribution"}
+
     review = {"target": {"study": {"nct_id": "NCT00000000"}, "criteria": []}, "comparators": []}
-    assert next(c for c in rationale.categories(item, review) if c["key"] == "enrichment")["label"] == "Efficacy enrichment"
+
+    def synthetic(*purposes):
+        item = {"purposes": [{"purpose": p, "status": s, "basis": "x"} for p, s in purposes], "evidence": []}
+        return next(c for c in rationale.categories(item, review) if c["key"] == "enrichment")["label"]
+
+    assert synthetic(("Statistical design (tolerability / heterogeneity)", "inferred"),
+                     ("Predictive enrichment", "possible (inferred)")) == "Efficacy enrichment"
+    assert synthetic(("Statistical design (interpretability)", "inferred"),
+                     ("Predictive enrichment", "not indicated")) == "Enrichment: clearer attribution"
+    assert synthetic(("Statistical design (interpretability / tolerability)", "inferred")) == "Enrichment: lower variability"
+    assert synthetic(("Statistical design", "inferred")) == "Enrichment"
+
+
+@pytest.mark.parametrize("nct", CACHED)
+def test_efficacy_enrichment_badge_needs_a_predictive_basis(nct):
+    """'Efficacy enrichment' only where the basis is predictive, so the badge never contradicts the packet's
+    'Predictive enrichment [not indicated]'."""
+    review = _cached(nct)
+    rep = rationale.rationale_report(review)
+    for item in review["reviews"]:
+        cid = item["criterion"]["id"]
+        labels = [c["label"] for c in rep["criteria"][cid]["categories"] if c["key"] == "enrichment"]
+        predictive = any("predictive" in rationale._qualifiers(p["purpose"])
+                         or (p["purpose"] == "Predictive enrichment" and p["status"] == "possible (inferred)")
+                         for p in item.get("purposes", []))
+        assert ("Efficacy enrichment" in labels) == predictive, (nct, cid, labels)
 
 
 def test_safety_purpose_agents_are_attributed_to_arms(el3):
@@ -275,7 +304,10 @@ def test_safety_purpose_agents_are_attributed_to_arms(el3):
     assert "Relevant agents: cemiplimab, ipilimumab." in safety["basis"]
     assert arm["driver"] == "investigational" and [a["name"] for a in arm["agents"]] == ["cemiplimab", "ipilimumab"]
     assert "Of these, cemiplimab is listed in the investigational arm(s) only" in arm["text"]
-    assert arm["text"].endswith("The regimen includes ipilimumab, but no arm label or intervention names it.")
+    # The arm 'REGN2810+AbbrevChemo+ipi' abbreviates ipilimumab, so the line must not say that no arm names it.
+    assert arm["text"].endswith("The regimen includes ipilimumab, but no arm label or intervention name spells it "
+                                "out, so its arm is not determined.")
+    assert "intervention names it" not in arm["text"]
     assert "does not apply" not in arm["text"]
 
 
