@@ -72,7 +72,7 @@ export interface GraphNode {
   type: string;
   label: string;
   epistemic?: string;
-  source?: { nct: string; page: number; quote: string; url: string };
+  source?: { nct: string | null; page: number | null; quote: string; url: string };
   data: { retrospective?: boolean; issued?: string; citation?: string; [key: string]: unknown };
 }
 
@@ -210,6 +210,24 @@ export const verifyAncClaim = (nct: string, proposedUnit: string) =>
       ],
     },
   });
+
+// A reviewer's suggestion as /api/verify accepts it; every claim is checked against a source.
+export type Claim =
+  | { type: "comparator_threshold"; nct_id: string; value: number; unit: string }
+  | { type: "fda_quote"; guidance: string; quote: string }
+  | { type: "drug_property"; drug: string; property: string; value: boolean };
+
+export interface Recommendation {
+  criterion_id: string;
+  action: string;
+  proposed_value: number | null;
+  proposed_unit: string;
+  text: string;
+  claims: Claim[];
+}
+
+export const verifyRecommendation = (nct: string, recommendation: Recommendation) =>
+  post<Verification>("/api/verify", { nct, recommendation });
 
 export const getPlanted = () => request<Planted>("/api/planted");
 export const getEvals = () => request<Evals>("/api/evals");

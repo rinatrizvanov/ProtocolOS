@@ -5,18 +5,18 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { CACHED_TRIALS, NCT, getReview, type Classification, type Selection } from "@/lib/api";
 import { useApi } from "@/lib/useApi";
 import { Failed, Pending } from "./components/Frame";
+import ChallengeExamples from "./screens/ChallengeExamples";
 import Screen2 from "./screens/Screen2";
 import Screen3 from "./screens/Screen3";
 import Screen4 from "./screens/Screen4";
-import Screen5 from "./screens/Screen5";
 import Screen7 from "./screens/Screen7";
 
-// The verifier's demo argument is about EL3's ANC rule, so Challenge exists only for that trial.
+// The verifier's demo arguments are about EL3's ANC and hemoglobin rules, so Challenge exists only for that trial.
 const TABS = [
   { id: "compare", title: "Compare", render: (s: Selection) => <Screen2 {...s} /> },
   { id: "why", title: "Why", render: (s: Selection) => <Screen3 {...s} /> },
   { id: "ask", title: "Ask", render: (s: Selection) => <Screen4 {...s} /> },
-  { id: "challenge", title: "Challenge", render: (s: Selection) => <Screen5 nct={s.nct} />, onlyFor: NCT },
+  { id: "challenge", title: "Challenge", render: (s: Selection) => <ChallengeExamples {...s} />, onlyFor: NCT },
   { id: "decide", title: "Decide", render: (s: Selection) => <Screen7 {...s} /> },
 ];
 
