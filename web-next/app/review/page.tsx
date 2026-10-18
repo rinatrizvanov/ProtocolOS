@@ -6,10 +6,10 @@ import { DISPLAY_CLASSIFICATION } from "@/lib/contracts";
 import { useApi } from "@/lib/useApi";
 import { AppHeader } from "../components/AppHeader";
 import { Failed, Pending } from "../components/Frame";
-import { ChatIcon, CheckCircleIcon, CompareIcon, GavelIcon, InfoIcon } from "../components/Icons";
+import { ChatIcon, CompareIcon, GavelIcon, InfoIcon, PenIcon } from "../components/Icons";
 import { MissingCriteria } from "../components/MissingCriteria";
 import { RationalePanel } from "../components/RationalePanel";
-import ChallengeExamples from "../screens/ChallengeExamples";
+import Redraft from "../screens/Redraft";
 import Screen2 from "../screens/Screen2";
 import Screen4 from "../screens/Screen4";
 import Screen7 from "../screens/Screen7";
@@ -18,7 +18,7 @@ const TABS = [
   { id: "rationale", title: "Rationale", Icon: InfoIcon, render: (s: Selection) => <RationalePanel {...s} /> },
   { id: "compare", title: "Compare", Icon: CompareIcon, render: (s: Selection) => <Screen2 {...s} detailed /> },
   { id: "ask", title: "Ask", Icon: ChatIcon, render: (s: Selection) => <Screen4 {...s} /> },
-  { id: "verify", title: "Verify", Icon: CheckCircleIcon, render: (s: Selection) => <ChallengeExamples {...s} /> },
+  { id: "verify", title: "Redraft", Icon: PenIcon, render: (s: Selection) => <Redraft {...s} /> },
   { id: "decide", title: "Decide", Icon: GavelIcon, render: (s: Selection) => <Screen7 {...s} detailed /> },
 ] as const;
 type TabId = (typeof TABS)[number]["id"];
