@@ -31,6 +31,9 @@ DEPS="$(.venv/bin/python -c "import tomllib;d=tomllib.load(open('pyproject.toml'
 step "cache documents"
 .venv/bin/python -m trialforge.sources NCT03409614 NCT03088540 NCT02578680 > "$LOGS/sources.txt" 2>&1
 
+step "prewarm reviews (auto and none) and draft presets, as docs/INSTALL.md does"
+.venv/bin/python -m scripts.prewarm --drafts NCT03409614 NCT02578680 NCT03088540 NCT02819518 > "$LOGS/prewarm.txt" 2>&1
+
 step "pytest"
 .venv/bin/python -m pytest -q tests/ > "$LOGS/pytest-full.txt" 2>&1 || { tail -n 30 "$LOGS/pytest-full.txt"; exit 1; }
 tail -n 1 "$LOGS/pytest-full.txt" | tee "$LOGS/pytest.txt"

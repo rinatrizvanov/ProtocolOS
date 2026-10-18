@@ -48,7 +48,7 @@ def install(app) -> None:
     app.add_api_route("/api/graph/{nct}", graph_route, methods=["GET"])
     app.add_api_route("/api/investigate", investigate_route, methods=["POST"])
     # v2 modules (plan-v2 section 6.0): each install(app) is idempotent; absent modules are skipped.
-    for name in ("routes_rationale", "routes_draft", "web_next"):
+    for name in ("routes_rationale", "routes_draft", "routes_redraft", "web_next"):
         if importlib.util.find_spec(f"trialforge.{name}") is not None:
             importlib.import_module(f"trialforge.{name}").install(app)
     if flag("PUBLIC"):
