@@ -261,8 +261,9 @@ function SummaryStrip({ review }: { review: Review }) {
       </ul>
       {comparators === 0 ? (
         <p data-testid="no-comparators" role="note" className="rounded-md border border-uncounted bg-uncounted-soft px-3 py-2 text-sm text-ink">
-          No comparable trial was found for this protocol, so no limit here has a precedent to compare with. Classifications come
-          from the regimen and protocol rules alone.
+          No comparable trial was found for this protocol, so no limit here has a precedent to compare with. Classifications here
+          come from the other scoring rules: drug links in the curated pharmacology table and FDA guidance specific to a
+          criterion.
         </p>
       ) : null}
     </div>
