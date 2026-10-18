@@ -1,7 +1,8 @@
 """Browser check of the ProtocolOS /draft page (authoring mode) in the Next.js app.
 
-Usage: BASE_URL=http://127.0.0.1:3767 python scripts/e2e_draft_next.py
+Usage: BASE_URL=http://localhost:3767 python scripts/e2e_draft_next.py
 Needs Playwright (for example the throwaway venv /tmp/pw). Exits 0 when every check passes.
+Use localhost against `next dev`: it blocks dev resources for 127.0.0.1 (allowedDevOrigins), so the page never hydrates.
 
 Checks (task-triallens-v2-draft-ui.md, acceptance 2-5):
 - preset nsclc-pd1-chemo shows at least 3 drafted criteria, each with passing checks, a non-empty
@@ -21,7 +22,7 @@ from pathlib import Path
 
 from playwright.sync_api import sync_playwright
 
-BASE_URL = os.environ.get("BASE_URL", "http://127.0.0.1:3767").rstrip("/")
+BASE_URL = os.environ.get("BASE_URL", "http://localhost:3767").rstrip("/")
 OUT = Path(os.environ.get("SHOT_DIR", "/tmp/triallens-logs/v2/draft-ui"))
 DRAFT_TIMEOUT_MS = 150_000
 FREE_IDEA = ("small cell lung cancer", ["atezolizumab", "carboplatin", "etoposide"])
