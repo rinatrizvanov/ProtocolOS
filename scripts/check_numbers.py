@@ -32,8 +32,14 @@ SOURCES = sorted((ROOT / "data").glob("*.json")) + [
     ROOT / "evals" / "impact" / "impact_numbers.json",
 ]
 # Numbers from an external, cited source that the document owner has checked against that source.
-# Format: {"57%": "Getz et al. 2016, <table/page>"}. Empty until someone verifies a citation.
-EXTERNAL_CITED: dict[str, str] = {}
+# Format: {"57%": "Getz et al. 2016, <table/page>"}.
+EXTERNAL_CITED: dict[str, str] = {
+    # Checked 2026-10-18 against the PubMed abstract (efetch PMID 30227022), RESULTS section, verbatim.
+    "57%": "Getz KA et al. Ther Innov Regul Sci 2016;50(4):436-441 (PMID 30227022): '57% of protocols had at least one "
+           "substantial amendment'",
+    "45%": "Getz KA et al. Ther Innov Regul Sci 2016;50(4):436-441 (PMID 30227022): 'nearly half (45%) of these amendments "
+           "were deemed \"avoidable\"'",
+}
 
 NUM = r"(?:\d{1,3}(?:,\d{3})+|\d+)"
 FRACTION = re.compile(rf"(?<![\w/.,])({NUM})(?:\s*[–-]\s*({NUM}))?\s*(?:/|\s+of\s+)\s*({NUM})(?![\w/])")
