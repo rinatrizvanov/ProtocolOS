@@ -11,9 +11,10 @@ const nextConfig: NextConfig = {
       },
     },
   },
-  // The FastAPI engine runs separately on :8766; the browser only ever talks to this origin.
+  // The FastAPI engine runs as a separate process; the browser only ever talks to this origin.
   async rewrites() {
-    return [{ source: "/api/:path*", destination: "http://127.0.0.1:8766/api/:path*" }];
+    const api = process.env.TRIALLENS_API_URL ?? "http://127.0.0.1:8765";
+    return [{ source: "/api/:path*", destination: `${api}/api/:path*` }];
   },
 };
 
