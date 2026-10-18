@@ -154,7 +154,8 @@ def main() -> int:
         # Verify tab runs and shows an outcome.
         page.goto(review_url(tab="verify"), wait_until="networkidle")
         label = page.get_by_test_id("examples-label")
-        label_ok = label.count() > 0 and "Example arguments written by the ProtocolOS team" in label.first.inner_text()
+        # The label is styled uppercase, so compare its DOM text, not the rendered case.
+        label_ok = label.count() > 0 and "Example arguments written by the ProtocolOS team" in (label.first.text_content() or "")
         report("Verify examples are labelled as the team's examples", "PASS" if label_ok else "FAIL")
         run = page.locator("[data-testid^=challenge-]").first
         if run.count() == 0:
