@@ -43,6 +43,11 @@ def test_el3_hemoglobin_safety_and_all_arms(el3):
     assert arm["property"] == "myelosuppression (anemia)"
     assert len(arm["arms"]) == 5 and all(a["has_agent"] for a in arm["arms"])
     assert "listed in" in arm["text"] and "caus" not in arm["text"].lower()
+    # No EL3 arm names a chemotherapy agent; every arm matches only through the text "chemo", and the line says so.
+    assert all(a["matched_by"] == "arm text 'chemo'" for a in arm["arms"])
+    assert "Each is listed" not in arm["text"] and "It is listed" not in arm["text"]
+    assert "Every arm's label or intervention names mention chemotherapy" in arm["text"]
+    assert "counted as listed in all 5 arms through the arm text 'chemo'" in arm["text"]
 
 
 def test_el3_ecog_not_applicable(el3):
@@ -100,7 +105,8 @@ def test_arm_text_names_only_matched_agents_and_other_arms():
     assert arm["driver"] == "comparator"
     assert "Of these, carboplatin is listed in the comparator / standard-of-care arm(s) only ('Carboplatin doublet')" in arm["text"]
     assert "the other arm(s) ('Pembrolizumab'; 'Placebo') do not list it" in arm["text"]
-    assert "investigational arm(s) (" not in arm["text"] and arm["text"].endswith("matched cisplatin.")
+    assert "investigational arm(s) (" not in arm["text"]
+    assert arm["text"].endswith("matched no registry arm label or intervention name to cisplatin.")
     assert {a["name"]: a["arms"] for a in arm["agents"]} == {"carboplatin": "comparator", "cisplatin": "undetermined"}
 
 
@@ -112,6 +118,28 @@ def test_all_arms_text_distinguishes_each_from_at_least_one():
                                               {"label": "B", "type": "ACTIVE_COMPARATOR", "interventions": ["Drug: Gemcitabine"]}],
                                              ("carboplatin", "gemcitabine")), "anc")
     assert some["driver"] == "all_arms" and "At least one of them is listed in each of the 2 arms" in some["text"]
+    assert "only through the arm text 'chemo'" not in each["text"] + some["text"]
+
+
+def test_chemo_text_matches_are_marked_apart_from_named_agents():
+    part = rationale.arm_attribution(_review([{"label": "A", "type": "EXPERIMENTAL", "interventions": ["Drug: Carboplatin"]},
+                                              {"label": "Chemotherapy", "type": "ACTIVE_COMPARATOR", "interventions": []}]),
+                                     "anc")
+    assert part["driver"] == "all_arms" and [a["matched_by"] for a in part["arms"]] == ["named agent", "arm text 'chemo'"]
+    assert "Each is listed" not in part["text"] and "It is listed" not in part["text"]
+    assert ("At least one of them is listed in each of the 2 arms, investigational and comparator alike. 'Chemotherapy' "
+            "matches only through the arm text 'chemo': the registry does not name which chemotherapy agents that arm "
+            "uses.") in part["text"]
+    comp = rationale.arm_attribution(_review([{"label": "Pembrolizumab", "type": "EXPERIMENTAL", "interventions": []},
+                                              {"label": "Standard-of-care chemotherapy", "type": "ACTIVE_COMPARATOR",
+                                               "interventions": []}]), "anc")
+    assert comp["driver"] == "comparator" and "'Standard-of-care chemotherapy' matches only through the arm text" in comp["text"]
+    every = rationale.arm_attribution(_review([{"label": "Chemo", "type": "EXPERIMENTAL", "interventions": []},
+                                               {"label": "Placebo + chemo", "type": "PLACEBO_COMPARATOR",
+                                                "interventions": []}]), "anc")
+    assert every["driver"] == "all_arms"
+    assert every["text"].endswith("It is counted as listed in both arms through the arm text 'chemo', investigational "
+                                  "and comparator alike.")
 
 
 def test_no_flagged_agent_is_not_applicable():

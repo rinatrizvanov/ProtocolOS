@@ -183,6 +183,7 @@ def arm_attribution(review: dict, criterion_id: str) -> dict:
 
     cytotoxic = {n for n in flagged if druglib.BY_NAME[n].myelosuppressive}
     per_agent: dict[str, list[bool]] = {n: [] for n in flagged}
+    named_hits: dict[str, list[bool]] = {n: [] for n in flagged}
     arms, has, roles = [], [], []
     for a in raw_arms:
         text = _arm_text(a)
@@ -194,7 +195,8 @@ def arm_attribution(review: dict, criterion_id: str) -> dict:
         has.append(bool(named or chemo))
         roles.append(_role(a.get("type")))
         for n in flagged:
-            per_agent[n].append(n in named or (n in cytotoxic and bool(CHEMO.search(text))))
+            per_agent[n].append(n in named or (n in cytotoxic and chemo))
+            named_hits[n].append(n in named)
     agents = [{"name": n, "drug_class": druglib.BY_NAME[n].drug_class, "arms": _driver(per_agent[n], roles)}
               for n in flagged]
     driver = _driver(has, roles)
@@ -202,6 +204,8 @@ def arm_attribution(review: dict, criterion_id: str) -> dict:
     unmatched = [n for n in flagged if not any(per_agent[n])]
     with_arms = [a for a in arms if a["has_agent"]]
     without = [a for a in arms if not a["has_agent"]]
+    # Arms that name none of the flagged agents and match only because their text says "chemo".
+    chemo_only = [a for a in with_arms if a["matched_by"] == "arm text 'chemo'"]
     one = len(listed) == 1
     # Subject of the arm sentence: only the agents some arm matched, so an unmatched agent is never placed in an arm.
     subject = ("It is" if one else "They are") if not unmatched else f"Of these, {', '.join(listed)} {'is' if one else 'are'}"
@@ -214,9 +218,16 @@ def arm_attribution(review: dict, criterion_id: str) -> dict:
     elif driver == "all_arms":
         alike = ", investigational and comparator alike" if {"investigational", "comparator"} <= set(roles) else ""
         span = "both arms" if len(arms) == 2 else f"all {len(arms)} arms"
-        every = all(all(per_agent[n]) for n in flagged)
-        body = (f"{'It is' if one else 'Each is'} listed in {span}{alike}." if every
-                else f"At least one of them is listed in each of the {len(arms)} arms{alike}.")
+        if all(all(named_hits[n]) for n in listed):
+            each = (("It is" if one else "Each is") if not unmatched
+                    else f"Of these, {', '.join(listed)} {'is' if one else 'are each'}")
+            body = f"{each} listed in {span}{alike}."
+        elif len(chemo_only) == len(arms):
+            body = (f"Every arm's label or intervention names mention chemotherapy ({_labels(arms)}), but the registry "
+                    f"does not name which chemotherapy agents each arm uses. {subject} counted as listed in {span} "
+                    f"through the arm text 'chemo'{alike}.")
+        else:
+            body = f"At least one of them is listed in each of the {len(arms)} arms{alike}."
     elif driver == "investigational":
         body = (f"{subject} listed in the investigational arm(s) only ({_labels(with_arms)}); the other arm(s) "
                 f"({_labels(without)}) do not list {them}.")
@@ -228,8 +239,12 @@ def arm_attribution(review: dict, criterion_id: str) -> dict:
     else:
         body = (f"{subject} listed in {_labels(with_arms)}; the registry does not mark those arms as investigational or "
                 "comparator, so the driving arm could not be determined.")
+    if chemo_only and len(chemo_only) < len(arms):
+        single = len(chemo_only) == 1
+        body += (f" {_labels(chemo_only)} {'matches' if single else 'match'} only through the arm text 'chemo': the "
+                 f"registry does not name which chemotherapy agents {'that arm uses' if single else 'those arms use'}.")
     if with_arms and unmatched:
-        body += f" No registry arm label or intervention name matched {', '.join(unmatched)}."
+        body += f" The curated drug table matched no registry arm label or intervention name to {', '.join(unmatched)}."
     text = lead + body
     return {**base, "driver": driver if raw_arms else "undetermined", "agents": agents, "arms": arms, "text": text}
 
