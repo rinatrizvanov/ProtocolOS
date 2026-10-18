@@ -306,7 +306,7 @@ export default function Redraft({ nct, criterionId }: Selection) {
           </div>
         ) : result ? (
           <div data-testid="redraft-status" data-status="none" className="rounded-md border border-line px-3 py-2 text-sm text-muted">
-            Verifier: not run for this text (no limit could be read).
+            {result.parsed ? "Verifier: not run (the draft matches the protocol as written)." : "Verifier: not run for this text (no limit could be read)."}
           </div>
         ) : null}
 
