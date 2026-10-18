@@ -2,8 +2,16 @@
 
 import { useState, type FormEvent, type KeyboardEvent } from "react";
 import type { DraftVocabulary, Idea, SettingTag } from "@/lib/contracts";
+import { Icon, WARN } from "./DraftCard";
 
 const ALL_SETTINGS: SettingTag[] = ["first-line", "metastatic", "non-squamous", "squamous", "perioperative/locally-advanced"];
+const SETTING_LABEL: Record<SettingTag, string> = {
+  "first-line": "First-line",
+  metastatic: "Metastatic",
+  "non-squamous": "Non-squamous",
+  squamous: "Squamous",
+  "perioperative/locally-advanced": "Perioperative or locally advanced",
+};
 const MAX_DRUGS = 8;
 const MAX_DRUG_CHARS = 40;
 
@@ -115,14 +123,19 @@ export default function IdeaForm({
               >
                 {d}
                 {hit ? <span className="text-muted">{hit.drug_class}</span> : null}
-                {unknown ? <span className="font-medium text-look">unrecognized</span> : null}
+                {unknown ? (
+                  <span className="inline-flex items-center gap-0.5 font-medium text-ink">
+                    <Icon d={WARN} className="mt-px text-look" />
+                    unrecognized
+                  </span>
+                ) : null}
                 <button
                   type="button"
                   aria-label={`Remove ${d}`}
                   onClick={() => setDrugs(drugs.filter((x) => x !== d))}
-                  className="ml-0.5 text-muted hover:text-ink"
+                  className="-my-0.5 -mr-1 ml-0.5 inline-grid h-6 w-6 place-items-center rounded text-muted hover:bg-line hover:text-ink focus-visible:outline-2 focus-visible:outline-ink"
                 >
-                  ×
+                  <span aria-hidden="true">×</span>
                 </button>
               </span>
             );
@@ -144,7 +157,8 @@ export default function IdeaForm({
           </datalist>
         </div>
         {notice ? (
-          <p data-testid="idea-drugs-notice" role="status" className="text-xs text-look">
+          <p data-testid="idea-drugs-notice" role="status" className="flex items-start gap-1 text-xs font-medium text-ink">
+            <Icon d={WARN} className="mt-px text-look" />
             {notice}
           </p>
         ) : null}
@@ -167,36 +181,48 @@ export default function IdeaForm({
                 data-testid={`idea-setting-${tag}`}
                 aria-pressed={on}
                 onClick={() => setSetting(on ? setting.filter((s) => s !== tag) : [...setting, tag])}
-                className={`rounded-full border px-2.5 py-0.5 text-xs ${
+                className={`rounded-full border px-2.5 py-1 text-xs focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
                   on ? "border-ink bg-ink text-paper" : "border-line bg-white text-ink hover:border-muted"
                 }`}
               >
-                {tag}
+                {SETTING_LABEL[tag] ?? tag}
               </button>
             );
           })}
         </div>
       </fieldset>
 
-      <fieldset className="flex items-center gap-2 text-sm">
-        <legend className="sr-only">Phase</legend>
-        <span className="font-medium text-ink">Phase</span>
-        {phases.map((p) => (
-          <label key={p} className="inline-flex items-center gap-1 text-ink">
-            <input type="radio" name="phase" value={p} checked={phase === p} onChange={() => setPhase(p)} />
-            {p === "PHASE2" ? "2" : "3"}
-          </label>
-        ))}
+      <fieldset className="flex flex-col gap-1 text-sm">
+        <legend className="mb-1 font-medium text-ink">Phase</legend>
+        <div className="grid grid-cols-2 rounded-md border border-line bg-white p-0.5">
+          {phases.map((p) => (
+            <label
+              key={p}
+              className="relative cursor-pointer rounded px-3 py-1.5 text-center text-sm text-ink has-[:checked]:bg-ink has-[:checked]:font-medium has-[:checked]:text-paper has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ink"
+            >
+              <input type="radio" name="phase" value={p} checked={phase === p} onChange={() => setPhase(p)} className="sr-only" />
+              {p === "PHASE2" ? "Phase 2" : "Phase 3"}
+            </label>
+          ))}
+        </div>
       </fieldset>
 
-      <button
-        type="submit"
-        data-testid="draft-submit"
-        disabled={busy || !ready}
-        className="rounded-md bg-ink px-3 py-2 text-sm font-medium text-paper disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {busy ? "Drafting…" : "Draft criteria"}
-      </button>
+      <div className="flex flex-col gap-1">
+        <button
+          type="submit"
+          data-testid="draft-submit"
+          disabled={busy || !ready}
+          aria-describedby={!busy && !ready ? "draft-submit-hint" : undefined}
+          className="rounded-md bg-ink px-3 py-2 text-sm font-medium text-paper focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {busy ? "Drafting…" : "Draft criteria"}
+        </button>
+        {!busy && !ready ? (
+          <p id="draft-submit-hint" className="text-xs text-muted">
+            Add a condition and at least one drug.
+          </p>
+        ) : null}
+      </div>
     </form>
   );
 }
