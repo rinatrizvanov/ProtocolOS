@@ -14,10 +14,11 @@ RUN pip install $(python -c "import tomllib;d=tomllib.load(open('pyproject.toml'
 
 COPY . .
 
-# Build-time prewarm of the demo trials. Exits 0 without network or on HTTP 403; the startup prewarm
-# below then fills whatever is missing before the server listens.
-RUN python -m scripts.prewarm NCT03409614 NCT02578680 NCT03088540 NCT02819518
+# Build-time prewarm of the demo trials, plus the authoring-mode draft presets when trialforge.draft is
+# present. Exits 0 without network or on HTTP 403; the startup prewarm below then fills whatever is
+# missing before the server listens.
+RUN python -m scripts.prewarm --drafts NCT03409614 NCT02578680 NCT03088540 NCT02819518
 
 ENV PROTOCOLOS_PUBLIC=1
 EXPOSE 8765
-CMD ["sh", "-c", "python -m scripts.prewarm --if-missing NCT03409614 NCT02578680 NCT03088540 NCT02819518; exec python -m trialforge.demo_guard"]
+CMD ["sh", "-c", "python -m scripts.prewarm --if-missing --drafts NCT03409614 NCT02578680 NCT03088540 NCT02819518; exec python -m trialforge.demo_guard"]
