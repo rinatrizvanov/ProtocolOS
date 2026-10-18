@@ -61,7 +61,8 @@ function linkedAgents(a: ArmAttribution): string[] {
 // Rationale tab: the protocol's own wording, category badges, arm attribution, the scoring
 // rules with their sources, open questions and the blind spot. The page heading above the tabs names the criterion.
 // The review page keys the tab panel on trial, criterion and tab, so each selection mounts a fresh panel.
-export function RationalePanel({ nct, criterionId }: Selection) {
+// `armTextOpen` (guided tour) opens the engine's arm sentence so the viewer reads it without a click.
+export function RationalePanel({ nct, criterionId, armTextOpen = false }: Selection & { armTextOpen?: boolean }) {
   const review = useApi(() => getReview(nct));
   const graph = useApi(() => getGraph(nct, criterionId));
   // Fetched in parallel with the review; a failure hides badges and the arm line and implies no finding.
@@ -139,7 +140,7 @@ export function RationalePanel({ nct, criterionId }: Selection) {
               )}
             </p>
             {driver ? (
-              <details className="pl-6 text-xs text-muted">
+              <details open={armTextOpen} className="pl-6 text-xs text-muted">
                 <summary className="cursor-pointer select-none py-0.5 text-ink">How this was determined</summary>
                 <figure className="mt-1">
                   <figcaption className="sr-only">Engine output, verbatim</figcaption>

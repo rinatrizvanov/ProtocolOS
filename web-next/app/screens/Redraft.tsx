@@ -2,6 +2,8 @@
 
 // Redraft workspace: the criterion as written in the protocol, an editable redraft and a live column of checks
 // (protocol text, similar trials, FDA guidance, NHANES, the verifier) that refreshes 450 ms after typing stops.
+// The guided tour passes `prefill` (a redraft typed for the viewer once the protocol text loads) and `exampleNote`
+// (a button that fills the rationale note with a labelled example), so the live checks show without typing.
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { getReview, type Selection } from "@/lib/api";
@@ -89,7 +91,7 @@ function caveatFor(caveat: string, criterionId: string): string {
 
 const fmt = (n: number | null | undefined) => (n === null || n === undefined ? "" : Number.isInteger(n) ? n.toFixed(1) : String(n));
 
-export default function Redraft({ nct, criterionId }: Selection) {
+export default function Redraft({ nct, criterionId, prefill, exampleNote }: Selection & { prefill?: string; exampleNote?: string }) {
   const [text, setText] = useState("");
   const [rationale, setRationale] = useState("");
   const [result, setResult] = useState<RedraftResult | null>(null);
@@ -112,11 +114,13 @@ export default function Redraft({ nct, criterionId }: Selection) {
         setResult(data);
         setError(null);
         setChecking(false);
-        // First answer: prefill the redraft with the verbatim protocol text and check that.
+        // First answer: prefill the redraft with the verbatim protocol text (or the tour's example) and check that.
         if (!touched.current && !original.current && data.original?.text) {
           original.current = data.original.text;
-          setText(data.original.text);
-          if (data.original.text !== nextText) run(data.original.text, nextRationale);
+          const first = prefill ?? data.original.text;
+          if (prefill) touched.current = true;
+          setText(first);
+          if (first !== nextText) run(first, nextRationale);
         }
       })
       .catch((err: unknown) => {
@@ -252,9 +256,27 @@ export default function Redraft({ nct, criterionId }: Selection) {
             spellCheck={false}
             className="w-full resize-y rounded border border-uncounted bg-paper px-2.5 py-2 font-mono text-[13px] leading-relaxed text-ink outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
           />
-          <label htmlFor="redraft-rationale" className="mt-2 block text-xs font-medium text-muted">
-            Why this value (rationale note, optional)
-          </label>
+          {prefill && text === prefill ? (
+            <p data-testid="redraft-tour-typed" className="mt-1 text-xs text-muted">
+              Example typed by the guided tour, not reviewer input.
+            </p>
+          ) : null}
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+            <label htmlFor="redraft-rationale" className="block text-xs font-medium text-muted">
+              Why this value (rationale note, optional)
+            </label>
+            {exampleNote ? (
+              <button
+                type="button"
+                data-testid="redraft-example-note"
+                onClick={() => onRationale(exampleNote)}
+                disabled={rationale === exampleNote}
+                className="min-h-11 rounded border border-line px-2 py-0.5 text-xs text-ink hover:border-ink/40 disabled:opacity-40 sm:min-h-0"
+              >
+                Add an overclaiming note (tour example)
+              </button>
+            ) : null}
+          </div>
           <textarea
             id="redraft-rationale"
             data-testid="redraft-rationale"
@@ -265,6 +287,11 @@ export default function Redraft({ nct, criterionId }: Selection) {
             placeholder="e.g. aligns with the comparator arm's labelled toxicity"
             className="mt-1 w-full resize-y rounded border border-uncounted bg-paper px-2.5 py-1.5 text-sm text-ink outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
           />
+          {exampleNote && rationale === exampleNote ? (
+            <p data-testid="redraft-note-typed" className="mt-1 text-xs text-muted">
+              Example note typed by the guided tour, not reviewer input.
+            </p>
+          ) : null}
           {result?.changed && (result.changed.operator || result.changed.value || result.changed.unit || result.changed.conditions_dropped.length > 0) ? (
             <p className="mt-2 text-xs text-muted">
               Changed from the protocol:{" "}

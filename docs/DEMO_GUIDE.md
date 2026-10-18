@@ -65,14 +65,20 @@ dev resources for `127.0.0.1`, and the page does not hydrate.
 
 ## 5. Guided tours
 
-- `/tour`: seven steps on EMPOWER-Lung 3 hemoglobin (rules, compared, rationale, ask, verify, tested,
-  decide).
+- `/tour`: seven steps on EMPOWER-Lung 3 hemoglobin, with the same names and order as the `/review` tabs between
+  an overview and a readiness step: 1 The rules (the trial's criteria), 2 Rationale (badges, the arm line, all 5 arms
+  list chemotherapy, with the engine's sentence open, and why, as on the Rationale tab), 3 Compare (similar trials' limits), 4 Ask (one question
+  asked for you, every sentence checked), 5 Redraft (the real Redraft workspace: the tour types "Hemoglobin ≥ 9.0
+  g/dL" so the live checks appear, and a labelled button adds the example note "This change is safe." so the
+  overclaim check fails and the verifier rejects it), 6 Decide (the decision form; the tour saves nothing by itself),
+  7 Tested (eval scores and the public-demo guard probed live).
 - `/tour/draft`: six steps on the EMPOWER-Lung 3 design-time preset: the idea, the precedents found
   (with start dates before the cutoff), one drafted criterion card, the criterion the self-critique flags,
   the before / after against the protocol as written, and the guardrails. Every number in the captions is
   computed from the live draft.
 - Both tours: Next / Back buttons, left and right arrow keys, and the step in the URL hash (`#1` to
-  `#7` in `/tour`, `#1` to `#6` in `/tour/draft`), so a step can be opened directly. "Exit" leads to the full page.
+  `#7` in `/tour`, e.g. `/tour#5` for Redraft; `#1` to `#6` in `/tour/draft`), so a step can be opened directly.
+  "Exit" leads to the full page (`/tour` exits to the review of EMPOWER-Lung 3 hemoglobin).
 
 ## 6. Automated checks
 
