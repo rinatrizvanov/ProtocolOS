@@ -10,7 +10,7 @@ Chalk does four concrete jobs in ProtocolOS. Each row says whether it has actual
 | **Model Gateway (router)** | Optional model mode: the critic (may only downgrade a flag), free-text questions, the investigator's model answers. OpenAI-compatible endpoint `https://api.chalk.ai/v1/router` with header `X-Chalk-Env-Id`; the environment and model are set by `CHALK_ROUTER_ENV_ID` and `CHALK_ROUTER_MODEL`. Every statement a model returns passes the deterministic checks. | **Works locally with a router key** (user's environment `trll59fe560c`; an investigator `why_flagged` answer came back with every statement checked). **Off on the public deploy:** the demo guard keeps it deterministic unless `PROTOCOLOS_ALLOW_MODEL=1`. Without a key the app says "not configured"; it never substitutes canned model output. |
 | Sandboxes, traces | — | Not used. |
 
-`data/chalk_status.json` (the vanilla dashboard's Chalk chip) is a committed snapshot from the collaborator's environment on 2026-10-17 and still says "model gateway pending key"; this file is the current state.
+`data/chalk_status.json` is the committed snapshot behind the vanilla dashboard's Chalk chip, not a live check; this file is the authoritative current state.
 
 ## Setup that was performed
 

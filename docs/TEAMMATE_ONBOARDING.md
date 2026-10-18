@@ -268,7 +268,7 @@ Do **not** run `chalk apply` unless you intend to redeploy the feature set; it i
 
 ## D. Current Chalk integration
 
-This is the state recorded in `CHALK.md` and `data/chalk_status.json` (2026-10-17). It was **not re-verified live** when this document was written.
+This is the state recorded on 2026-10-17; `CHALK.md` is the authoritative current state, and `data/chalk_status.json` is the committed snapshot behind the dashboard's Chalk chip, not a live check. It was **not re-verified live** when this document was written.
 
 | Component | Status | Identifiers |
 |---|---|---|
