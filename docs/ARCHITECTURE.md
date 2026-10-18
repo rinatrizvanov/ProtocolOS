@@ -122,8 +122,8 @@ Any suggested change, from a reviewer, a model, the redraft workspace, the draft
 structured recommendation:
 
 ```
-{"criterion_id": "anc", "action": "relax" | "remove" | "tighten" | "retain" | "add_provision" | "justify_in_protocol",
- "proposed_value": 1.0, "proposed_unit": "x10^9/L",
+{"criterion_id": "hemoglobin", "action": "relax" | "remove" | "tighten" | "retain" | "add_provision" | "justify_in_protocol",
+ "proposed_value": 9.0, "proposed_unit": "g/dL",
  "claims": [{"type": "drug_property", "drug": "cemiplimab", "property": "myelosuppressive", "value": false},
             {"type": "comparator_threshold", "nct_id": "NCT02578680", "value": 9.0, "unit": "g/dL"},
             {"type": "fda_quote", "guidance": "lab", "quote": "..."},
@@ -210,7 +210,7 @@ These rules are enforced in code and tested:
 |---|---|---|
 | Extraction, comparator direction, FDA quotes, regimen, verifier cases | `python -m evals.run_evals` (`--llm` adds the LLM-only baseline) | `data/eval_results.json` |
 | Planted issues in previously unseen protocols | `python -m evals.planted.make_variants && python -m evals.run_planted` | `data/planted_results.json`, `data/planted_results_no_cutoff.json` |
-| Verifier on Chalk Evaluations | `chalk_project/trialforge_chalk_eval.py --run` (see CHALK.md) | `data/chalk_eval_run.json` |
+| Verifier on Chalk Evaluations | `python -m chalk_project.build_eval_bundle`, then `cd chalk_project && ../.venv/bin/python trialforge_chalk_eval.py --run` (see CHALK.md) | `data/chalk_eval_run.json` |
 | Investigator answer checker | `python -m evals.investigator.run` | `evals/investigator/results.json` |
 | Draft guardrails, leave-one-out | `python -m evals.draft.run` | `evals/draft/results.json` |
 | NHANES context numbers | `python -m scripts.impact_numbers` | `evals/impact/impact_numbers.json` |

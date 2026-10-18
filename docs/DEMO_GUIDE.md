@@ -44,7 +44,7 @@ dev resources for `127.0.0.1`, and the page does not hydrate.
    The checks update as you type: the verifier re-runs and flags any mismatch with precedents or FDA
    guidance.
 7. Decide tab: choose a decision and a structured reason (safety concern, regulatory requirement,
-   efficacy enrichment, prior trials, operational reason, other).
+   efficacy enrichment, prior trial data, operational reason, other).
 8. Export the review packet and open the file.
 
 ## 4. Mode B: create criteria from an idea
@@ -72,7 +72,7 @@ dev resources for `127.0.0.1`, and the page does not hydrate.
   the before / after against the protocol as written, and the guardrails. Every number in the captions is
   computed from the live draft.
 - Both tours: Next / Back buttons, left and right arrow keys, and the step in the URL hash (`#1` to
-  `#6`), so a step can be opened directly. "Exit" leads to the full page.
+  `#7` in `/tour`, `#1` to `#6` in `/tour/draft`), so a step can be opened directly. "Exit" leads to the full page.
 
 ## 6. Automated checks
 

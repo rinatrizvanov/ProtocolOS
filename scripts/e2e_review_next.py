@@ -1,14 +1,14 @@
 """Browser check of the ProtocolOS web-next landing and /review.
 
 Usage:
-    BASE_URL=http://localhost:3766 /tmp/pw/bin/python scripts/e2e_review_next.py [--strict] [--data-dir DIR] [--write-decision]
+    BASE_URL=http://localhost:3765 /tmp/pw/bin/python scripts/e2e_review_next.py [--strict] [--data-dir DIR] [--write-decision]
 
 Use localhost, not 127.0.0.1, against `next dev`: Next 16 blocks its dev resources for the 127.0.0.1 origin
 unless next.config.ts lists it in allowedDevOrigins, and the page never hydrates.
 
 Each step prints PASS, FAIL or SKIP. A step SKIPs when the piece it needs is missing from the deployment (for
 example /api/rationale answers 404, or the Decide tab has no structured reason buttons). A skip is never a pass:
-with --strict any SKIP makes the run fail. Screenshots go to /tmp/protocolos-logs/v2/ui/.
+with --strict any SKIP makes the run fail. Screenshots go to /tmp/protocolos-logs/ui/.
 
 The Decide step saves a decision. Against a local BASE_URL it first backs up data/decisions/<nct>.json of the engine's
 data directory (--data-dir, else $PROTOCOLOS_DATA_DIR, else this checkout's data/) and restores it byte for byte, or
@@ -29,9 +29,9 @@ from urllib.parse import urlparse
 
 from playwright.sync_api import Page, sync_playwright
 
-BASE_URL = os.environ.get("BASE_URL", "http://localhost:3766").rstrip("/")
+BASE_URL = os.environ.get("BASE_URL", "http://localhost:3765").rstrip("/")
 NCT = "NCT03409614"
-SHOTS = Path("/tmp/protocolos-logs/v2/ui")
+SHOTS = Path("/tmp/protocolos-logs/ui")
 REPO = Path(__file__).resolve().parents[1]
 TABS = ("rationale", "compare", "ask", "verify", "decide")
 BANNED = re.compile(r"feedback loop|learns from|safe to|will increase enrol", re.I)

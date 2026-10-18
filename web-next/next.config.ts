@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Do not generate AGENTS.md / CLAUDE.md files in the app folder when running `next dev`.
+  // Do not generate agent rule files in the app folder during `next dev`.
   agentRules: false,
   cacheComponents: true,
   partialPrefetching: true,

@@ -30,13 +30,13 @@ _load_dotenv()
 
 
 CHALK_ROUTER_URL = os.environ.get("CHALK_ROUTER_URL", "https://api.chalk.ai/v1/router")
-CHALK_ROUTER_ENV = os.environ.get("CHALK_ROUTER_ENV_ID", "clkdcdaf84e")
+CHALK_ROUTER_ENV = os.environ.get("CHALK_ROUTER_ENV_ID", "")
 CHALK_ROUTER_MODEL = os.environ.get("CHALK_ROUTER_MODEL", "openai/gpt-6.1-sol")
 
 
 def provider() -> str | None:
     """Chalk Model Gateway (router) is preferred when its key is present; Anthropic API otherwise."""
-    if os.environ.get("CHALK_ROUTER_API_KEY"):
+    if os.environ.get("CHALK_ROUTER_API_KEY") and CHALK_ROUTER_ENV:
         return "chalk_router"
     if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"):
         return "anthropic"

@@ -8,7 +8,7 @@ ProtocolOS (formerly TrialLens) was built at HackHarvard 2026 for the Regeneron 
 
 ## Try it
 
-| | |
+| What | URL |
 |---|---|
 | Web app | https://protocolos-web.vercel.app |
 | Worked example, mode A (EMPOWER-Lung 3 hemoglobin) | https://protocolos-web.vercel.app/review?nct=NCT03409614&c=hemoglobin |
@@ -30,13 +30,13 @@ Pick a trial (EMPOWER-Lung 3, NCT03409614, is the worked example) and a criterio
 - **Compare:** earlier comparable trials and the threshold each used, with regimen coverage.
 - **Ask:** fixed questions ("Why was it flagged?", "What contradicts it?") answered from the evidence graph; every statement is checked against its source.
 - **Redraft:** type a new limit and an optional rationale note; the deterministic checks re-run as you type.
-- **Decide:** a decision with a structured reason (safety concern, regulatory requirement, efficacy enrichment, prior trials, operational reason, other), then export the review packet as Markdown (the API also serves it as printable HTML and JSON).
+- **Decide:** a decision with a structured reason (safety concern, regulatory requirement, efficacy enrichment, prior trial data, operational reason, other), then export the review packet as Markdown (the API also serves it as printable HTML and JSON).
 
 ![Rationale tab for EMPOWER-Lung 3 hemoglobin](docs/img/review-rationale.png)
 
 ![Redraft workspace checking a lower hemoglobin limit](docs/img/redraft.png)
 
-**Worked example: EMPOWER-Lung 3 hemoglobin ≥10 g/dL.** Every arm contains chemotherapy, and the protocol (p. 51) notes higher grade 3-4 anemia with pemetrexed, so a plausible safety rationale exists. A toxicity rationale supports having *a* threshold, not this exact number. Among comparable trials that started earlier, CheckMate 9LA, CheckMate 227 and KEYNOTE-042 used ≥9 g/dL and eNERGY used >10 g/dL. ProtocolOS classifies the criterion *Review recommended*: a question for the protocol team, not a finding that the threshold is wrong. The posted protocol is Amendment 5, so nothing here shows how the threshold evolved, and no outcome data identify which threshold is best.
+**Worked example: EMPOWER-Lung 3 hemoglobin ≥10 g/dL.** Every arm contains chemotherapy, and the protocol (p. 51) notes higher grade 3-4 anemia with pemetrexed, so a plausible safety rationale exists. A toxicity rationale supports having *a* threshold, not this exact number. Among comparable trials that started earlier, CheckMate 9LA, CheckMate 227 and KEYNOTE-042 (NCT02220894) used ≥9 g/dL and eNERGY used >10 g/dL. ProtocolOS classifies the criterion *Review recommended*: a question for the protocol team, not a finding that the threshold is wrong. The posted protocol is Amendment 5, so nothing here shows how the threshold evolved, and no outcome data identify which threshold is best.
 
 ## Mode B: Create criteria from an idea
 

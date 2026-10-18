@@ -1,6 +1,6 @@
 # Chalk in ProtocolOS
 
-Chalk does four concrete jobs in ProtocolOS. Each row says whether it has actually run, and where. The Chalk team and project identifiers keep the original name (`triallens`, query `triallens_registry_profile`).
+Chalk does three concrete jobs in ProtocolOS (features and a resolver, Compute with Evaluations, the Model Gateway); a fourth evaluation is prepared for Chalk but has run locally only. Each row says whether it has actually run, and where. The Chalk team and project identifiers keep the original name (`triallens`, query `triallens_registry_profile`).
 
 | Chalk capability | What it does in ProtocolOS | Status (2026-10-18) |
 |---|---|---|

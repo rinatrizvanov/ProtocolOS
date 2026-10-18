@@ -32,7 +32,7 @@ ALLOW: list[tuple[str, str, str]] = [
     ("*", r"\bteam\W+(?:<code>|`)?triallens", "Chalk team name"),
     ("tests/*", r"not in", "a negative check that the old name is gone"),
     # Paths: the local checkout folder and the default log directories keep the old name.
-    ("*", r"triallens/|/tl-|triallens-logs|task-triallens-", "local folder, log directory or spec id"),
+    ("*", r"triallens/|/tl-|triallens-logs", "local folder or log directory"),
     ("*", r"rinatrizvanov/triallens", "old GitHub URL (redirects to ProtocolOS)"),
     # The one "formerly" line that connects the old name with the new one.
     ("*", r"formerly TrialLens|renamed from TrialLens|from `?triallens`? (?:at|on|to)", "formerly-TrialLens note"),

@@ -58,7 +58,7 @@ has a spending budget.
 | `PROTOCOLOS_BUILD_SHA` | the git SHA being deployed; `GET /api/build` reports it |
 | `PROTOCOLOS_ALLOW_MODEL` | unset |
 | `CHALK_ROUTER_API_KEY` | unset, unless the key has a spending budget |
-| `CHALK_ROUTER_ENV_ID` | the Chalk environment of the router key, set explicitly (the code default belongs to another environment) |
+| `CHALK_ROUTER_ENV_ID` | the Chalk environment of the router key (required with the key; without it the gateway is not used) |
 | `CHALK_ROUTER_MODEL` | set explicitly whenever a router key is set |
 | `ANTHROPIC_API_KEY` | unset |
 | `CHALK_CLIENT_ID`, `CHALK_CLIENT_SECRET`, `CHALK_ENVIRONMENT`, `CHALK_API_SERVER` | a scoped client credential for the registry profile chip, optional; without it the chip says "unavailable" |

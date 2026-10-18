@@ -33,7 +33,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:3767").rstrip("/")
-OUT = Path(os.environ.get("SHOT_DIR", "/tmp/protocolos-logs/v2/draft-ui"))
+OUT = Path(os.environ.get("SHOT_DIR", "/tmp/protocolos-logs/draft-ui"))
 DRAFT_TIMEOUT_MS = 150_000
 # Phase 2 uveal melanoma has few regimen-matched precedents, so its draft also has insufficient-evidence cards. The
 # engine caches drafts, so only the first run on a fresh cache computes it; the log line says which one happened.

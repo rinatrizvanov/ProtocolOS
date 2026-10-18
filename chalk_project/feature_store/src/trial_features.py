@@ -4,8 +4,8 @@ Trial-level features are resolved live from the ClinicalTrials.gov API v2 inside
 review-level features (classification counts, flagged criteria) are computed by TrialForge and
 served through Chalk so the dashboard and evaluations read one consistent feature view.
 
-Status: definitions import and validate locally with chalkpy; deployment requires `chalk login`
-and an environment that allows outbound HTTPS to clinicaltrials.gov (unverified for hackathon accounts).
+Status: deployed and queried successfully (see CHALK.md); a deployment needs `chalk login` and an environment that
+allows outbound HTTPS to clinicaltrials.gov.
 """
 from __future__ import annotations
 
