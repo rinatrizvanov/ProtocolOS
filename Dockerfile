@@ -8,7 +8,7 @@ RUN apt-get update \
 WORKDIR /app
 ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# dependencies from pyproject.toml (AGENTS.md section 8 one-liner; no uv needed)
+# dependencies from pyproject.toml (the pip one-liner from docs/INSTALL.md; no uv needed)
 COPY pyproject.toml ./
 RUN pip install $(python -c "import tomllib;d=tomllib.load(open('pyproject.toml','rb'));print(' '.join(d['project']['dependencies']+d['dependency-groups']['dev']))")
 

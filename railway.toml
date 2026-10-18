@@ -1,4 +1,4 @@
-# Railway config as code (Dockerfile builder, one replica). Deploys need the user's confirmation; see docs/DEPLOY.md.
+# Railway config as code (Dockerfile builder, one replica). Deploy steps: docs/DEPLOY.md.
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
