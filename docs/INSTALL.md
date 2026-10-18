@@ -1,6 +1,6 @@
 # Installing ProtocolOS
 
-ProtocolOS (formerly TrialLens) is a Python + FastAPI engine with two UIs: the vanilla dashboard in `web/`
+ProtocolOS is a Python + FastAPI engine with two UIs: the vanilla dashboard in `web/`
 (served by FastAPI at `/`) and the Next.js app in `web-next/`. Public data only; no patient data.
 
 ## 1. Engine (pip, no uv needed)
@@ -53,8 +53,8 @@ scripts/clean_clone.sh "$(pwd)"                         # fresh clone of this ch
 ```
 
 `smoke_deploy.sh` checks the public-demo guard too, so run it against a guarded engine; it must print
-`smoke: all checks passed`. `clean_clone.sh` without an argument clones GitHub main instead; logs go to
-`/tmp/triallens-logs/v2/clean/` and the clone is deleted afterwards (`KEEP=1` keeps it).
+`smoke: all checks passed`. `clean_clone.sh` without an argument clones GitHub main instead; it prints where its
+logs go, and the clone is deleted afterwards (`KEEP=1` keeps it).
 
 ## 4. Docker (one container: engine + vanilla dashboard + poppler)
 
@@ -69,10 +69,11 @@ image (`.dockerignore`); it is deployed separately.
 ## 5. Hosted deploy
 
 The backend runs on Railway (project `protocolos-api`), the Next.js app on Vercel (project `protocolos-web`), which
-proxies `/api/*` to the Railway URL. Exact deploy and redeploy commands: `docs/DEPLOY.md` section 9.
+proxies `/api/*` to the Railway URL. Exact commands: [DEPLOY.md](DEPLOY.md).
 
-- Railway: `railway up --ci --no-gitignore` from the repo root (it ships the warm `data/` caches; `.railwayignore`
-  keeps secrets out), with `PROTOCOLOS_PUBLIC=1` and `PROTOCOLOS_BUILD_SHA` set on the service.
+- Railway: `railway up --ci --no-gitignore` from a slim staging copy (the committed tree plus the warm `data/` caches
+  the demo reads; `.railwayignore` keeps secrets out), with `PROTOCOLOS_PUBLIC=1` and `PROTOCOLOS_BUILD_SHA` set on
+  the service.
 - Vercel: from `web-next/`, set `PROTOCOLOS_API_URL` for production, then `npx -y vercel@latest deploy --prod --yes`.
 
 ## 6. Security notes
@@ -87,5 +88,5 @@ proxies `/api/*` to the Railway URL. Exact deploy and redeploy commands: `docs/D
   container (`data/decisions/`) and are lost on a redeploy or restart. Do not enter confidential information.
 - Document text (protocol PDFs, web pages) is treated as data, never as instructions.
 - Dependency audit: `cd web-next && npm audit --omit=dev` reported `found 0 vulnerabilities` (exit 0) on
-  2026-10-18 at 00:29 ET. `npm ci` itself reports high-severity advisories; they are in development-only dependencies
+  2026-10-18. `npm ci` itself reports high-severity advisories; they are in development-only dependencies
   (the build toolchain), which the deployed app does not ship.

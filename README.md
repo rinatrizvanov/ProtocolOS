@@ -1,216 +1,160 @@
-# ProtocolOS
+<p align="center"><img src="web-next/public/protocolos-logo.jpg" alt="ProtocolOS" width="220"></p>
 
-**Every exclusion deserves a rationale.**
+<h3 align="center">Every exclusion deserves a rationale.</h3>
 
-ProtocolOS (formerly TrialLens) helps protocol teams check the rationale behind each eligibility criterion of an oncology trial: lab thresholds, ECOG performance status and washouts. It reads the protocol PDF posted on ClinicalTrials.gov, compares each criterion with earlier comparable trials and FDA final guidance (July 2026), and verifies every suggested change with a deterministic verifier. The team decides; ProtocolOS prepares the rationale and a review packet.
+Eligibility criteria (lab thresholds, ECOG performance status, washout periods) decide who may join a cancer trial, and they are often carried forward from earlier protocols without a written reason. FDA's final guidance of July 2026 says lab restrictions from earlier trials "should not be carried forward automatically", but restrictions also exist for real reasons: safety, enrichment, interpretability. **ProtocolOS** shows a protocol team the likely rationale behind each criterion of an oncology protocol, compares it with earlier comparable trials and FDA guidance, checks every suggested change with a deterministic verifier, and can draft criteria for a new trial idea from verified precedents only. The team decides; ProtocolOS prepares the rationale and a review packet.
 
-Two modes:
-- **Finishing a trial:** review an existing protocol: Rationale badges with the arm that drives a safety rationale, Compare, Ask, a Redraft workspace with live deterministic checks, Decide with structured reasons, and an exportable review packet.
-- **Create criteria from an idea:** draft criteria for a new trial concept from verified precedents only, with a self-critique of each draft and a before/after against a real protocol.
+ProtocolOS (formerly TrialLens) was built at HackHarvard 2026 for the Regeneron "Reinvent Clinical Trials & Drug Development" and Chalk "Best Data-Driven Agent Built on Chalk" tracks. It is a research prototype, not clinical, regulatory or safety advice.
 
-| Link | |
+## Try it
+
+| | |
 |---|---|
-| Web app | https://protocolos-web.vercel.app (routes `/`, `/review`, `/draft`, `/tour`, `/tour/draft`) |
-| Engine API | https://protocolos-api-production.up.railway.app (`/docs` is the OpenAPI page) |
-| Guided demos | https://protocolos-web.vercel.app/tour (mode A) and https://protocolos-web.vercel.app/tour/draft (mode B) |
-| Repository | https://github.com/rinatrizvanov/ProtocolOS |
+| Web app | https://protocolos-web.vercel.app |
+| Worked example, mode A (EMPOWER-Lung 3 hemoglobin) | https://protocolos-web.vercel.app/review?nct=NCT03409614&c=hemoglobin |
+| Worked example, mode B (EMPOWER-Lung 3 at design time) | https://protocolos-web.vercel.app/draft?preset=el3-design-time |
+| Guided tour, mode A (reviewing a protocol) | https://protocolos-web.vercel.app/tour |
+| Guided tour, mode B (drafting from an idea) | https://protocolos-web.vercel.app/tour/draft |
+| Engine API and OpenAPI page | https://protocolos-api-production.up.railway.app/docs |
+| Vanilla dashboard (served by the engine) | https://protocolos-api-production.up.railway.app |
 
-> Research prototype built at HackHarvard 2026 (Regeneron "Reinvent Clinical Trials & Drug Development"; Chalk "Best Data-Driven Agent Built on Chalk"). Not clinical, regulatory or safety advice. Classifications are prompts for expert review.
+The public deployment runs with a demo guard: cached reviews of four completed trials, no recomputation and no model calls. Decisions recorded there are visible to anyone with the URL and are lost on redeploy.
 
-![Review of EMPOWER-Lung 3 hemoglobin criterion](docs/img/review_hemoglobin.png)
+![Landing page with the two modes](docs/img/landing.png)
 
----
+## Mode A: Finishing a trial
 
-## The problem
+Pick a trial (EMPOWER-Lung 3, NCT03409614, is the worked example) and a criterion. ProtocolOS reads the thresholds from the protocol PDF posted on ClinicalTrials.gov, because the registry text rarely states them.
 
-Eligibility criteria are decided largely from precedent and habit. Regeneron's own starter material describes protocol teams that "rarely get evidence-based feedback on their draft until it's too late to change cheaply." In July 2026 FDA issued final guidance on exactly these criteria in three oncology documents: laboratory values, performance status, and washout periods. They state that "unnecessarily restrictive eligibility criteria may slow subject accrual, limit patients' access to clinical trials, and lead to trial results that do not fully represent treatment effects…"
+- **Rationale:** badges for the likely rationale (safety, efficacy enrichment, precedent; labelled as inferred), an arm line saying which arms list the agents behind a safety rationale, the verbatim protocol line and page, and the scoring behind the classification: *Review recommended*, *Rationale supports keeping* or *Insufficient evidence*.
+- **Compare:** earlier comparable trials and the threshold each used, with regimen coverage.
+- **Ask:** fixed questions ("Why was it flagged?", "What contradicts it?") answered from the evidence graph; every statement is checked against its source.
+- **Redraft:** type a new limit and an optional rationale note; the deterministic checks re-run as you type.
+- **Decide:** a decision with a structured reason (safety concern, regulatory requirement, efficacy enrichment, prior trials, operational reason, other), then export the review packet as Markdown (the API also serves it as printable HTML and JSON).
 
-But restrictions exist for reasons: patient safety, predictive or prognostic enrichment, reduced heterogeneity, interpretability. "Loosen the criteria" misses most of the problem. The useful question is narrower: **which restrictions deserve reconsideration, and what evidence supports or contradicts each one?**
+![Rationale tab for EMPOWER-Lung 3 hemoglobin](docs/img/review-rationale.png)
 
-The evidence is scattered. For EMPOWER-Lung 3 (Regeneron, NCT03409614), the registry text never mentions a neutrophil threshold. The lab criteria exist only on page 67 of a 170-page protocol PDF, and comparable trials' thresholds sit in other sponsors' PDFs.
+![Redraft workspace checking a lower hemoglobin limit](docs/img/redraft.png)
 
-**Retrospective use of the 2026 guidance.** EMPOWER-Lung 3 and its comparators were designed years before FDA's final guidance (July 2026). ProtocolOS applies that guidance as a present-day review standard. It does not judge what those teams could have known when they designed their trials.
+**Worked example: EMPOWER-Lung 3 hemoglobin ≥10 g/dL.** Every arm contains chemotherapy, and the protocol (p. 51) notes higher grade 3-4 anemia with pemetrexed, so a plausible safety rationale exists. A toxicity rationale supports having *a* threshold, not this exact number. Among comparable trials that started earlier, CheckMate 9LA, CheckMate 227 and KEYNOTE-042 used ≥9 g/dL and eNERGY used >10 g/dL. ProtocolOS classifies the criterion *Review recommended*: a question for the protocol team, not a finding that the threshold is wrong. The posted protocol is Amendment 5, so nothing here shows how the threshold evolved, and no outcome data identify which threshold is best.
 
-### Worked example: EMPOWER-Lung 3 hemoglobin ≥10 g/dL
+## Mode B: Create criteria from an idea
 
-ProtocolOS examines the trial's own context before looking at peers:
-- **Own arms.** The regimen contains carboplatin, cisplatin, paclitaxel and pemetrexed.
-- **Own protocol.** Page 51 notes that grade 3–4 anemia was higher with pemetrexed.
+Enter a condition, drugs, setting, phase and a design date. ProtocolOS finds comparable trials that started before that date and drafts lab, ECOG and washout criteria. Each proposed value is copied from a precedent whose threshold the verifier matched to its protocol page; without one, the criterion is *Insufficient evidence* and gets no value. The same review engine then critiques the draft, and a before/after compares it with a protocol as written. The preset "EMPOWER-Lung 3 at design time" drafts from that trial's own idea at its start date, with its own protocol excluded.
 
-A plausible safety rationale therefore exists. A toxicity rationale supports having *a* threshold, though, not this exact number, and the protocol does not say why 10 rather than 9 was chosen.
+![Draft criteria for the EMPOWER-Lung 3 design-time preset](docs/img/draft.png)
 
-Among comparable trials started earlier:
-- Three used ≥9 g/dL (CheckMate 9LA, CheckMate 227, KEYNOTE-042).
-- One (eNERGY) used >10 g/dL.
-- EMPOWER-Lung 1 (cemiplimab monotherapy vs platinum-doublet chemotherapy) and KEYNOTE-189 also used ≥9 g/dL. ProtocolOS did not select them as automatic comparators.
+## How it works
 
-ProtocolOS classifies this as *Review recommended*: a clinical review question for the protocol team. It is **not** a finding that the threshold is a mistake or that it unjustifiably excludes patients.
+```mermaid
+flowchart LR
+  S["ClinicalTrials.gov records and protocol PDFs<br/>FDA guidance PDFs, NHANES"] --> E["Extract criteria and regimen<br/>(verbatim line and page)"]
+  E --> C["Comparable trials<br/>started earlier"]
+  E --> R["Review: evidence, rationale,<br/>classification"]
+  C --> R
+  G["FDA passages,<br/>verified verbatim"] --> R
+  R --> V{{"Deterministic verifier"}}
+  R --> UI["Next.js app and vanilla dashboard"]
+  V --> UI
+```
 
-Several things are not shown by this evidence:
-- **Protocol version.** The posted protocol is Amendment 5, not necessarily the design-time version. Nothing here shows whether the threshold changed across amendments.
-- **Influence from EMPOWER-Lung 1.** Nothing here shows that EMPOWER-Lung 1 shaped EMPOWER-Lung 3's design.
-- **Optimal threshold.** No outcome data identify which threshold is best.
+- **Deterministic engine.** Extraction, comparator discovery, classification, the rationale report, redraft checks, drafting and the review packet are rule-based and auditable. Every displayed value links to its source page.
+- **The verifier is the authority.** Any suggested change (from a reviewer, the redraft workspace, the draft module or a model) is a structured recommendation. Factual checks compare quotes, values and units with the sources; clinical-logic checks catch regimen contradictions, wrong direction, missing evidence and overclaiming. A threshold change that passes is still escalated to *Needs medical review*.
+- **Model mode is optional and off on the public demo.** When a key is configured (Chalk Model Gateway or Anthropic API), a model may critique a flag and may only downgrade it, and every statement it returns passes the deterministic checks. Without a key the app says "not configured". Document text is treated as data, never as instructions; the model has no tools or write access.
+- **Chalk.** A deployed `Trial` feature set resolves ClinicalTrials.gov records inside Chalk (the app uses it to show that the registry rarely states lab thresholds); the verifier ran as a Chalk Compute function graded by Chalk Evaluations; the Model Gateway serves the optional model mode. Details and run identifiers: [CHALK.md](CHALK.md).
 
-## Who it is for and where it fits
-
-Clinical scientists, protocol authors, medical reviewers and cross-functional protocol-review teams. It fits **before protocol finalization**, as preparation for the protocol review meeting. ProtocolOS gathers and checks the evidence; the team decides.
-
-## What it does
-
-| Step | What happens | How |
-|---|---|---|
-| Ingest | NCT ID → ClinicalTrials.gov record + posted protocol PDF (cached) | Deterministic; registry text as a fallback |
-| Extract | Hemoglobin, ANC, platelets, bilirubin, AST/ALT, renal function, ECOG, washouts, with operators, units, conditions (e.g. liver metastases) and the **verbatim source line and page** | Rule-based parser (handles tables, garbled PDF glyphs, image-only pages) |
-| Regimen | Drugs in every arm, each with its source; agents unknown to the curated table are listed, never assumed harmless | Registry + protocol dosing context; curated class table |
-| Comparators | Phase 3 trials in the same disease, setting and histology, with overlapping drug classes and posted protocols, **started before the reviewed trial** | Registry search, then the same extractor on their PDFs |
-| Guidance | 32 passages from FDA final guidance (July 2026) on eligibility and the 2019 enrichment guidance, **verified verbatim against the PDFs** at startup, with section, page and line | Deterministic |
-| Review | Each criterion: *Review recommended* / *Rationale supports keeping* / *Insufficient evidence*, plus rationale categories (safety, efficacy enrichment, regulatory precedent; inferred), the arm that drives a safety rationale, supporting, challenging and context evidence by tier, missing evidence, and a cautious next action | Transparent rules |
-| Verify | Any recommendation (from a reviewer, a model, or a test case) is checked. **Factual** checks: source existence, verbatim quotes, values, units. **Clinical-logic** rules: regimen contradiction, direction, evidence sufficiency, overclaiming. Outcomes: *Supported*, *Supported with qualifications*, *Rejected*, *Needs medical review* | Deterministic |
-| Redraft | A reviewer types a new limit and a one-line rationale; the verifier re-runs as they type and flags mismatches with precedents or FDA guidance | Deterministic |
-| Decide | A decision per criterion with a structured reason (safety concern, regulatory requirement, efficacy enrichment, prior trials, operational reason, other); free text only for exceptions | Recorded in the packet |
-| Packet | Exportable review packet (Markdown / printable PDF / JSON) with decision fields: accept / reject / **needs medical review** / defer | Deterministic |
-| Draft (mode B) | From an idea (condition, drugs, setting, phase, cutoff date): find earlier comparable trials, propose each criterion only from a verified precedent, otherwise *Insufficient evidence*; self-critique each draft; before/after against a real protocol | Deterministic, verifier-gated |
-
-Rules that keep the reasoning honest:
-- A toxicity link supports having *a* threshold, never a specific value.
-- A more permissive comparator shows a threshold was *used*, not that it was safe.
-- Agreement among comparators may reflect template carry-forward (FDA lab guidance §II).
-- When no comparable precedent exists, the answer is "Insufficient evidence", not "retain".
-
-### Where AI is and is not used
-
-The evidence engine is **deterministic and auditable**; it is not an autonomous AI scientist. A language model, when configured (the Chalk Model Gateway, or the Anthropic API), does two things:
-- It critiques a flag, and may only *downgrade* it.
-- It turns a reviewer's free-text challenge into structured claims, which then pass through the deterministic verifier.
-
-Documents are treated as data. PDF text is never executed as instructions, the model has no tools or write access, and every displayed value links to its source page. This mitigates the OWASP prompt-injection and excessive-agency risks noted in Regeneron's mentor guidance.
-
-![Verifier rejecting a plausible but invalid recommendation](docs/img/challenge.png)
-
-## Chalk integration (what actually ran)
-
-| Chalk capability | Role in ProtocolOS | Status (2026-10-18) |
-|---|---|---|
-| Features + online resolver | `Trial` features resolved live from ClinicalTrials.gov inside Chalk. The dashboard shows, per trial, whether the registry even mentions lab thresholds (usually not), which is why ProtocolOS reads the PDF | **Deployed; online queries succeed from the CLI and the local app** |
-| Chalk Compute + Evaluations | The verifier runs as a Chalk function over 39 test cases; Chalk scorers grade it | **Ran** in the collaborator's environment: evaluation `cmvco3m0n01dw01y520oc80sq`, run `e61fce6c-…`, SUCCEEDED, 0 task errors (`data/chalk_eval_run.json`) |
-| Evaluation `protocolos-investigator` | Planted defects in the investigator's answers, graded by the answer checker | **Local only** (`evals/investigator/results.json`); not yet run on Chalk |
-| Model Gateway (router) | Optional model mode: critic (may only downgrade a flag), free-text questions, every statement checked | **Works locally with a router key**; off on the public deploy (the demo guard keeps it deterministic) |
-
-Details and reproduction: [CHALK.md](CHALK.md).
+Architecture, API and data schema: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Evaluation
 
-All numbers are produced by scripts in `evals/` from official documents and hand-labelled answer keys. Gold labels are from a single annotator (the developer). **None of this is clinical validation.**
+Every number below comes from a committed result file in `data/` or `evals/`; `python -m scripts.check_numbers` fails if a fraction or percentage in this README is not backed by one. Gold labels are from a single annotator. **None of this is clinical validation.**
 
-**A. Original protocols (19 real protocols: NSCLC, SCLC, TNBC, gastric, HCC, head & neck, renal)**
+**A. Real protocols** (19 protocols: NSCLC, SCLC, TNBC, gastric, HCC, head and neck, renal; `data/eval_results.json`)
 
 | Measure | Result |
 |---|---|
-| Criterion extraction, all labelled criteria | 122/128 correct; precision 97.6% (3 extracted values known wrong) |
-| — development protocols | 54/55 |
-| — held-out (outputs seen once, no changes) | 18/19 |
-| — unseen set 1, **first run** | **15/21** → 21/21 after one fix (synopsis vs full eligibility section). The first-run number is the honest estimate. |
-| — unseen set 2 (6 protocols, measured once, not tuned) | **29/33**; CASPIAN labs missed (wrong section), 2 KEYNOTE-048 table values wrong |
-| Comparator threshold direction | 1780/1802 correct where both values were extracted (22 errors, all from the wrong extractions above) |
-| FDA quotes verified verbatim / protocol source lines on cited page | 32/32 · 157/157 |
-| Regimen (developer-curated reference) | precision 98.2%, recall 100% (12 protocols) |
+| Criterion extraction, all labelled criteria | 122/128 correct; precision 97.6% |
+| First run on unseen set 1 | 15/21, then 21/21 after one fix; the first-run number is the honest estimate |
+| Unseen set 2 (6 protocols, measured once, not tuned) | 29/33 |
+| Comparator threshold direction, where both values were extracted | 1780/1802 |
+| FDA quotes verbatim / protocol source lines on the cited page | 32/32 · 157/157 |
+| Regimen (developer-curated reference, 12 protocols) | precision 98.2%, recall 100% |
 
-**B. Planted-issue variants: synthetic modifications to authentic, previously unseen protocols** (method from Regeneron's *Trial by Design, Part 2*). One threshold was made stricter (24 variants) or looser (10) on the protocol's own source line, across 5 protocols, with unmodified controls. A stricter criterion is not assumed wrong. The test is whether ProtocolOS notices and **escalates it for evidence review**.
+**B. Planted issues** (the method of Regeneron's *Trial by Design, Part 2*): one threshold made stricter (24 variants) or looser (10) on the protocol's own source line, in 5 real, previously unseen protocols. A stricter criterion is not assumed wrong; the test is whether ProtocolOS escalates it for review.
 
-| Run | Planted value extracted | Discrepancy surfaced | Escalated "Review recommended" | Never "Rationale supports keeping" | Looser plants falsely flagged |
-|---|---|---|---|---|---|
-| First run | 23/24 | 18/24 | 18/24 | 23/24 | 0/10 |
-| After fixes, historical comparators only | 24/24 | 14/24 | 16/24 | 24/24 | 0/10 |
-| After fixes, all comparators (reviewing a draft today) | 24/24 | 24/24 | 22/24 | 24/24 | 0/10 |
+| Run | Planted value extracted | Escalated "Review recommended" | Never "Rationale supports keeping" | Looser plants falsely flagged |
+|---|---|---|---|---|
+| First run | 23/24 | 18/24 | 23/24 | 0/10 |
+| After fixes, comparators started before the trial | 24/24 | 16/24 | 24/24 | 0/10 |
+| After fixes, all comparators (reviewing a draft today) | 24/24 | 22/24 | 24/24 | 0/10 |
 
-The first run found three bugs:
-1. Agents outside the drug table (axitinib, sunitinib) were treated as "no myelosuppressive agent".
-2. SCLC trials received NSCLC comparators.
-3. A harness bug left "1,500/µL" unmodified.
+The first run found three bugs (agents outside the drug table treated as non-myelosuppressive, SCLC trials given NSCLC comparators, and a harness bug), which is why some first-run escalations disappeared after the fixes. The remaining misses are protocols with no comparable precedent before their start date, where ProtocolOS answers *Insufficient evidence*.
 
-Some first-run escalations came from bugs 1 and 2, which is why the historical-cutoff numbers went *down* after fixing them. Remaining misses are protocols with no comparable precedent before their start date, where ProtocolOS correctly answers "Insufficient evidence". Unmodified controls: 14–17 of 42 criteria flagged, mostly from criterion-specific FDA recommendations (ECOG PS2, Duffy-null ANC); these are not counted as errors.
+**C. Verifier** (39 developer-designed cases: 24 injected faults, 10 valid, 5 ambiguous): 24/24 faults rejected, 0/10 valid recommendations rejected and 5/5 ambiguous cases flagged, both locally and on Chalk Evaluations (`data/chalk_eval_run.json`). The same developer wrote the cases and the verifier, so this tests designed behaviour, not robustness.
 
-**C. Developer-designed verifier faults** (24 injected faults, 10 valid/cautious, 5 ambiguous)
+**D. Investigator answer checker** (`evals/investigator/results.json`; EMPOWER-Lung 3, 11 criteria, 4 questions): 44/44 of the investigator's own answers not rejected; 336/336 planted defects rejected (unknown trial ids, changed numbers, causal phrases, misquotes, dropped counterevidence, injected instructions). This shows the checker catches these classes, not defects a model would produce.
 
-| Verifier | Faults rejected | Valid rejected | Ambiguous flagged |
-|---|---|---|---|
-| None (baseline) | 0/24 | 0/10 | 0/5 |
-| Deterministic, local | 24/24 | 0/10 | 5/5 |
-| Deterministic, **on Chalk Compute** | 24/24 | 0/10 | 5/5 |
+**E. Drafting, leave-one-out** (`evals/draft/results.json`): each of 4 cached trials drafted from its own idea at its start date, itself excluded. Criteria drafted without a verified precedent: 0. Overclaim failures: 0. Drafted values equal to the trial's own value: 22/31. Agreement shows a value was used before, not that it is right.
 
-The cases and the verifier were written by the same developer, and most faults are factual (misquotes, wrong values) rather than clinical reasoning errors. Treat this as a test of designed behaviour, not of robustness.
+**F. Population context** (`evals/impact/impact_numbers.json`): the survey-weighted share of US adults (NHANES 2017-2018) below the EMPOWER-Lung 3 hemoglobin threshold and below ≥9 g/dL, with standard errors. It describes the general population, not a trial-eligible population, and is not an enrollment prediction.
 
-**D. Model-based evaluations:** no model-based results are committed. `python -m evals.run_evals --llm` adds the LLM-only verifier baseline when a router or Anthropic key is present.
+No model-based evaluation results are committed; `python -m evals.run_evals --llm` adds an LLM-only verifier baseline when a key is present.
 
-**E. Investigator answer checker** (`evals/investigator/results.json`, local; on EMPOWER-Lung 3, 11 criteria, 4 question types). The deterministic investigator's own answers: 44/44 not rejected. Planted defects (unknown trial ID, changed number, causal phrase, one-word misquote, dropped counter-evidence, injected instruction): 336/336 rejected. The developers wrote both the mutants and the checker, so this shows the checker catches these classes, not defects a model would produce.
+## Quick start
 
-**F. Draft guardrails, leave-one-out** (`evals/draft/results.json`). For each of 4 cached trials, ProtocolOS drafts criteria from the trial's own idea at its start date, with the trial itself excluded. Drafted without a verified precedent: 0. Overclaim failures: 0. Drafted values equal to the trial's own value: 22/31. Agreement is not correctness: a precedent shows a value was used, not that it was right.
-
-**Measured context (NHANES 2017-2018, `evals/impact/impact_numbers.json`).** `python -m scripts.impact_numbers` computes the survey-weighted share of US adults below the EMPOWER-Lung 3 hemoglobin threshold (≥10.0 g/dL) and below the ≥9.0 g/dL used by CheckMate 9LA and CheckMate 227, with standard errors. It is a US general-population share, not a trial-eligible share, and not an enrollment prediction.
-
-## Quick start (clean clone)
-
-Full instructions: [docs/INSTALL.md](docs/INSTALL.md). uv is not required. You need Python 3.12 or newer, Node.js 20.9 or newer for the web app, and preferably poppler (`pdftotext`; pypdf is used otherwise).
+Full instructions, Docker and checks: [docs/INSTALL.md](docs/INSTALL.md). You need Python 3.12 or newer, Node.js 20.9 or newer, and preferably poppler (`pdftotext`).
 
 ```bash
 git clone https://github.com/rinatrizvanov/ProtocolOS.git && cd ProtocolOS
 python3 -m venv .venv
 .venv/bin/pip install $(.venv/bin/python -c "import tomllib;d=tomllib.load(open('pyproject.toml','rb'));print(' '.join(d['project']['dependencies']+d['dependency-groups']['dev']))")
-.venv/bin/python -m scripts.prewarm --drafts NCT03409614 NCT02578680 NCT03088540 NCT02819518   # fetch documents, cache reviews and draft presets
-.venv/bin/uvicorn trialforge.api:app --port 8765                                # engine + vanilla dashboard: http://localhost:8765, API docs at /docs
-cd web-next && npm ci && npm run dev -- -p 3765                                 # second terminal: Next.js app at http://localhost:3765
+.venv/bin/python -m scripts.prewarm --drafts            # fetch public documents, cache the demo reviews and draft presets
+.venv/bin/uvicorn trialforge.api:app --port 8765        # engine + vanilla dashboard; API docs at /docs
+cd web-next && npm ci && npm run dev -- -p 3765         # second terminal: http://localhost:3765
 ```
 
-Add `PROTOCOLOS_PUBLIC=1` before `uvicorn` to run with the public-demo guard, as deployed (cached reviews only, no recompute, no model calls). Optional keys (model mode via the Chalk Model Gateway, the Chalk registry chip) are listed in `.env.example`; without them model mode says "not configured". Never commit `.env`.
-
-**Guided tours:** `/tour` walks through mode A on EMPOWER-Lung 3 hemoglobin; `/tour/draft` walks through mode B on the EMPOWER-Lung 3 design-time preset. Both work on the deployed app and locally.
-
-**Tests, evals and checks** (the full table, with what each one proves, is in [docs/DEMO_GUIDE.md](docs/DEMO_GUIDE.md)):
-
-```bash
-.venv/bin/python -m pytest -q tests/                          # engine unit and API tests
-(cd web-next && npm run build && npx tsc --noEmit && npm run lint)
-.venv/bin/python -m evals.run_evals                           # A + C (downloads the evaluation protocols on first run)
-.venv/bin/python -m evals.planted.make_variants && .venv/bin/python -m evals.run_planted   # B
-.venv/bin/python -m evals.investigator.run                    # E
-.venv/bin/python -m evals.draft.run                           # F
-.venv/bin/python -m scripts.check_numbers                     # every number in this README matches a committed result
-```
+Checks: `.venv/bin/python -m pytest -q tests/`, `(cd web-next && npm run build && npx tsc --noEmit && npm run lint)`, `.venv/bin/python -m scripts.check_numbers`. The demo and test guide is [docs/DEMO_GUIDE.md](docs/DEMO_GUIDE.md); deployment is [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Repository layout
 
 | Path | Contents |
 |---|---|
-| `trialforge/` | Engine: `sources`, `extract`, `druglib`, `comparators`, `guidance`, `review`, `verifier`, `draft`, `graph`, `investigate`, `packet`, `llm`, `chalk_bridge`, `nhanes`, `demo_guard`, `api` (the Python package keeps its original name) |
-| `web-next/` | Next.js app (primary UI): both modes and the guided tours |
-| `web/` | Vanilla-JS dashboard served by FastAPI at `/` (no build step) |
-| `evals/` | Gold labels, verifier cases, planted-issue generator, investigator and draft evals, impact numbers, runners |
-| `scripts/` | Prewarm, numbers check, brand check, smoke test, clean-clone test, browser end-to-end checks |
-| `chalk_project/` | Chalk feature store and Chalk Evaluation bundle |
-| `docs/` | [Install](docs/INSTALL.md), [demo and test guide](docs/DEMO_GUIDE.md), [deploy](docs/DEPLOY.md), demo script, Devpost text, deck, screenshots, [teammate onboarding](docs/TEAMMATE_ONBOARDING.md) |
+| `trialforge/` | Python engine and FastAPI app (the package keeps its original name) |
+| `web-next/` | Next.js app: both modes and the guided tours |
+| `web/` | Vanilla-JS dashboard served by the engine at `/` (no build step) |
+| `evals/` | Gold labels, verifier cases, planted-issue generator, investigator and draft evaluations, runners |
+| `chalk_project/` | Chalk feature set and the Chalk Evaluation bundle builders |
+| `scripts/` | Prewarm, numbers and brand checks, browser end-to-end checks, deploy smoke test, clean-clone test |
 | `tests/` | Engine unit and API tests |
+| `data/` | Committed evaluation results; document caches, reviews and decisions are created here at runtime (gitignored) |
+| `docs/` | Architecture, install, demo guide, deploy guide, demo script, Devpost text, deck, screenshots |
+
+Root files: `Dockerfile` and `railway.toml` (engine container), `pyproject.toml` and `uv.lock` (Python dependencies), `chalk.yaml` and `.chalkignore` (Chalk deployment), `.env.example` (optional keys, names only).
 
 ## Limitations
 
 - **Blind spot.** ProtocolOS sees public documents only. Rationale in non-public sources (preclinical toxicology, internal development data, regulator correspondence) cannot be seen, so "no rationale found" never means "no rationale exists".
-- **Protocol versions.** Protocol PDFs on ClinicalTrials.gov are usually the final amendment, not the design-time draft (EMPOWER-Lung 3's posted protocol is Amendment 5). ProtocolOS does not track amendment history, so it cannot say whether or why a threshold changed.
-- **Retrospective guidance.** FDA's final guidances (July 2026) post-date most reviewed trials and are applied retrospectively; FDA citations are marked "retrospective" when issued after the trial's start date.
-- **Coverage.** Many recent phase 3 oncology trials do not post a protocol PDF on ClinicalTrials.gov; for those, only the registry text can be read, and it rarely states lab thresholds.
-- **Extraction.** It is rule-based and misses unusual layouts; known failures are listed in the Evaluation section.
-- **Drug table.** The pharmacology table is curated at class level and not re-verified against current labels.
-- **Purpose tags.** Rationale categories are inferred, not read from the protocol.
-- **Classification.** It is a transparent heuristic, not a validated model, and no clinician has reviewed the outputs.
-- **Gold labels.** Single annotator.
-- **NHANES panel (secondary).** It describes the US general population, not people with cancer, and is not an enrollment prediction. Race/ethnicity is not a proxy for Duffy-null phenotype.
+- **Protocol versions.** Posted protocols are usually the final amendment, not the design-time draft; amendment history is not tracked.
+- **Retrospective guidance.** The July 2026 FDA guidance post-dates the reviewed trials; it is applied as a present-day review standard and labelled retrospective, not as a judgment of what the designers could have known.
+- **Coverage.** Many phase 3 trials post no protocol PDF; for those only registry text, which rarely states lab thresholds, is available.
+- **Method.** Extraction is rule-based and misses unusual layouts; the drug table is curated at class level; rationale categories are inferred; classification is a transparent heuristic, not a validated model; no clinician has reviewed the outputs.
+- **NHANES** describes the US general population, not people with cancer. Race or ethnicity is not a proxy for Duffy-null phenotype.
 
-**Claims ProtocolOS does not make:**
-- That any threshold is safe to change.
-- That a threshold differing from peer trials is a mistake.
-- That one trial's results caused another trial's design choices.
-- That a change would improve enrollment, timelines or cost.
-- That any output is clinically validated.
-- That it learns from the team's decisions: decisions and reasons are recorded in the packet, not used to retrain anything.
+ProtocolOS does not claim that any threshold is safe to change, that a difference from peer trials is a mistake, that one trial's results caused another's design, that a change would improve enrollment, timelines or cost, or that any output is clinically validated. Decisions and reasons are recorded in the packet; nothing learns from them.
 
-## License and third-party data
+## Related work
 
-The code is MIT-licensed (see [LICENSE](LICENSE)). Third-party data (ClinicalTrials.gov records, sponsor protocol PDFs, FDA guidance, NHANES files) is downloaded from its official source at runtime, is not redistributed in this repository and is not covered by this license; it remains under its own terms.
+TrialPathfinder (Liu et al., *Nature* 2021) emulates trials on patient-level electronic health records to evaluate eligibility rules, and PyTrial collects machine-learning pipelines for trial search, outcome prediction and patient-trial matching, with criteria kept as free text. Both are third-party references, not dependencies: ProtocolOS works from public documents without patient data and structures each criterion with its source and rationale.
+
+## Data sources and attribution
+
+- **ClinicalTrials.gov** (U.S. National Library of Medicine), API v2: registry records and comparator search.
+- **Sponsor protocol PDFs** posted on ClinicalTrials.gov; they remain the property of their sponsors.
+- **FDA guidance:** *Cancer Clinical Trial Eligibility Criteria* on laboratory values, performance status, and washout periods and concomitant medications (July 2026), and *Enrichment Strategies for Clinical Trials* (March 2019).
+- **NHANES 2017-2018** (CDC, National Center for Health Statistics): demographics and complete blood count public-use files.
+
+Third-party data is downloaded from its official source at runtime, is not redistributed in this repository and is not covered by this license; it remains under its own terms. No patient data is used.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
