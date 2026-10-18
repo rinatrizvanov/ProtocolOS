@@ -1,4 +1,6 @@
-# TrialLens: teammate onboarding
+# ProtocolOS: teammate onboarding
+
+ProtocolOS (formerly TrialLens).
 
 A 10–15 minute technical read. Everything below describes code that exists in this repository today. Where something has not run, this document says so.
 
@@ -26,11 +28,11 @@ The useful question is therefore narrow: **which restrictions deserve reconsider
 The users are clinical scientists, protocol authors, medical reviewers and protocol-review teams, working **before protocol finalization**.
 
 1. Enter an NCT ID.
-2. TrialLens reads the posted protocol, extracts criteria and assembles evidence per criterion.
+2. ProtocolOS reads the posted protocol, extracts criteria and assembles evidence per criterion.
 3. A reviewer inspects the evidence and challenges any conclusion; the deterministic verifier checks the challenge.
 4. The team exports a review packet and records a decision per criterion: accept, reject, needs medical review, or defer.
 
-TrialLens prepares the evidence. **The team decides.**
+ProtocolOS prepares the evidence. **The team decides.**
 
 ### What the application does today
 
@@ -58,7 +60,7 @@ The engine therefore enforces these rules, which you must preserve:
 - Differences from peers are **review questions, not mistakes**. No output may claim that one trial's results caused another trial's design choices.
 
 **Reference example: EMPOWER-Lung 3 hemoglobin.** EMPOWER-Lung 3 (NCT03409614) requires hemoglobin ≥10 g/dL. Several peers used ≥9.
-- **Own context first.** TrialLens looks at the trial's own regimen (platinum doublets with pemetrexed or paclitaxel) and the protocol's anemia discussion (p. 51).
+- **Own context first.** ProtocolOS looks at the trial's own regimen (platinum doublets with pemetrexed or paclitaxel) and the protocol's anemia discussion (p. 51).
 - **Conclusion.** A plausible safety rationale exists, but the precise threshold is not established by the available evidence.
 - **Classification.** *Review recommended*.
 - **Protocol version.** The posted protocol is Amendment 5. We make no claim about how the threshold evolved, or that EMPOWER-Lung 1 influenced it.
@@ -79,7 +81,7 @@ The engine therefore enforces these rules, which you must preserve:
 ### Known limitations and non-claims
 
 **Limitations:**
-- Posted protocols are usually the final amendment, and TrialLens does not track amendments.
+- Posted protocols are usually the final amendment, and ProtocolOS does not track amendments.
 - Extraction is rule-based and misses unusual layouts.
 - The drug table is curated at class level.
 - Purpose tags are inferred.
@@ -87,7 +89,7 @@ The engine therefore enforces these rules, which you must preserve:
 - Gold labels come from a single annotator, and no clinician has reviewed the outputs.
 - NHANES describes the general population, not people with cancer.
 
-**TrialLens never claims:**
+**ProtocolOS never claims:**
 - that a threshold is safe to change
 - that a difference from peers is a mistake
 - that one trial caused another's design
@@ -219,7 +221,7 @@ Requirements:
 - Optional: `brew install poppler` (provides `pdftotext`; the pypdf fallback works but may extract slightly differently)
 
 ```bash
-git clone git@github.com:<owner>/triallens.git && cd triallens
+git clone https://github.com/rinatrizvanov/ProtocolOS.git && cd ProtocolOS
 uv sync --group dev
 
 # fetch and cache source documents (first run ~1 min; tests read these caches)
@@ -245,7 +247,7 @@ uv run python -m evals.planted.make_variants && uv run python -m evals.run_plant
 ### Connecting to Chalk
 
 ```bash
-~/.chalk/bin/chalk login && ~/.chalk/bin/chalk user        # pick the TrialLens environment
+~/.chalk/bin/chalk login && ~/.chalk/bin/chalk user        # pick an environment of the Chalk team `triallens`
 ~/.chalk/bin/chalk query --in trial.nct_id=NCT03409614 --out trial.registry_mentions_anc --out trial.has_protocol_pdf
 uv run python -m trialforge.chalk_bridge NCT03409614       # the same query through the app's code path
 ```
@@ -266,7 +268,7 @@ Do **not** run `chalk apply` unless you intend to redeploy the feature set; it i
 
 ## D. Current Chalk integration
 
-This is the state recorded in `CHALK.md` and `data/chalk_status.json` (2026-10-17). It was **not re-verified live** when this document was written.
+This is the state recorded on 2026-10-17; `CHALK.md` is the authoritative current state, and `data/chalk_status.json` is the committed snapshot behind the dashboard's Chalk chip, not a live check. It was **not re-verified live** when this document was written.
 
 | Component | Status | Identifiers |
 |---|---|---|
