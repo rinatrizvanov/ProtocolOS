@@ -1,10 +1,10 @@
 """Bounded investigator: check_answer, budgets, audit log, the four questions.
 
-Most tests run against a synthetic graph that follows the frozen P0 contract (ids, node types, edge
+Most tests run against a synthetic graph that follows the graph contract (ids, node types, edge
 types) for EL3 hemoglobin, built here from the cached review so every quote is real; mutants can then
-edit the graph freely. The real-graph tests (WS-A's trialforge.graph, merged from ws/graph) and the
-route test build the graph from data/reviews/NCT03409614_auto.json. No test hits the network: the review
-and protocols come from data/ caches and the Chalk registry tool is monkeypatched.
+edit the graph freely. The real-graph tests (trialforge.graph) and the route test build the graph from
+data/reviews/NCT03409614_auto.json. No test hits the network: the review and protocols come from data/
+caches and the Chalk registry tool is monkeypatched.
 """
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ def _edge(frm, to, typ, stance=None, points=0, axis=None, group=None, scope=None
 
 
 def synthetic_graph(review: dict) -> dict:
-    """Contract-conformant EL3 hemoglobin graph (P0 contract detail), hand-assembled from the cached review."""
+    """Contract-conformant EL3 hemoglobin graph, hand-assembled from the cached review."""
     item = next(x for x in review["reviews"] if x["criterion"]["id"] == CID)
     c = item["criterion"]
     crit, assess, cls, rec = f"crit:{NCT}:{CID}", f"assess:{NCT}:{CID}", f"class:{NCT}:{CID}", f"rec:{NCT}:{CID}"
@@ -624,7 +624,7 @@ def test_eval_harness_on_synthetic_graph(env, review, tmp_path):
     assert "developers wrote both" in data["note"].lower()
 
 
-# ----------------------------------------------------------------------------- real graph (WS-A trialforge.graph)
+# ----------------------------------------------------------------------------- real graph (trialforge.graph)
 
 @pytest.fixture
 def real(monkeypatch, tmp_path):
@@ -691,7 +691,7 @@ RESPONSE_KEYS = {"nct_id", "criterion_id", "question", "mode", "classification",
 
 
 def test_investigate_route(real, monkeypatch):
-    """POST /api/investigate on a fresh app with only routes_graph installed (the api.py hook comes at C2)."""
+    """POST /api/investigate on a fresh app with only routes_graph installed (no api.py install hook)."""
     from fastapi import FastAPI
     from fastapi.testclient import TestClient
 

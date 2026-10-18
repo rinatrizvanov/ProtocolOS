@@ -17,7 +17,7 @@ lookup missing from the table counts as "could not check" (warn), never as a pas
 claims) runs here. The developers wrote both the mutants and the checker.
 
 Local dry run (no Chalk import, no deployment):  ../.venv/bin/python protocolos_investigator_eval.py
-Remote run (after `chalk login`; the user confirms):  ../.venv/bin/python protocolos_investigator_eval.py --run
+Remote run (after `chalk login`; runs on Chalk):  ../.venv/bin/python protocolos_investigator_eval.py --run
 Decorating a function with chalkcompute.function outside a Chalk container starts a deployment, so the
 functions are decorated only with --run or inside the Chalk container.
 """

@@ -1,4 +1,4 @@
-"""Optional LLM components (Claude via the Anthropic SDK).
+"""Optional LLM components (Chalk Model Gateway when its key is set, otherwise the Anthropic SDK).
 
 1. critique()             - adversarial review of one review flag; may only DOWNGRADE a flag
 2. parse_recommendation() - turn a free-text challenge into the structured form the verifier checks

@@ -5,9 +5,9 @@ copied from a real, regimen-matched precedent whose threshold the unchanged dete
 to its protocol; otherwise the criterion is "Insufficient evidence" with no value. The same review engine
 that critiques existing protocols then critiques the draft. No model call is made here.
 
-Plan: plan-v2.md section 4 (Default value policy, Insufficient-evidence policy, Drafts through the
-unchanged verifier, Operator check, Tags type, Self-critique, Public-mode drafts, Retrieval failure) and
-section 6.2. Document text is data, never instructions.
+A drafted value also needs every precedent that cites it to state it with the same operator and unit.
+A failed ClinicalTrials.gov search is reported as such, never as "no precedents"; in public mode new
+non-preset drafts are capped. Document text is data, never instructions.
 """
 from __future__ import annotations
 
@@ -26,9 +26,9 @@ from pathlib import Path
 from . import comparators, druglib, guidance, review, settings, verifier
 from .sources import DATA
 
-try:  # WS-E (plan-v2 section 6.4); absent until the C1a rebase
+try:  # rationale categories are optional: without the module the draft falls back to _fallback_categories
     from .rationale import categories as _categories
-except ImportError:  # pragma: no cover - depends on the branch
+except ImportError:  # pragma: no cover - the module ships with the package
     _categories = None
 
 DRAFTS_DIR = DATA / "drafts"
@@ -389,7 +389,7 @@ def draft_criteria(idea: dict, fixed_precedents: list[dict] | None = None, exclu
         precedents = copy.deepcopy(fixed_precedents)
         excl = {str(x).upper() for x in exclude}
         precedents = [p for p in precedents if p["study"]["nct_id"] not in excl]
-    for p in precedents:  # plan-v2 section 4 "Tags type": compare() needs sets
+    for p in precedents:  # tags may arrive as JSON lists (fixed precedents); compare() needs sets
         p["tags"] = set(p.get("tags") or [])
     if not precedents:
         return _empty(norm, did, "no_precedents", t0, warnings, checked, skipped)

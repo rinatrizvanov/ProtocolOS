@@ -1,6 +1,6 @@
-"""GET /api/rationale/{nct}: the rationale report (plan-v2 section 6.2) for a cached review.
+"""GET /api/rationale/{nct}: the rationale report for a cached review.
 
-Installed by `routes_graph.install(app)` through its v2 module loop; `install` is idempotent. On the public
+Installed by `routes_graph.install(app)` through its optional-module loop; `install` is idempotent. On the public
 demo (PROTOCOLOS_PUBLIC=1) a review that is not cached answers 403 instead of being computed. Handlers
 import `trialforge.api` lazily, because `api.py` calls the install hook at its end.
 """

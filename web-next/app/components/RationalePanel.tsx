@@ -58,7 +58,7 @@ function linkedAgents(a: ArmAttribution): string[] {
   return (own.length > 0 ? own : a.agents).map((g) => g.name);
 }
 
-// Rationale tab (merges the old Why view): the protocol's own wording, category badges, arm attribution, the scoring
+// Rationale tab: the protocol's own wording, category badges, arm attribution, the scoring
 // rules with their sources, open questions and the blind spot. The page heading above the tabs names the criterion.
 // The review page keys the tab panel on trial, criterion and tab, so each selection mounts a fresh panel.
 export function RationalePanel({ nct, criterionId }: Selection) {

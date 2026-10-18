@@ -1,5 +1,6 @@
-// Frozen v2 contracts (plan-v2 section 6.1): rationale, authoring mode and structured decision reasons.
-// Only the main session edits this file after P0. All fetches use absolute /api/... paths.
+// API contracts shared with the engine (trialforge/rationale.py, draft.py, routes_draft.py): rationale,
+// authoring mode and structured decision reasons. Change a shape here and in the engine together.
+// All fetches use absolute /api/... paths.
 
 export type EngineClassification = "Review recommended" | "Evidence supports retaining" | "Insufficient evidence";
 export const DISPLAY_CLASSIFICATION: Record<EngineClassification, string> = {
@@ -168,7 +169,7 @@ export function encodeReason(key: ReasonKey, note: string): string {
 export function parseReason(reason: string): { key: ReasonKey | null; note: string } {
   const m = /^Reason: ([^.]+)\.(?: Note: ([\s\S]*))?$/.exec(reason.trim());
   if (!m) return { key: null, note: reason };
-  // "Prior evidence" is the label decisions were saved with before 2026-10-18 01:35 ET.
+  // "Prior evidence" is the earlier label for this reason; decisions saved with it still parse.
   const label = m[1] === "Prior evidence" ? "Prior trial data" : m[1];
   const hit = DECISION_REASONS.find((r) => r.label === label);
   if (!hit) return { key: null, note: reason };

@@ -8,7 +8,7 @@ type State =
   | { nct: string; status: "ready"; missing: MissingCriterion[]; comparators: number }
   | { nct: string; status: "error" };
 
-// Criteria most comparable protocols state but this protocol's extraction lacks (plan-v2 section 6.3).
+// Criteria most comparable protocols state but this protocol's extraction lacks (`missing` in /api/rationale).
 // Extraction misses are possible, so each item is a question to check in the protocol, not a finding.
 export function MissingCriteria({ nct }: { nct: string }) {
   const [state, setState] = useState<State | null>(null);

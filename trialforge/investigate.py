@@ -59,7 +59,7 @@ INSTRUCTION = re.compile(
     r"\b(?:ignore|disregard)\s+(?:all\s+|any\s+|the\s+)?(?:previous|prior|above|earlier|preceding)\s+instructions?\b|\bsystem prompt\b",
     re.I,
 )
-# AGENTS.md section 6 forbids enrollment and cost claims; verifier.OVERCLAIM covers only some phrasings
+# The product makes no enrollment or cost claims; verifier.OVERCLAIM covers only some phrasings
 BENEFIT = re.compile(r"\b(?:improv\w*|increas\w*|speed\w*|accelerat\w*|faster)\s+(?:the\s+)?(?:enrol\w*|accrual|recruitment)\b"
                      r"|\b(?:lower\w*|reduc\w*|cut\w*|sav\w*)\s+(?:the\s+)?costs?\b", re.I)
 RETAIN_WORD = re.compile(r"\bretain", re.I)
@@ -412,7 +412,7 @@ def _tool_get_review(nct: str, as_of: str = "auto") -> dict:
 
 
 def _tool_build_graph(review: dict, criterion_id: str) -> dict:
-    from .graph import build_graph  # WS-A; imported lazily so this module loads without it
+    from .graph import build_graph  # imported lazily so this module loads without the graph module
     from .packet import load_decisions
 
     return build_graph(review, load_decisions(review["target"]["study"]["nct_id"]), criterion_id)
