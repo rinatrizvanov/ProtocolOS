@@ -16,6 +16,7 @@ function axisText(graph: Graph, axis: "support" | "challenge"): string {
 }
 import { useApi } from "@/lib/useApi";
 import { Failed, Frame, Pending } from "../components/Frame";
+import { EvidenceColumns } from "./EvidenceColumns";
 
 const MAX_TILT_DEG = 14;
 
@@ -61,7 +62,6 @@ export default function Screen3({ nct, criterionId }: Selection) {
   const against = sumAxis(graph, "challenge");
   const support = sumAxis(graph, "support");
   const passages = graph.nodes.filter((n) => n.type === "GuidancePassage");
-  const scoreEdges = graph.edges.filter((e) => e.type === "RULE_SCORES");
 
   return (
     <Frame
@@ -69,13 +69,7 @@ export default function Screen3({ nct, criterionId }: Selection) {
       caption={`Points against the rule: ${against}; for it: ${support}. FDA passages issued after the trial started are retrospective and not counted.`}
       details={
         <>
-          <ul className="list-disc pl-5">
-            {scoreEdges.map((e) => (
-              <li key={e.id}>
-                {e.label ?? e.id} ({e.axis}, <span className="tabular-nums">{e.points ?? 0}</span>)
-              </li>
-            ))}
-          </ul>
+          <EvidenceColumns graph={graph} />
           <ul className="list-disc pl-5">
             {passages.map((p) => (
               <li key={p.id}>

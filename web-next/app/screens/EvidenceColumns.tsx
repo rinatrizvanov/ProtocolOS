@@ -1,9 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { getGraph, type Graph, type GraphNode, type Selection } from "@/lib/api";
-import { useApi } from "@/lib/useApi";
-import { Failed, Frame, Pending } from "../components/Frame";
+import type { Graph, GraphNode } from "@/lib/api";
 import { ProtocolDrawer } from "./Screen2";
 
 type Stance = "challenges" | "supports" | "context";
@@ -68,26 +66,20 @@ function Card({ node, tone, onOpen }: { node: GraphNode; tone: string; onOpen: (
   );
 }
 
-export default function Evidence({ nct, criterionId }: Selection) {
-  const state = useApi(() => getGraph(nct, criterionId));
+// The graph's evidence in three columns, shown inside the Why view's Details.
+export function EvidenceColumns({ graph }: { graph: Graph }) {
   const [open, setOpen] = useState<{ source: Source; title: string } | null>(null);
   const close = useCallback(() => setOpen(null), []);
-  if (state.status === "loading") return <Pending label="Loading the evidence graph…" />;
-  if (state.status === "error") return <Failed message={state.message} />;
-  const graph = state.data;
   const columns = evidenceByStance(graph);
   const passages = graph.nodes.filter((n) => n.type === "GuidancePassage" && !inRule(graph, n.id));
   const retrospective = passages.every((n) => n.data.retrospective === true);
 
   return (
-    <Frame
-      headline="Every piece of evidence, sorted."
-      caption="Cards sit where the scoring put them. Click a protocol card to read its source page."
-    >
-      <div className="grid w-full grid-cols-3 gap-6">
+    <>
+      <div className="grid w-full grid-cols-3 gap-4">
         {COLUMNS.map((col) => (
           <section key={col.stance} data-testid={`evidence-${col.stance}`} className="flex flex-col gap-3">
-            <h2 className="text-lg font-semibold text-ink">
+            <h2 className="text-base font-semibold text-ink">
               {col.title}
               {col.stance === "context" ? null : <span className="tabular-nums"> +{pointsFor(graph, col.stance)}</span>}
             </h2>
@@ -108,6 +100,6 @@ export default function Evidence({ nct, criterionId }: Selection) {
       {open && (
         <ProtocolDrawer nct={open.source.nct} page={open.source.page} quote={open.source.quote} title={open.title} onClose={close} />
       )}
-    </Frame>
+    </>
   );
 }
