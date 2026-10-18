@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Draft, DraftCriterion } from "@/lib/contracts";
-import { fmt, Icon, WARN } from "./DraftCard";
+import { ConditionMark, draftHasCondition, fmt, hasCondition, Icon, sourceOf, valueText, WARN } from "./DraftCard";
 
 // Only the fields this table reads from GET /api/review/{nct}.
 interface ReviewCriterion {
@@ -25,9 +25,12 @@ interface Row {
   c: DraftCriterion;
   // null when no criterion for this analyte was extracted from the protocol.
   written: string | null;
+  writtenCondition: boolean;
   source: { href: string; page: number } | null;
   drafted: string | null;
   differs: boolean;
+  // Set when the two sides state different measures (renal: GFR vs creatinine clearance); such a row is not compared.
+  measure: { written: string; drafted: string; writtenLabel: string } | null;
   // How many of the earlier trials that state this criterion used the protocol's written value (k of n), and how many
   // regimen-matched precedents the draft read in all.
   used: { k: number; n: number; total: number };
@@ -36,20 +39,37 @@ interface Row {
 const sameValue = (a: { operator: string; value: number; unit: string }, op: string, v: number, u: string) =>
   a.operator === op && a.unit === u && Math.abs(a.value - v) < 1e-9;
 
+// Same rule as the engine's comparators.renal_measure: GFR when the label or the source wording says so.
+const renalMeasure = (text: string) => (/GFR|glomerular/i.test(text) ? "GFR" : "CrCl");
+const prettyUnit = (u: string) => u.replace(/m2$/, "m²");
+
 function toRow(c: DraftCriterion, w: ReviewCriterion | undefined, total: number): Row {
   const n = c.distribution.reduce((sum, d) => sum + d.count, 0);
-  const drafted = c.proposed ? `${c.proposed.operator}${fmt(c.proposed.value)} ${c.proposed.unit}` : null;
-  if (!w) return { c, written: null, source: null, drafted, differs: true, used: { k: 0, n, total } };
+  const drafted = c.proposed ? valueText(c.proposed.operator, c.proposed.value, c.proposed.unit, c.label) : null;
+  if (!w) return { c, written: null, writtenCondition: false, source: null, drafted, differs: true, measure: null, used: { k: 0, n, total } };
+  const source = w.source ? { href: `${w.source.url}#page=${w.source.page}`, page: w.source.page } : null;
+  const writtenCondition = hasCondition(w.source?.text);
+  if (c.analyte === "renal" && c.proposed) {
+    const mw = renalMeasure(`${w.label} ${w.source?.text ?? ""}`);
+    const md = renalMeasure(`${c.label} ${sourceOf(c)?.quote ?? ""}`);
+    if (mw !== md) {
+      // The normalized unit drops "/1.73m2"; a different measure is shown as written, with its own label and unit.
+      const written = w.value !== null ? `${w.operator}${fmt(w.value)} ${prettyUnit(w.unit ?? "")}`.trim() : `${w.operator}?`;
+      return { c, written, writtenCondition, source, drafted, differs: false, measure: { written: mw, drafted: md, writtenLabel: w.label }, used: { k: 0, n, total } };
+    }
+  }
   const wv = w.value_norm ?? w.value;
   const wu = w.unit_norm ?? w.unit ?? "";
   const same = c.proposed !== null && wv !== null && sameValue(c.proposed, w.operator, wv, wu);
   const k = wv === null ? 0 : (c.distribution.find((d) => sameValue(d, w.operator, wv, wu))?.count ?? 0);
   return {
     c,
-    written: `${w.operator}${wv !== null ? fmt(wv) : "?"} ${wu}`.trim(),
-    source: w.source ? { href: `${w.source.url}#page=${w.source.page}`, page: w.source.page } : null,
+    written: wv !== null ? valueText(w.operator, wv, wu, c.label) : `${w.operator}?`,
+    writtenCondition,
+    source,
     drafted,
     differs: c.proposed !== null && !same,
+    measure: null,
     used: { k, n, total },
   };
 }
@@ -57,6 +77,14 @@ function toRow(c: DraftCriterion, w: ReviewCriterion | undefined, total: number)
 const trials = (n: number) => `${n} earlier trial${n === 1 ? "" : "s"}`;
 
 function Question({ row }: { row: Row }) {
+  if (row.measure) {
+    return (
+      <span className="inline-flex items-center gap-1 font-medium text-ink">
+        <Icon d={WARN} className="text-look" />
+        Different measure ({row.measure.written} vs {row.measure.drafted}): ask which the team intends
+      </span>
+    );
+  }
   if (row.drafted === null) return <span className="text-muted">No precedent value to compare</span>;
   if (!row.differs) return <span className="text-muted">Same as drafted</span>;
   const { k, n, total } = row.used;
@@ -64,7 +92,7 @@ function Question({ row }: { row: Row }) {
     <span className="inline-flex flex-col gap-0.5">
       <span className="inline-flex items-center gap-1 font-medium text-ink">
         <Icon d={WARN} className="text-look" />
-        {row.written === null ? "Not found in the protocol: ask why" : "Differs: ask why"}
+        {row.written === null ? "Not extracted from the protocol: check it" : "Differs: ask why"}
       </span>
       <span data-role="used" className="text-muted">
         {row.written === null ? `${n} of ${trials(total)} state it` : k > 0 ? `${k} of ${trials(n)} used it` : "no earlier trial used it"}
@@ -73,31 +101,65 @@ function Question({ row }: { row: Row }) {
   );
 }
 
-function CriterionLink({ c }: { c: DraftCriterion }) {
+function CriterionLink({ c, onOpen }: { c: DraftCriterion; onOpen: (id: string) => void }) {
   return (
-    <a href={`#draft-${c.id}`} className="font-medium text-ink underline decoration-line underline-offset-2 hover:decoration-ink">
+    <a href={`#draft-${c.id}`} onClick={() => onOpen(c.id)} className="font-medium text-ink underline decoration-line underline-offset-2 hover:decoration-ink">
       {c.label}
     </a>
   );
 }
 
 function Written({ row }: { row: Row }) {
-  if (row.written === null) return <span className="text-muted">Not found</span>;
+  if (row.written === null) return <span className="text-muted">Not extracted</span>;
   return (
-    <>
-      {row.written}
-      {row.source ? (
-        <a href={row.source.href} target="_blank" rel="noreferrer" className="ml-1 text-xs text-muted underline decoration-line underline-offset-2">
-          p.{row.source.page}
-        </a>
-      ) : null}
-    </>
+    <span className="inline-flex flex-col items-start gap-0.5">
+      <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+        {row.written}
+        {row.source ? (
+          <a
+            href={row.source.href}
+            target="_blank"
+            rel="noreferrer"
+            className="-mx-1 -my-1 inline-block rounded px-1 py-1 text-xs text-muted underline decoration-line underline-offset-2 hover:text-ink"
+          >
+            p.{row.source.page}
+          </a>
+        ) : null}
+        {row.writtenCondition ? <ConditionMark short /> : null}
+      </span>
+      {row.measure ? <span className="text-xs text-muted">{row.measure.writtenLabel}</span> : null}
+    </span>
   );
 }
 
+function Drafted({ row }: { row: Row }) {
+  if (row.drafted === null) return <span className="text-muted">Insufficient evidence</span>;
+  return (
+    <span className="inline-flex flex-col items-start gap-0.5">
+      <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
+        {row.drafted}
+        {draftHasCondition(row.c) ? <ConditionMark short /> : null}
+      </span>
+      {row.measure ? <span className="text-xs text-muted">{row.c.label}</span> : null}
+    </span>
+  );
+}
+
+const rowTone = (row: Row) => (row.measure || row.differs ? "bg-look-soft/50" : "");
+
 // Compares the protocol as written with the criteria drafted from trials that started before it. A difference is a
 // question for the team, not an error in either.
-export default function BeforeAfter({ draft, nct }: { draft: Draft; nct: string }) {
+export default function BeforeAfter({
+  draft,
+  nct,
+  presetTitle,
+  onOpen,
+}: {
+  draft: Draft;
+  nct: string;
+  presetTitle: string | null;
+  onOpen: (id: string) => void;
+}) {
   const [review, setReview] = useState<ReviewLite | null>(null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
@@ -119,21 +181,33 @@ export default function BeforeAfter({ draft, nct }: { draft: Draft; nct: string 
   const rows = draft.criteria
     .filter((c) => written.has(c.analyte) || c.proposed !== null)
     .map((c) => toRow(c, written.get(c.analyte), draft.precedents.length));
+  const comparable = rows.filter((r) => !r.measure).length;
   const differing = rows.filter((r) => r.differs).length;
+  const otherMeasure = rows.length - comparable;
   const study = review.target.study;
 
   return (
     <section data-testid="before-after" aria-labelledby="before-after-title" className="flex flex-col gap-2">
       <div>
         <h2 id="before-after-title" className="text-lg font-semibold text-ink">
-          Drafted at design time vs. {study.acronym ?? study.nct_id} as written
+          Drafted at design time vs. the protocol as written ({study.acronym ?? study.nct_id})
         </h2>
         <p className="text-sm text-muted">
-          {study.title}, started {study.start_date}. The draft uses only trials that started earlier. Differences are review questions, not mistakes.
+          {presetTitle ? `${presetTitle}. ` : ""}Registry title: {study.title}, started {study.start_date}. The draft uses only trials that started earlier.
+          Differences are review questions, not mistakes.
         </p>
       </div>
-      <p data-testid="before-after-count" className="text-sm font-medium text-ink">
-        {differing} of {rows.length} criteria differ from the value drafted from earlier trials
+      <p data-testid="before-after-count" className="text-sm text-ink">
+        <span className="text-2xl font-semibold tabular-nums tracking-tight">
+          {differing} of {comparable}
+        </span>{" "}
+        criteria differ from the value drafted from earlier trials
+        {otherMeasure ? (
+          <span className="text-muted">
+            {" "}
+            · {otherMeasure} states a different measure
+          </span>
+        ) : null}
       </p>
 
       <div className="hidden overflow-hidden rounded-lg border border-line bg-white sm:block">
@@ -149,15 +223,17 @@ export default function BeforeAfter({ draft, nct }: { draft: Draft; nct: string 
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.c.id} data-differs={row.differs} className={`border-t border-line align-top ${row.differs ? "bg-look-soft/50" : ""}`}>
+              <tr key={row.c.id} data-differs={row.differs} data-measure={row.measure ? "different" : undefined} className={`border-t border-line align-top ${rowTone(row)}`}>
                 <th scope="row" className="px-3 py-2 font-normal">
-                  <CriterionLink c={row.c} />
+                  <CriterionLink c={row.c} onOpen={onOpen} />
                 </th>
                 <td className="px-3 py-2 tabular-nums text-ink">
                   <Written row={row} />
                 </td>
-                <td className="px-3 py-2 tabular-nums text-ink">{row.drafted ?? <span className="text-muted">Insufficient evidence</span>}</td>
-                <td className="px-3 py-2 text-xs">
+                <td className="px-3 py-2 tabular-nums text-ink">
+                  <Drafted row={row} />
+                </td>
+                <td className="px-3 py-2 text-[13px]">
                   <Question row={row} />
                 </td>
               </tr>
@@ -171,21 +247,24 @@ export default function BeforeAfter({ draft, nct }: { draft: Draft; nct: string 
           <li
             key={row.c.id}
             data-differs={row.differs}
-            className={`rounded-lg border px-3 py-2 text-sm ${row.differs ? "border-look/40 bg-look-soft/50" : "border-line bg-white"}`}
+            data-measure={row.measure ? "different" : undefined}
+            className={`rounded-lg border px-3 py-2 text-sm ${row.measure || row.differs ? "border-look/40 bg-look-soft/50" : "border-line bg-white"}`}
           >
             <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-              <CriterionLink c={row.c} />
-              <span className="text-xs">
+              <CriterionLink c={row.c} onOpen={onOpen} />
+              <span className="text-[13px]">
                 <Question row={row} />
               </span>
             </div>
-            <dl className="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-xs">
+            <dl className="mt-1 grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-[13px]">
               <dt className="text-muted">As written</dt>
               <dd className="tabular-nums text-ink">
                 <Written row={row} />
               </dd>
               <dt className="text-muted">Drafted</dt>
-              <dd className="tabular-nums text-ink">{row.drafted ?? "Insufficient evidence"}</dd>
+              <dd className="tabular-nums text-ink">
+                <Drafted row={row} />
+              </dd>
             </dl>
           </li>
         ))}

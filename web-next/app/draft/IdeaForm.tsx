@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent, type KeyboardEvent } from "react";
+import { useState, type FormEvent, type KeyboardEvent, type ReactNode } from "react";
 import type { DraftVocabulary, Idea, SettingTag } from "@/lib/contracts";
 import { Icon, WARN } from "./DraftCard";
 
@@ -13,6 +13,8 @@ const SETTING_LABEL: Record<SettingTag, string> = {
   "perioperative/locally-advanced": "Perioperative or locally advanced",
 };
 const MAX_DRUGS = 8;
+// Form fields get a darker edge than the shared line token, so the field boundary reaches 3:1 against white.
+const FIELD = "border-uncounted";
 const MAX_DRUG_CHARS = 40;
 
 // Matches a typed drug against the vocabulary by name or alias; null when the engine would not recognize it,
@@ -28,11 +30,14 @@ export default function IdeaForm({
   vocabularyFailed,
   busy,
   onSubmit,
+  error = null,
 }: {
   vocabulary: DraftVocabulary | null;
   vocabularyFailed: boolean;
   busy: boolean;
   onSubmit: (idea: Idea) => void;
+  // A failed run of this form's idea, shown under the submit button with its next step.
+  error?: ReactNode;
 }) {
   const [condition, setCondition] = useState("");
   const [drugs, setDrugs] = useState<string[]>([]);
@@ -99,7 +104,7 @@ export default function IdeaForm({
           placeholder="e.g. non-small cell lung cancer"
           minLength={3}
           maxLength={120}
-          className="rounded-md border border-line bg-white px-2.5 py-1.5 text-ink outline-none focus-visible:ring-2 focus-visible:ring-ink/30"
+          className={`rounded-md border ${FIELD} bg-white px-2.5 py-1.5 text-ink outline-none focus-visible:border-ink focus-visible:ring-2 focus-visible:ring-ink`}
         />
       </label>
 
@@ -107,7 +112,7 @@ export default function IdeaForm({
         <label htmlFor="idea-drugs" className="font-medium text-ink">
           Regimen <span className="font-normal text-muted">(press Enter after each drug)</span>
         </label>
-        <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-line bg-white px-2 py-1.5 focus-within:ring-2 focus-within:ring-ink/30">
+        <div className={`flex flex-wrap items-center gap-1.5 rounded-md border ${FIELD} bg-white px-2 py-1.5 focus-within:border-ink focus-within:ring-2 focus-within:ring-ink`}>
           {drugs.map((d) => {
             const hit = lookup(vocabulary, d);
             const unknown = hit === null;
@@ -116,7 +121,7 @@ export default function IdeaForm({
                 key={d}
                 data-testid="drug-chip"
                 data-recognized={hit ? "true" : unknown ? "false" : "unchecked"}
-                title={hit ? hit.drug_class : unknown ? "Not in the drug vocabulary; it will not be matched" : undefined}
+                title={hit ? hit.drug_class : unknown ? "Not in the curated drug table; it will not be matched" : undefined}
                 className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs ${
                   unknown ? "bg-look-soft text-ink ring-1 ring-look" : hit ? "bg-uncounted-soft text-ink" : "bg-white text-ink ring-1 ring-line"
                 }`}
@@ -164,7 +169,7 @@ export default function IdeaForm({
         ) : null}
         {vocabularyFailed ? (
           <p data-testid="idea-vocabulary-error" className="text-xs text-muted">
-            Could not load the drug vocabulary, so names are not checked here; the summary lists any the engine did not recognize.
+            Could not load the curated drug table, so names are not checked here; the summary lists any the engine did not recognize.
           </p>
         ) : null}
       </div>
@@ -194,11 +199,11 @@ export default function IdeaForm({
 
       <fieldset className="flex flex-col gap-1 text-sm">
         <legend className="mb-1 font-medium text-ink">Phase</legend>
-        <div className="grid grid-cols-2 rounded-md border border-line bg-white p-0.5">
+        <div className={`grid grid-cols-2 gap-1 rounded-md border ${FIELD} bg-white p-1`}>
           {phases.map((p) => (
             <label
               key={p}
-              className="relative cursor-pointer rounded px-3 py-1.5 text-center text-sm text-ink has-[:checked]:bg-ink has-[:checked]:font-medium has-[:checked]:text-paper has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ink"
+              className="relative cursor-pointer rounded px-3 py-1.5 text-center text-sm text-ink has-[:checked]:bg-ink has-[:checked]:font-medium has-[:checked]:text-paper has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-ink"
             >
               <input type="radio" name="phase" value={p} checked={phase === p} onChange={() => setPhase(p)} className="sr-only" />
               {p === "PHASE2" ? "Phase 2" : "Phase 3"}
@@ -222,6 +227,7 @@ export default function IdeaForm({
             Add a condition and at least one drug.
           </p>
         ) : null}
+        {error}
       </div>
     </form>
   );
