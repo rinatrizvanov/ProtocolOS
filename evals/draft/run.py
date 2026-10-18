@@ -16,6 +16,7 @@ import time
 from pathlib import Path
 
 from trialforge import comparators, draft, verifier
+from trialforge.sources import fetch_study
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = Path(__file__).resolve().parent / "results.json"
@@ -24,10 +25,7 @@ OUT = Path(__file__).resolve().parent / "results.json"
 def _idea(target: dict) -> dict:
     study = target["study"]
     drugs = list(((target.get("regimen") or {}).get("drugs") or {}).keys())[:8]
-    try:
-        tags = comparators.setting_tags(study)
-    except Exception:
-        tags = set(target.get("tags") or [])
+    tags = comparators.setting_tags(fetch_study(study["nct_id"]))  # registry JSON, cached under data/registry
     return {"condition": (study.get("conditions") or ["cancer"])[0][:120], "drugs": drugs,
             "setting": [t for t in draft.SETTING_TAGS if t in tags], "phase": "PHASE3",
             "as_of": study.get("start_date")}

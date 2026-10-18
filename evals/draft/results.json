@@ -18,11 +18,16 @@
           "cisplatin",
           "pemetrexed"
         ],
-        "setting": [],
+        "setting": [
+          "first-line",
+          "metastatic",
+          "non-squamous",
+          "squamous"
+        ],
         "phase": "PHASE3",
         "as_of": "2016-01-15"
       },
-      "draft_id": "d-204ffbfb9c85",
+      "draft_id": "d-a031830182a1",
       "status": "ok",
       "summary": {
         "drafted": 10,
@@ -30,7 +35,7 @@
         "precedents": 4,
         "candidates_checked": 4,
         "skipped": 0,
-        "elapsed_s": 1.75,
+        "elapsed_s": 2.12,
         "cached": false
       },
       "precedents": [
@@ -130,7 +135,7 @@
         }
       ],
       "overclaim_hits": [],
-      "wall_s": 1.76
+      "wall_s": 2.13
     },
     {
       "nct_id": "NCT02819518",
@@ -143,11 +148,14 @@
           "paclitaxel",
           "gemcitabine"
         ],
-        "setting": [],
+        "setting": [
+          "first-line",
+          "metastatic"
+        ],
         "phase": "PHASE3",
         "as_of": "2016-07-27"
       },
-      "draft_id": "d-757f376050ee",
+      "draft_id": "d-4b0c9cc8ad20",
       "status": "no_precedents",
       "summary": {
         "drafted": 0,
@@ -175,11 +183,16 @@
           "paclitaxel",
           "gemcitabine"
         ],
-        "setting": [],
+        "setting": [
+          "first-line",
+          "metastatic",
+          "non-squamous",
+          "squamous"
+        ],
         "phase": "PHASE3",
         "as_of": "2017-05-29"
       },
-      "draft_id": "d-5e4e1b7aec42",
+      "draft_id": "d-82994fa5f0ca",
       "status": "ok",
       "summary": {
         "drafted": 12,
@@ -187,7 +200,7 @@
         "precedents": 4,
         "candidates_checked": 4,
         "skipped": 0,
-        "elapsed_s": 1.89,
+        "elapsed_s": 2.6,
         "cached": false
       },
       "precedents": [
@@ -295,7 +308,7 @@
         }
       ],
       "overclaim_hits": [],
-      "wall_s": 1.9
+      "wall_s": 2.61
     },
     {
       "nct_id": "NCT03409614",
@@ -309,11 +322,16 @@
           "cisplatin",
           "paclitaxel"
         ],
-        "setting": [],
+        "setting": [
+          "first-line",
+          "metastatic",
+          "non-squamous",
+          "squamous"
+        ],
         "phase": "PHASE3",
         "as_of": "2018-03-06"
       },
-      "draft_id": "d-eafd1256bf8b",
+      "draft_id": "d-03988c323aaf",
       "status": "ok",
       "summary": {
         "drafted": 12,
@@ -321,7 +339,7 @@
         "precedents": 4,
         "candidates_checked": 4,
         "skipped": 0,
-        "elapsed_s": 1.49,
+        "elapsed_s": 1.79,
         "cached": false
       },
       "precedents": [
@@ -429,8 +447,8 @@
         }
       ],
       "overclaim_hits": [],
-      "wall_s": 1.5
+      "wall_s": 1.8
     }
   ],
-  "computed_at": "2026-10-18T00:30:29-0400"
+  "computed_at": "2026-10-18T00:47:37-0400"
 }
