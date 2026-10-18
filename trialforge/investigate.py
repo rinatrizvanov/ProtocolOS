@@ -56,6 +56,9 @@ INSTRUCTION = re.compile(
     r"\b(?:ignore|disregard)\s+(?:all\s+|any\s+|the\s+)?(?:previous|prior|above|earlier|preceding)\s+instructions?\b|\bsystem prompt\b",
     re.I,
 )
+# AGENTS.md section 6 forbids enrollment and cost claims; verifier.OVERCLAIM covers only some phrasings
+BENEFIT = re.compile(r"\b(?:improv\w*|increas\w*|speed\w*|accelerat\w*|faster)\s+(?:the\s+)?(?:enrol\w*|accrual|recruitment)\b"
+                     r"|\b(?:lower\w*|reduc\w*|cut\w*|sav\w*)\s+(?:the\s+)?costs?\b", re.I)
 RETAIN_WORD = re.compile(r"\bretain", re.I)
 NCT_TEXT = re.compile(r"\bNCT\d{8}\b")
 NUMBER = re.compile(r"\d+(?:\.\d+)?")
@@ -111,8 +114,10 @@ def _numbers(s: str) -> set:
 
 
 def _node_numbers(n: dict) -> set:
+    # facts only: label, data and the verbatim quote; never digits from a document URL or page number
     data = {k: v for k, v in (n.get("data") or {}).items() if k != "members"}
-    return _numbers(NODE_REF.sub(" ", json.dumps([n.get("label"), data, n.get("source")], ensure_ascii=False, default=str)))
+    quote = (n.get("source") or {}).get("quote")
+    return _numbers(NODE_REF.sub(" ", json.dumps([n.get("label"), data, quote], ensure_ascii=False, default=str)))
 
 
 def _graph_ncts(graph: dict) -> set:
@@ -136,7 +141,7 @@ def language_checks(text: str, classification: str | None, sid=None, label: str 
     """Overclaiming, necessity, causal-between-trials and instruction language; 'retain' only when the
     classification is 'Evidence supports retaining'. Apply to our own words (verbatim quotes removed)."""
     out = []
-    for name, rx in (("overclaim", OVERCLAIM), ("necessity", NECESSITY), ("causal", CAUSAL), ("instruction", INSTRUCTION)):
+    for name, rx in (("overclaim", OVERCLAIM), ("necessity", NECESSITY), ("causal", CAUSAL), ("benefit_claim", BENEFIT), ("instruction", INSTRUCTION)):
         m = rx.search(text or "")
         if m:
             out.append({"check": f"{label}{name}", "statement_id": sid, "result": "fail", "detail": f"\"{m.group(0)}\" is not allowed in an answer"})
