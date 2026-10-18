@@ -151,7 +151,7 @@ export const DECISION_REASONS = [
   { key: "safety_concern", label: "Safety concern" },
   { key: "regulatory_requirement", label: "Regulatory requirement" },
   { key: "efficacy_enrichment", label: "Efficacy enrichment" },
-  { key: "prior_evidence", label: "Prior evidence" },
+  { key: "prior_evidence", label: "Prior trial data" },
   { key: "operational_reason", label: "Operational reason" },
   { key: "other", label: "Other" },
 ] as const;
@@ -168,7 +168,9 @@ export function encodeReason(key: ReasonKey, note: string): string {
 export function parseReason(reason: string): { key: ReasonKey | null; note: string } {
   const m = /^Reason: ([^.]+)\.(?: Note: ([\s\S]*))?$/.exec(reason.trim());
   if (!m) return { key: null, note: reason };
-  const hit = DECISION_REASONS.find((r) => r.label === m[1]);
+  // "Prior evidence" is the label decisions were saved with before 2026-10-18 01:35 ET.
+  const label = m[1] === "Prior evidence" ? "Prior trial data" : m[1];
+  const hit = DECISION_REASONS.find((r) => r.label === label);
   if (!hit) return { key: null, note: reason };
   return { key: hit.key, note: (m[2] ?? "").trim() };
 }
