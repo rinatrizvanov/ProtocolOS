@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getReview } from "@/lib/api";
 import { getRationale, type MissingCriterion } from "@/lib/contracts";
 
-type State = { nct: string; status: "ready"; missing: MissingCriterion[] } | { nct: string; status: "error" };
+type State =
+  | { nct: string; status: "ready"; missing: MissingCriterion[]; comparators: number }
+  | { nct: string; status: "error" };
 
 // Criteria most comparable protocols state but this protocol's extraction lacks (plan-v2 section 6.3).
 // Extraction misses are possible, so each item is a question to check in the protocol, not a finding.
@@ -12,13 +15,18 @@ export function MissingCriteria({ nct }: { nct: string }) {
 
   useEffect(() => {
     let live = true;
-    getRationale(nct).then(
-      (report) => live && setState({ nct, status: "ready", missing: report.missing }),
-      (err: unknown) => {
-        console.error(err);
-        if (live) setState({ nct, status: "error" });
-      },
-    );
+    // The review only after the rationale loaded: the rationale answers 403 for an uncached trial on the public
+    // demo, where requesting the review would start computing it.
+    getRationale(nct)
+      .then((report) => getReview(nct).then((review) => ({ report, review })))
+      .then(
+        ({ report, review }) =>
+          live && setState({ nct, status: "ready", missing: report.missing, comparators: review.comparators.length }),
+        (err: unknown) => {
+          console.error(err);
+          if (live) setState({ nct, status: "error" });
+        },
+      );
     return () => {
       live = false;
     };
@@ -36,9 +44,13 @@ export function MissingCriteria({ nct }: { nct: string }) {
     );
   }
   if (current.missing.length === 0) {
+    // Same threshold as rationale.missing_criteria: stated by at least max(2, ceil(0.75*M)) of the M comparators.
+    const m = current.comparators;
     return (
       <p data-testid="missing-none" className="text-sm text-muted">
-        No gaps found: every criterion that most comparable protocols state was also extracted from this protocol.
+        {m < 2
+          ? "Fewer than 2 comparable protocols were found for this trial, so missing criteria were not checked."
+          : `No gaps found: every criterion stated by at least ${Math.max(2, Math.ceil(0.75 * m))} of the ${m} comparable protocols was also extracted from this protocol.`}
       </p>
     );
   }
@@ -51,12 +63,7 @@ export function MissingCriteria({ nct }: { nct: string }) {
           data-criterion={m.criterion_id}
           className="rounded-md border border-look bg-look-soft/40 px-4 py-3"
         >
-          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <p className="font-semibold text-ink">{m.label}</p>
-            <p className="text-sm tabular-nums text-muted">
-              in {m.comparators_with} of {m.comparators_total} comparable protocols
-            </p>
-          </div>
+          <p className="font-semibold text-ink">{m.label}</p>
           <p className="mt-1 text-sm text-ink">{m.text}</p>
           {m.examples.length > 0 ? (
             <ul className="mt-2 flex flex-col gap-1 text-sm text-muted">
