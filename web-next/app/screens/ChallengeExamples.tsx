@@ -239,12 +239,18 @@ function WhatIfPanel({ nct, criterionId }: Selection) {
   const current = criterion.value_norm;
   const unit = criterion.unit_norm ?? "";
 
-  // Limits the similar trials used that differ from this one, most common first; the first prefills the field.
+  // Values the similar trials used that differ from this one, most common first; the first prefills the field. A limit
+  // on a different measure is not comparable, so, as in the engine's /api/whatif, it is neither a value nor a precedent.
   const counts = new Map<number, number>();
+  const otherMeasures = new Set<string>();
   let stated = 0;
   for (const row of review.data.comparison[criterionId] ?? []) {
     const v = row.criterion?.value_norm;
-    if (v === null || v === undefined) continue;
+    if (!row.criterion || v === null || v === undefined) continue;
+    if (row.direction === "different measure") {
+      otherMeasures.add(row.criterion.label);
+      continue;
+    }
     stated += 1;
     if (v !== current) counts.set(v, (counts.get(v) ?? 0) + 1);
   }
@@ -317,15 +323,16 @@ function WhatIfPanel({ nct, criterionId }: Selection) {
       ) : null}
       {used.length > 0 ? (
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted">
-          Limits similar trials used:
+          Values similar trials used:
           {used.map(([v, n]) => (
             <button
               key={v}
               type="button"
+              data-testid="whatif-chip"
               onClick={() => setDraft(String(v))}
               className="rounded-full border border-line px-2.5 py-0.5 tabular-nums text-ink transition-colors duration-150 hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
             >
-              {criterion.operator} {v} {unit} <span className="text-muted">({n} {n === 1 ? "trial" : "trials"})</span>
+              {v} {unit} <span className="text-muted">({n} {n === 1 ? "trial" : "trials"})</span>
             </button>
           ))}
         </div>
@@ -333,9 +340,11 @@ function WhatIfPanel({ nct, criterionId }: Selection) {
         <p data-testid="whatif-precedent" className="text-sm text-muted">
           {review.data.comparators.length === 0
             ? "No similar trial was found for this protocol, so a change would cite none."
-            : stated === 0
-              ? "No similar trial states a numeric limit for this criterion, so a change would cite none."
-              : "Every similar trial that states a numeric limit for this criterion used this one."}
+            : stated === 0 && otherMeasures.size > 0
+              ? `The similar trials that state this criterion use a different measure, ${[...otherMeasures].join("; ")}, so a change would cite none.`
+              : stated === 0
+                ? "No similar trial states a numeric limit for this criterion, so a change would cite none."
+                : "Every similar trial with a comparable numeric limit for this criterion used this one."}
         </p>
       )}
       {run.status === "ready" ? <WhatIfResult data={run.data} operator={criterion.operator} current={current} unit={unit} /> : null}

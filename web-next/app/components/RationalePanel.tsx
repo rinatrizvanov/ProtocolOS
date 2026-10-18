@@ -59,7 +59,7 @@ export function RationalePanel({ nct, criterionId }: Selection) {
           {row.criterion.label} <span className="tabular-nums text-muted">{threshold(row)}</span>
         </h2>
         <p data-role="caption" className="text-sm text-muted">
-          Why this criterion exists, which arm drives it, and how ProtocolOS scored it. The team decides.
+          The likely rationale for this criterion, which arm drives it, and how ProtocolOS scored it. The team decides.
         </p>
       </div>
 

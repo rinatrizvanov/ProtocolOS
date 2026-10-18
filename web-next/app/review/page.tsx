@@ -62,9 +62,11 @@ function parseSelection(search: string): { nct: string; criterionId: string | nu
 function CriteriaList({ nct, selected, tab }: { nct: string; selected: string | null; tab: TabId }) {
   const state = useApi(() => getReview(nct));
   const first = state.status === "ready" ? state.data.reviews[0]?.criterion.id : undefined;
+  // No ?c= or one this review does not have: select the first criterion.
+  const known = state.status === "ready" && state.data.reviews.some((r) => r.criterion.id === selected);
   useEffect(() => {
-    if (selected === null && first) navigate({ nct, criterionId: first, tab });
-  }, [nct, selected, first, tab]);
+    if (!known && first) navigate({ nct, criterionId: first, tab });
+  }, [nct, known, first, tab]);
 
   if (state.status === "loading") return <Pending label="Loading the criteria…" />;
   if (state.status === "error") return <Failed message={state.message} />;

@@ -6,7 +6,7 @@ import { CloseIcon } from "./Icons";
 const KEY = "protocolos.onboarding.v2";
 const STEPS = [
   { n: 1, title: "Pick a trial or an idea", text: "Review a posted protocol, or draft criteria for a new concept." },
-  { n: 2, title: "Read the rationale", text: "Each criterion shows why it exists, which arm drives it, and what similar trials used." },
+  { n: 2, title: "Read the rationale", text: "Each criterion shows its likely rationale, which arm drives it, and what similar trials used." },
   { n: 3, title: "Verify, then decide", text: "Propose another limit, see the deterministic verifier's verdict, then record the team's reason." },
 ];
 

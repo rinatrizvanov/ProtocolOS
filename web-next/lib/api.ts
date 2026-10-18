@@ -60,7 +60,7 @@ export interface ComparatorRow {
   acronym: string | null;
   direction: Direction;
   coverage: { status: string };
-  criterion: { operator: string; value_norm: number | null; unit_norm: string | null; source: SourceRef } | null;
+  criterion: { label: string; operator: string; value_norm: number | null; unit_norm: string | null; source: SourceRef } | null;
 }
 
 export interface Review {

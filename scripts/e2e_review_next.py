@@ -213,6 +213,32 @@ def main() -> int:
         except Exception as exc:  # noqa: BLE001 - reported as a failed step
             report(step, "FAIL", str(exc)[:200])
 
+        # Renal: these protocols state GFR, their similar trials creatinine clearance. The engine does not compare a
+        # different measure, so Verify offers none of its values and Compare lists those trials apart from the plot.
+        for nct in (NCT, "NCT03088540"):
+            step = f"Verify and Compare keep a different measure out of the comparison ({nct} renal)"
+            try:
+                page.goto(review_url("renal", tab="verify", nct=nct), wait_until="networkidle")
+                page.get_by_test_id("whatif-precedent").wait_for(timeout=15000)
+                directions = page.evaluate(
+                    "async (n) => (await (await fetch('/api/review/' + n)).json()).comparison.renal"
+                    ".filter((r) => r.criterion).map((r) => r.direction)", nct)
+                chips = page.get_by_test_id("whatif-chip").count()
+                prefill = page.get_by_test_id("whatif-value").input_value()
+                verify_text = page.get_by_test_id("whatif-precedent").inner_text()
+                page.goto(review_url("renal", tab="compare", nct=nct), wait_until="networkidle")
+                page.get_by_test_id("target-marker").wait_for(timeout=15000)
+                dots = page.get_by_test_id("comparator-dot").count()
+                listed = page.get_by_test_id("other-measure-row").count()
+                compare_text = page.get_by_role("tabpanel").inner_text()
+                ok = bool(directions) and set(directions) == {"different measure"} and chips == 0 and prefill == "" \
+                    and "different measure" in verify_text and dots == 0 and listed == len(directions) \
+                    and "use a different measure; not directly comparable." in compare_text
+                report(step, "PASS" if ok else "FAIL",
+                       f"engine {directions}; chips={chips}, prefill={prefill!r}, dots={dots}, listed={listed}; Verify: {verify_text}")
+            except Exception as exc:  # noqa: BLE001 - reported as a failed step
+                report(step, "FAIL", str(exc)[:200])
+
         # Decide: a structured reason and a fresh note reach the markdown packet (needs WS-E's reason buttons).
         page.goto(review_url(tab="decide"), wait_until="networkidle")
         page.wait_for_timeout(800)

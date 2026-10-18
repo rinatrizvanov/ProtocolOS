@@ -58,67 +58,67 @@ export default function Tour() {
 
   return (
     <>
-    <AppHeader mode="tour" />
-    <main className="mx-auto flex max-w-6xl flex-col px-4 py-4 sm:px-6">
-      <nav aria-label="Demo steps" className="flex flex-wrap items-center gap-x-6 gap-y-2">
-        <ol className="flex flex-1 flex-wrap items-center gap-2">
-          {STEPS.map((s, i) => (
-            <li key={s.title}>
-              <button
-                type="button"
-                onClick={() => go(i)}
-                aria-current={i === step ? "step" : undefined}
-                className={`flex items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors duration-150 ${
-                  i === step ? "text-ink" : "text-muted hover:text-ink"
-                }`}
-              >
-                <span
-                  aria-hidden
-                  className={`h-2 w-2 rounded-full ${i === step ? "bg-ink" : i < step ? "bg-muted" : "bg-line"}`}
-                />
-                <span className={i === step ? "font-medium" : ""}>{s.title}</span>
-              </button>
-            </li>
-          ))}
-        </ol>
-        <span className="text-sm tabular-nums text-muted">
-          {step + 1} / {STEPS.length}
-        </span>
-        <a
-          href={`../review?nct=${NCT}&c=${CRITERION}`}
-          data-testid="exit-demo"
-          className="rounded-md px-3 py-1 text-sm text-ink hover:bg-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
-        >
-          Exit to the review
-        </a>
-      </nav>
+      <AppHeader mode="tour" />
+      <main className="mx-auto flex max-w-6xl flex-col px-4 py-4 sm:px-6">
+        <nav aria-label="Demo steps" className="flex flex-wrap items-center gap-x-6 gap-y-2">
+          <ol className="flex flex-1 flex-wrap items-center gap-2">
+            {STEPS.map((s, i) => (
+              <li key={s.title}>
+                <button
+                  type="button"
+                  onClick={() => go(i)}
+                  aria-current={i === step ? "step" : undefined}
+                  className={`flex items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors duration-150 ${
+                    i === step ? "text-ink" : "text-muted hover:text-ink"
+                  }`}
+                >
+                  <span
+                    aria-hidden
+                    className={`h-2 w-2 rounded-full ${i === step ? "bg-ink" : i < step ? "bg-muted" : "bg-line"}`}
+                  />
+                  <span className={i === step ? "font-medium" : ""}>{s.title}</span>
+                </button>
+              </li>
+            ))}
+          </ol>
+          <span className="text-sm tabular-nums text-muted">
+            {step + 1} / {STEPS.length}
+          </span>
+          <a
+            href={`../review?nct=${NCT}&c=${CRITERION}`}
+            data-testid="exit-demo"
+            className="rounded-md px-3 py-1 text-sm text-ink hover:bg-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
+          >
+            Exit to the review
+          </a>
+        </nav>
 
-      <div className="mt-4 flex flex-1 flex-col">
-        <div key={step} className="flex flex-1 flex-col">
-          {STEPS[step].render()}
+        <div className="mt-4 flex flex-1 flex-col">
+          <div key={step} className="flex flex-1 flex-col">
+            {STEPS[step].render()}
+          </div>
         </div>
-      </div>
 
-      <footer className="mt-4 flex items-center justify-between border-t border-line pt-3">
-        <button
-          type="button"
-          onClick={() => go(step - 1)}
-          disabled={step === 0}
-          className="rounded-md px-4 py-2 text-ink transition-colors duration-150 hover:bg-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:invisible"
-        >
-          Back
-        </button>
-        <span className="text-sm text-muted">Arrow keys move between steps</span>
-        <button
-          type="button"
-          onClick={() => go(step + 1)}
-          disabled={step === STEPS.length - 1}
-          className="rounded-md bg-ink px-5 py-2 text-paper transition-opacity duration-150 hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:invisible"
-        >
-          Next
-        </button>
-      </footer>
-    </main>
+        <footer className="mt-4 flex items-center justify-between border-t border-line pt-3">
+          <button
+            type="button"
+            onClick={() => go(step - 1)}
+            disabled={step === 0}
+            className="rounded-md px-4 py-2 text-ink transition-colors duration-150 hover:bg-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:invisible"
+          >
+            Back
+          </button>
+          <span className="text-sm text-muted">Arrow keys move between steps</span>
+          <button
+            type="button"
+            onClick={() => go(step + 1)}
+            disabled={step === STEPS.length - 1}
+            className="rounded-md bg-ink px-5 py-2 text-paper transition-opacity duration-150 hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:invisible"
+          >
+            Next
+          </button>
+        </footer>
+      </main>
     </>
   );
 }

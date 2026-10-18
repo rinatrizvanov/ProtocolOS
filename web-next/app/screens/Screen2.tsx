@@ -5,7 +5,12 @@ import { getProtocolPage, getReview, type ComparatorRow, type ProtocolPage, type
 import { useApi } from "@/lib/useApi";
 import { Failed, Frame, Pending } from "../components/Frame";
 
-type Plotted = ComparatorRow & { criterion: NonNullable<ComparatorRow["criterion"]> & { value_norm: number } };
+type Stated = ComparatorRow & { criterion: NonNullable<ComparatorRow["criterion"]> };
+type Plotted = Stated & { criterion: { value_norm: number } };
+
+function isStated(row: ComparatorRow): row is Stated {
+  return row.criterion !== null;
+}
 
 function isPlotted(row: ComparatorRow): row is Plotted {
   return row.criterion !== null && row.criterion.value_norm !== null;
@@ -84,7 +89,7 @@ const ROW = "grid grid-cols-[8.5rem_minmax(0,1fr)] gap-x-4 sm:grid-cols-[14rem_m
 // `detailed` is the app's Compare tab (sponsor and regimen lines); the tour keeps the short labels.
 export default function Screen2({ nct, criterionId, detailed = false }: Selection & { detailed?: boolean }) {
   const state = useApi(() => getReview(nct));
-  const [open, setOpen] = useState<Plotted | null>(null);
+  const [open, setOpen] = useState<Stated | null>(null);
   const closeDrawer = useCallback(() => setOpen(null), []);
   if (state.status === "loading") return <Pending label="Loading the comparison…" />;
   if (state.status === "error") return <Failed message={state.message} />;
@@ -92,8 +97,11 @@ export default function Screen2({ nct, criterionId, detailed = false }: Selectio
   const target = state.data.reviews.find((r) => r.criterion.id === criterionId)?.criterion;
   if (!target || target.value_norm === null) return <Failed message={`no numeric ${criterionId} limit in the review`} />;
   const targetValue = target.value_norm;
-  const plotted = rows.filter(isPlotted);
-  const withCriterion = rows.filter((r) => r.criterion !== null);
+  // A limit on a different measure is not on this trial's scale; the engine does not compare it, so it is listed, not plotted.
+  const otherMeasure = rows.filter((r): r is Stated => isStated(r) && r.direction === "different measure");
+  const comparable = rows.filter((r) => r.direction !== "different measure");
+  const plotted = comparable.filter(isPlotted);
+  const withCriterion = comparable.filter(isStated);
   const sponsors = new Map(state.data.comparators.map((c) => [c.study.nct_id, c.study.sponsor]));
   const looser = withCriterion.filter((r) => r.direction === "comparator looser").length;
   // Operators arrive as Unicode (≥, >); a looser comparator for a floor is a lower limit.
@@ -107,9 +115,11 @@ export default function Screen2({ nct, criterionId, detailed = false }: Selectio
   const caption =
     state.data.comparators.length === 0
       ? "No similar trial was found for this protocol."
-      : withCriterion.length === 0
-        ? "None of the similar trials states this criterion."
-      : `${looser} of ${withCriterion.length} similar trials used a ${word} limit; differences are questions for the team.`;
+      : withCriterion.length === 0 && otherMeasure.length > 0
+        ? "The similar trials that state this criterion use a different measure; not directly comparable."
+        : withCriterion.length === 0
+          ? "None of the similar trials states this criterion."
+          : `${looser} of ${withCriterion.length} similar trials used a ${word} limit; differences are questions for the team.`;
   const at = pct(targetValue);
   // Text near an edge grows inward: translating by -at% keeps the block inside the track at any width.
   const align = at < 34 ? "text-left" : at > 66 ? "text-right" : "text-center";
@@ -150,7 +160,7 @@ export default function Screen2({ nct, criterionId, detailed = false }: Selectio
             <span className="absolute bottom-0 h-2 w-0.5 -translate-x-1/2 bg-ink" style={{ left: `${at}%` }} />
           </div>
         </div>
-        {plotted.length === 0 ? (
+        {plotted.length === 0 && otherMeasure.length === 0 ? (
           <p className="border-t border-line py-3 text-sm text-muted">No similar trial&apos;s limit to plot.</p>
         ) : null}
         {plotted.map((r) => {
@@ -204,13 +214,37 @@ export default function Screen2({ nct, criterionId, detailed = false }: Selectio
             </span>
           </div>
         ) : null}
+        {otherMeasure.length > 0 ? (
+          <div data-testid="other-measure" className="flex flex-col gap-1 border-t border-line py-3 text-sm">
+            <p className="text-muted">Different measure, not directly comparable, so not plotted:</p>
+            <ul className="flex flex-col gap-1">
+              {otherMeasure.map((r) => (
+                <li key={r.nct_id}>
+                  <button
+                    type="button"
+                    data-testid="other-measure-row"
+                    data-nct={r.nct_id}
+                    onClick={() => setOpen(r)}
+                    title="Open the protocol page this limit comes from"
+                    className="text-left text-ink underline decoration-line underline-offset-2 transition-colors duration-150 hover:decoration-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
+                  >
+                    <span className="font-medium">{r.acronym ?? r.nct_id}</span> {r.criterion.label}{" "}
+                    <span className="tabular-nums">
+                      {r.criterion.operator} {r.criterion.value_norm ?? ""} {r.criterion.unit_norm ?? ""}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
       </div>
       {open && (
         <ProtocolDrawer
           nct={open.nct_id}
           page={open.criterion.source.page}
           quote={open.criterion.source.text}
-          fallback={String(open.criterion.value_norm)}
+          fallback={open.criterion.value_norm === null ? undefined : String(open.criterion.value_norm)}
           title={open.acronym ?? open.nct_id}
           onClose={closeDrawer}
         />
