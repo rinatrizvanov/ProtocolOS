@@ -93,3 +93,34 @@ def test_route_public_cold_403(monkeypatch):
     finally:
         monkeypatch.delenv("PROTOCOLOS_PUBLIC")
         importlib.reload(api)
+
+
+def test_washout_precedent_needs_the_exact_value(review):
+    from trialforge.redraft import analyze
+
+    cid = next(c["id"] for c in review["target"]["criteria"] if c["analyte"].startswith("washout") and review["comparison"].get(c["id"]))
+    rows = [r for r in review["comparison"][cid] if r.get("criterion") and r["criterion"].get("value_norm")]
+    v = rows[0]["criterion"]["value_norm"] + 3  # within the 10% washout tolerance of comparators.direction for v >= 30
+    crit = next(c for c in review["target"]["criteria"] if c["id"] == cid)
+    d = analyze(review, cid, f"{crit['label']} {crit['operator']}{v:g} days", "")
+    assert all(x["value"] == v for x in d["precedents"]["values"] if x["relation"] == "same as draft")
+
+
+def test_operator_must_match_and_reversal_fails(review):
+    from trialforge.redraft import analyze
+
+    d = analyze(review, "anc", "Absolute neutrophil count >1.5 × 10^9/L", "")
+    assert d["precedents"]["same"] == 0 and "operator_changed" in codes(d)
+    r = analyze(review, "hemoglobin", "Hemoglobin <9 g/dL", "")
+    assert "operator_reversed" in codes(r, "fail") and r["precedents"] is None and r["verification"] is None
+
+
+def test_conditions_are_text(review):
+    from trialforge.redraft import analyze
+
+    crit = next((c for c in review["target"]["criteria"] if c.get("conditions")), None)
+    if crit is None:
+        pytest.skip("no criterion with conditions in the cached EL3 review")
+    d = analyze(review, crit["id"], f"{crit['label']} {crit['operator']}{crit['value_norm']:g} {crit['unit_norm']}", "")
+    assert all(isinstance(c, str) for c in d["original"]["conditions"] + d["changed"]["conditions_dropped"])
+    assert not any("{" in f["message"] for f in d["flags"])
