@@ -157,85 +157,61 @@ def main() -> int:
         report("wording scan on landing and every tab", "PASS" if not problems else "FAIL",
                json.dumps(problems, ensure_ascii=False)[:600] if problems else "")
 
-        # Verify tab runs and shows an outcome.
-        page.goto(review_url(tab="verify"), wait_until="networkidle")
-        label = page.get_by_test_id("examples-label")
-        # The label is styled uppercase, so compare its DOM text, not the rendered case.
-        label_ok = label.count() > 0 and "Example arguments written by the ProtocolOS team" in (label.first.text_content() or "")
-        report("Verify examples are labelled as the team's examples", "PASS" if label_ok else "FAIL")
-        run = page.locator("[data-testid^=challenge-]").first
-        if run.count() == 0:
-            report("tab-verify runs and shows an outcome", "FAIL", "no example button")
-        else:
-            run.click()
-            outcome = page.locator("[data-testid^=outcome-]").first
-            try:
-                outcome.wait_for(timeout=30000)
-                report("tab-verify runs and shows an outcome", "PASS", outcome.inner_text())
-            except Exception as exc:  # noqa: BLE001 - reported as a failed step
-                report("tab-verify runs and shows an outcome", "FAIL", str(exc)[:200])
+        # Redraft (tab-verify): on EL3 hemoglobin, a lowered limit gets a value_changed flag and a verifier status, and a
+        # rationale claiming safety gets a fail-level overclaim flag. The wording rule still holds with the flags on screen.
+        step = "Redraft flags a changed value and an overclaiming rationale (EL3 hemoglobin)"
+        try:
+            page.goto(review_url("hemoglobin", tab="verify", nct=NCT), wait_until="networkidle")
+            box = page.get_by_test_id("redraft-input")
+            box.wait_for(timeout=15000)
+            page.locator("[data-testid=redraft-flag]").first.wait_for(timeout=30000)
+            label_ok = page.get_by_test_id("tab-verify").inner_text().strip().endswith("Redraft")
+            box.fill("Hemoglobin \u2265 9.0 g/dL")
+            page.locator("[data-testid=redraft-flag][data-code=value_changed]").first.wait_for(timeout=30000)
+            page.get_by_test_id("redraft-status").wait_for(timeout=15000)
+            status = page.get_by_test_id("redraft-status").inner_text()
+            page.get_by_test_id("redraft-rationale").fill("this change is safe")
+            page.locator("[data-testid=redraft-flag][data-level=fail][data-code=overclaim]").first.wait_for(timeout=30000)
+            codes = page.evaluate("() => [...document.querySelectorAll('[data-testid=redraft-flag]')]"
+                                  ".map((e) => e.dataset.level + ':' + e.dataset.code)")
+            found = wording_problems(visible_text(page))
+            page.screenshot(path=str(SHOTS / "review-redraft-1440.png"), full_page=True)
+            ok = label_ok and not found
+            report(step, "PASS" if ok else "FAIL",
+                   f"status={status!r}; flags={codes}" + ("" if label_ok else ", tab label is not Redraft")
+                   + (f", wording {found}" if found else ""))
+        except Exception as exc:  # noqa: BLE001 - reported as a failed step
+            report(step, "FAIL", str(exc)[:200])
 
-        # Verify "Try another limit": a criterion without worked examples gets a verdict; hemoglobin also shows the
-        # NHANES share with its caveat. The wording rule still holds once the verifier's output is on screen.
-        for criterion, population in (("washout_corticosteroid", False), ("hemoglobin", True)):
-            step = f"Verify 'Try another limit' on {criterion}"
-            page.goto(review_url(criterion, tab="verify"), wait_until="networkidle")
-            try:
-                page.get_by_test_id("whatif-value").wait_for(timeout=15000)
-                proposed = page.get_by_test_id("whatif-value").input_value()
-                page.get_by_test_id("whatif-run").click()
-                page.get_by_test_id("whatif-outcome").wait_for(timeout=15000)
-                outcome = page.get_by_test_id("whatif-outcome").inner_text()
-                line = page.get_by_test_id("whatif-population")
-                pop_ok = (line.count() == 1 and "not an oncology patient eligibility estimate" in line.inner_text()) if population else True
-                found = wording_problems(visible_text(page))
-                ok = bool(outcome) and pop_ok and not found
-                report(step, "PASS" if ok else "FAIL",
-                       f"{proposed} -> {outcome}" + ("" if pop_ok else ", NHANES line or caveat missing") + (f", wording {found}" if found else ""))
-            except Exception as exc:  # noqa: BLE001 - reported as a failed step
-                report(step, "FAIL", str(exc)[:200])
-
-        # Verify on a trial where the engine found no similar trial: the panel says so instead of claiming agreement,
-        # and so does the Compare caption.
-        step = "Verify and Compare claim no precedent on a trial without similar trials"
+        # Compare on a trial where the engine found no similar trial: the caption says so instead of claiming agreement.
+        step = "Compare claims no precedent on a trial without similar trials"
         bare = "NCT02819518"
         try:
-            page.goto(review_url("anc", tab="verify", nct=bare), wait_until="networkidle")
-            page.get_by_test_id("whatif-precedent").wait_for(timeout=15000)
             count = page.evaluate("async (n) => (await (await fetch('/api/review/' + n)).json()).comparators.length", bare)
-            verify_text = page.get_by_test_id("whatif-precedent").inner_text()
             page.goto(review_url("anc", tab="compare", nct=bare), wait_until="networkidle")
             page.get_by_test_id("target-marker").wait_for(timeout=15000)
             compare_text = page.get_by_role("tabpanel").inner_text()
-            ok = count == 0 and "Every similar trial" not in verify_text and "No similar trial was found" in verify_text \
-                and "No similar trial was found for this protocol." in compare_text
-            report(step, "PASS" if ok else "FAIL", f"{count} similar trials; Verify: {verify_text}")
+            ok = count == 0 and "No similar trial was found for this protocol." in compare_text
+            report(step, "PASS" if ok else "FAIL", f"{count} similar trials")
         except Exception as exc:  # noqa: BLE001 - reported as a failed step
             report(step, "FAIL", str(exc)[:200])
 
         # Renal: these protocols state GFR, their similar trials creatinine clearance. The engine does not compare a
-        # different measure, so Verify offers none of its values and Compare lists those trials apart from the plot.
+        # different measure, so Compare lists those trials apart from the plot.
         for nct in (NCT, "NCT03088540"):
-            step = f"Verify and Compare keep a different measure out of the comparison ({nct} renal)"
+            step = f"Compare keeps a different measure out of the comparison ({nct} renal)"
             try:
-                page.goto(review_url("renal", tab="verify", nct=nct), wait_until="networkidle")
-                page.get_by_test_id("whatif-precedent").wait_for(timeout=15000)
                 directions = page.evaluate(
                     "async (n) => (await (await fetch('/api/review/' + n)).json()).comparison.renal"
                     ".filter((r) => r.criterion).map((r) => r.direction)", nct)
-                chips = page.get_by_test_id("whatif-chip").count()
-                prefill = page.get_by_test_id("whatif-value").input_value()
-                verify_text = page.get_by_test_id("whatif-precedent").inner_text()
                 page.goto(review_url("renal", tab="compare", nct=nct), wait_until="networkidle")
                 page.get_by_test_id("target-marker").wait_for(timeout=15000)
                 dots = page.get_by_test_id("comparator-dot").count()
                 listed = page.get_by_test_id("other-measure-row").count()
                 compare_text = page.get_by_role("tabpanel").inner_text()
-                ok = bool(directions) and set(directions) == {"different measure"} and chips == 0 and prefill == "" \
-                    and "different measure" in verify_text and dots == 0 and listed == len(directions) \
+                ok = bool(directions) and set(directions) == {"different measure"} and dots == 0 and listed == len(directions) \
                     and "use a different measure; not directly comparable." in compare_text
-                report(step, "PASS" if ok else "FAIL",
-                       f"engine {directions}; chips={chips}, prefill={prefill!r}, dots={dots}, listed={listed}; Verify: {verify_text}")
+                report(step, "PASS" if ok else "FAIL", f"engine {directions}; dots={dots}, listed={listed}")
             except Exception as exc:  # noqa: BLE001 - reported as a failed step
                 report(step, "FAIL", str(exc)[:200])
 
