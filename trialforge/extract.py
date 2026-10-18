@@ -541,7 +541,7 @@ def extract_regimen(study: dict, doc: PdfDoc | None) -> dict:
         for a in am.get("armGroups", [])
     ]
     # Registry drug/biological interventions the curated table does not recognize. Their presence means
-    # TrialLens must not conclude that "no arm contains a myelosuppressive (or hepatic, ...) agent".
+    # ProtocolOS must not conclude that "no arm contains a myelosuppressive (or hepatic, ...) agent".
     unrecognized = []
     for i in am.get("interventions", []):
         if i.get("type") not in ("DRUG", "BIOLOGICAL", "COMBINATION_PRODUCT"):

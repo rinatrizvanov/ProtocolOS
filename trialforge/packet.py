@@ -16,7 +16,7 @@ DECISION_OPTIONS = {
     "accept": "Accept suggested review action",
     "reject": "Reject (keep criterion as written)",
     "needs_medical_review": "Needs medical review",
-    "defer": "Defer / need more evidence",
+    "defer": "Defer / needs more information",
 }
 PRIORITY = {
     "Review recommended": ("High", "Evidence conflict or a criterion-specific FDA recommendation; discuss before finalizing."),
@@ -87,7 +87,7 @@ def build_packet(review: dict, decisions: dict | None = None) -> dict:
               "target_only_classes": c["similarity"]["target_only_classes"], "comparator_only_classes": c["similarity"]["comparator_only_classes"],
               "setting": c.get("tags", [])} for c in review["comparators"]]
     return {
-        "title": f"TrialLens eligibility review packet — {st['nct_id']}",
+        "title": f"ProtocolOS eligibility review packet — {st['nct_id']}",
         "generated_at": time.strftime("%Y-%m-%d %H:%M"),
         "trial": {k: st.get(k) for k in ("nct_id", "acronym", "title", "sponsor", "phases", "status", "start_date", "registry_url", "criteria_source")},
         "protocol_document": (st.get("protocol_docs") or [None])[0],
@@ -98,8 +98,10 @@ def build_packet(review: dict, decisions: dict | None = None) -> dict:
         "items": items,
         "decision_summary": {opt: sum(1 for d in decisions.values() if d["decision"] == opt) for opt in DECISION_OPTIONS},
         "notes": [
-            "TrialLens is a research prototype. Classifications are prompts for expert review, not safety or regulatory determinations.",
-            "Likely-purpose tags are inferred by TrialLens from the criterion type and regimen unless a protocol source is cited.",
+            "ProtocolOS is a research prototype. Classifications are prompts for expert review, not safety or regulatory determinations.",
+            "Rationale in non-public sources (preclinical toxicology, internal development data, regulator correspondence) cannot be seen by ProtocolOS.",
+            "Reviewer reasons are recorded as \"Reason: <label>.\" (the structured reason chosen in Decide), optionally followed by \"Note: <text>\" for free text.",
+            "Likely-purpose tags are inferred by ProtocolOS from the criterion type and regimen unless a protocol source is cited.",
             "A more permissive comparator shows a threshold was used, not that it was safe; a toxicity link supports having a threshold, not a specific value.",
             "Protocol PDFs on ClinicalTrials.gov are usually the final amendment, not the design-time version. "
             "A difference from peer trials does not show that a threshold changed across amendments or why it was chosen.",

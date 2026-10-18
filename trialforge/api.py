@@ -1,4 +1,4 @@
-"""TrialForge HTTP API + static dashboard.
+"""ProtocolOS HTTP API + static dashboard (Python package: trialforge).
 
 Run:  .venv/bin/uvicorn trialforge.api:app --port 8000
 """
@@ -27,7 +27,10 @@ REVIEW_CACHE = DATA / "reviews"
 EVAL_RESULTS = DATA / "eval_results.json"
 CHALK_STATUS = DATA / "chalk_status.json"
 
-app = FastAPI(title="TrialLens")
+app = FastAPI(
+    title="ProtocolOS",
+    description="Eligibility-criteria rationale review for oncology protocols: comparable trials, FDA guidance and a deterministic verifier.",
+)
 _resolvers = None
 _mem: dict[str, dict] = {}
 
@@ -43,6 +46,10 @@ def get_review(nct: str, as_of: str = "auto", refresh: bool = False) -> dict:
     nct = nct.strip().upper()
     if not re.fullmatch(r"NCT\d{8}", nct):
         raise HTTPException(400, "Expected an NCT identifier like NCT03409614")
+    # as_of goes into a cache file name and the ClinicalTrials.gov query, so it is checked here too,
+    # not only by the public-demo guard.
+    if not isinstance(as_of, str) or not re.fullmatch(r"auto|none|\d{4}-\d{2}-\d{2}", as_of):
+        raise HTTPException(400, "as_of must be auto, none or YYYY-MM-DD")
     key = f"{nct}_{as_of}"
     if not refresh and key in _mem:
         return _mem[key]
@@ -196,7 +203,7 @@ def packet(nct: str, format: str = "json", as_of: str = "auto"):
     r = get_review(nct, as_of)
     p = build_packet(r, load_decisions(r["target"]["study"]["nct_id"]))
     if format == "md":
-        return PlainTextResponse(to_markdown(p), headers={"Content-Disposition": f'attachment; filename="TrialLens_{nct}_review_packet.md"'})
+        return PlainTextResponse(to_markdown(p), headers={"Content-Disposition": f'attachment; filename="ProtocolOS_{nct}_review_packet.md"'})
     if format == "html":
         return HTMLResponse(to_html(p))
     return p
@@ -243,6 +250,11 @@ def evals():
 
 
 app.mount("/static", StaticFiles(directory=WEB), name="static")
+
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return FileResponse(WEB / "favicon.ico", media_type="image/x-icon")
 
 
 @app.get("/")
