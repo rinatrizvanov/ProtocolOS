@@ -6,11 +6,15 @@ Use localhost against `next dev`: it blocks dev resources for 127.0.0.1 (allowed
 
 Checks (task-triallens-v2-draft-ui.md, acceptance 2-5):
 - /draft with no query opens the first preset (nsclc-pd1-chemo) with one request, without scrolling;
-- that draft shows at least 3 drafted criteria, each with passing checks, a non-empty "Why this value", a
-  self-critique, a verdict chip and the precedent's own words; insufficient cards show the reason and no value;
-- the summary counts every criterion by verdict, and no internal score tally is shown;
-- preset el3-design-time puts the before/after table above the cards and counts its differing rows;
-- the downloaded JSON deep-equals GET /api/draft/{draft_id};
+- that draft shows at least 3 drafted criteria, each with passing checks, a verdict chip and the precedent's own
+  words in its compact row, and (once expanded) a non-empty "Why this value" and a self-critique; insufficient cards
+  show the reason and no value;
+- cards start compact except Review recommended and drafted Insufficient-evidence ones; a verdict-band link opens
+  the card it points to;
+- the verdict band counts every criterion, and no internal score tally is shown;
+- preset el3-design-time puts the before/after table above the cards, counts its differing rows among the rows that
+  state the same measure, and marks the renal row (GFR as written vs drafted CrCl) as a different measure;
+- the downloaded JSON deep-equals GET /api/draft/{draft_id}; the Markdown download lists every criterion;
 - a free idea (a condition plus 3 known drugs) returns a result or a visible error within 150 s;
 - with the last drug still typed (no Enter), a click on a setting, a phase or "Draft criteria" lands on the first try;
 - each preset click or idea sends exactly one draft request;
@@ -22,7 +26,6 @@ from __future__ import annotations
 
 import json
 import os
-import re
 import sys
 import time
 from pathlib import Path
@@ -96,26 +99,47 @@ def check_preset(page) -> str | None:
     check(page.evaluate("window.scrollY") == 0, "opening the first preset by itself does not scroll the page")
     drafted = page.locator('[data-testid="draft-criterion"][data-status="drafted"]')
     check(drafted.count() >= 3, f"at least 3 drafted criteria (found {drafted.count()})")
+    # Starting state, read before the loop below opens every card: compact cards exist, and a band link opens one.
+    compact = page.locator('[data-testid="draft-criterion"][data-open="false"]')
+    check(compact.count() > 0, f"{compact.count()} card(s) start as a compact row")
+    if compact.count():
+        cid = compact.first.get_attribute("id")
+        page.locator(f'[data-testid="draft-index"] a[href="#{cid}"]').click()
+        check(page.locator(f"#{cid}").get_attribute("data-open") == "true", f"band link opens the compact card #{cid}")
+        page.locator(f"#{cid}").get_by_test_id("draft-toggle").click()  # back to its starting state for the loop
+        page.evaluate("window.scrollTo(0, 0)")
     for i in range(drafted.count()):
         card = drafted.nth(i)
         name = card.get_attribute("data-analyte")
+        bucket = card.get_attribute("data-bucket")
+        should_open = bucket in ("review", "insufficient_value")
+        check((card.get_attribute("data-open") == "true") == should_open,
+              f"{name}: starts {'open' if should_open else 'compact'} ({bucket})")
         status = card.get_by_test_id("draft-checks").get_attribute("data-status")
         check(status in ("PASSED", "PASSED_WITH_WARNINGS"), f"{name}: checks status {status}")
-        why = card.get_by_test_id("draft-why").locator("li")
-        check(why.count() > 0 and why.first.inner_text().strip() != "", f"{name}: non-empty 'Why this value'")
-        check(card.get_by_test_id("draft-critique").count() == 1, f"{name}: self-critique present")
         check(card.get_by_test_id("draft-value").count() == 1, f"{name}: proposed value shown")
         check(card.get_by_test_id("draft-verdict").inner_text().strip() != "", f"{name}: verdict chip in the header")
-        quote = card.locator('[data-role="quote"]')
-        check(quote.count() == 1 and "“" in quote.inner_text(), f"{name}: precedent's own words quoted")
+        quote = card.get_by_test_id("draft-quote")
+        check(quote.count() == 1 and "“" in quote.inner_text(), f"{name}: precedent's own words quoted in the compact row")
+        # The reasoning sits behind the card's toggle; closed content has no innerText.
+        toggle = card.get_by_test_id("draft-toggle")
+        if toggle.get_attribute("aria-expanded") != "true":
+            toggle.click()
+        why = card.get_by_test_id("draft-why").locator("li")
+        check(why.count() > 0 and why.first.inner_text().strip() != "", f"{name}: non-empty 'Why this value'")
+        check(card.get_by_test_id("draft-critique").count() == 1 and card.get_by_test_id("draft-critique").inner_text().strip() != "",
+              f"{name}: self-critique present")
+        check("FDA, " not in card.get_by_test_id("draft-why").inner_text(), f"{name}: FDA passages are not listed as reasons for the value")
     text = page.get_by_test_id("draft-result").inner_text()
     check("support score" not in text and "FDA: FDA" not in text, "no internal score tally or doubled FDA prefix")
-    counts = page.get_by_test_id("draft-verdict-counts").inner_text()
-    total = sum(int(n) for n in re.findall(r"(\d+)\s+[a-z]", counts))
+    tiles = page.locator('[data-testid="draft-verdict-counts"] > li')
+    total = sum(int(tiles.nth(i).get_attribute("data-count")) for i in range(tiles.count()))
     cards = page.get_by_test_id("draft-criterion").count()
-    check(total == cards, f"verdict counts add up to the {cards} criteria ({counts!r})")
+    check(total == cards, f"verdict band counts add up to the {cards} criteria ({total})")
     check_insufficient(page)
     check(page.get_by_test_id("blind-spot").count() == 1, "blind-spot footer present")
+    check(page.title().startswith("Create criteria from an idea"), f"document title names the mode ({page.title()!r})")
+    check(page.get_by_role("link", name="Skip to draft").count() == 1, "skip link to the draft present")
     return page.get_by_test_id("draft-summary").get_attribute("data-draft-id")
 
 
@@ -133,13 +157,16 @@ def check_before_after(page) -> None:
     check(above, "before/after table comes before the cards")
     rows = page.locator('[data-testid="before-after"] tbody tr')
     differ = page.locator('[data-testid="before-after"] tbody tr[data-differs="true"]').count()
+    other = page.locator('[data-testid="before-after"] tbody tr[data-measure="different"]').count()
     line = page.get_by_test_id("before-after-count").inner_text()
-    check(line.startswith(f"{differ} of {rows.count()} criteria differ"), f"before/after count line matches the rows ({line!r})")
-    # EL3's renal threshold (>30 mL/min) is the value one of the four earlier trials used, not the drafted mode.
+    check(line.startswith(f"{differ} of {rows.count() - other} criteria differ"), f"before/after count line matches the rows ({line!r})")
+    # EL3 states GFR >30 mL/min/1.73m2 (p.67); the draft's >=50 mL/min is a creatinine clearance. A different measure is
+    # a question about intent, not a value difference, and is left out of the count.
     renal = page.locator('[data-testid="before-after"] tbody tr', has=page.locator('a[href="#draft-renal"]'))
-    used = renal.locator('[data-role="used"]')
-    check(used.count() == 1 and used.inner_text().strip() == "1 of 4 earlier trials used it",
-          f"renal row says how many earlier trials used the written value ({used.inner_text() if used.count() else 'missing'!r})")
+    rtext = renal.inner_text() if renal.count() else ""
+    check(renal.get_attribute("data-measure") == "different" and "Different measure (GFR vs CrCl)" in rtext and "1.73m²" in rtext
+          and renal.locator('[data-role="used"]').count() == 0,
+          f"renal row is marked as a different measure with the written unit ({rtext!r})")
 
 
 def check_download(page, draft_id: str) -> None:
@@ -149,6 +176,12 @@ def check_download(page, draft_id: str) -> None:
     saved = json.loads(Path(path).read_text(encoding="utf-8"))
     api = page.request.get(f"{BASE_URL}/api/draft/{draft_id}").json()
     check(saved == api, f"downloaded JSON deep-equals /api/draft/{draft_id}")
+    with page.expect_download() as info:
+        page.get_by_test_id("draft-download-md").click()
+    md = Path(info.value.path()).read_text(encoding="utf-8")
+    labels = [c["label"] for c in api["criteria"]]
+    check(all(f". {label}\n" in md for label in labels) and "cannot be seen by ProtocolOS" in md,
+          f"Markdown download lists all {len(labels)} criteria and the blind spot")
 
 
 def in_view(page, testid: str) -> bool:
@@ -221,14 +254,15 @@ def check_free_idea(page) -> None:
     chips = page.get_by_test_id("drug-chip")
     check(chips.count() == 3 and all(chips.nth(i).get_attribute("data-recognized") == "true" for i in range(3)),
           "3 drug chips, all recognized by the vocabulary")
-    if page.get_by_test_id("draft-result").count():
+    if page.get_by_test_id("draft-error").count():
+        # A failed idea keeps the previous draft on screen and reports the failure next to the submit button.
+        outcome = f"error: {page.get_by_test_id('draft-error').inner_text()}"
+    else:
         summary = page.get_by_test_id("draft-summary")
         cached = summary.get_attribute("data-cached") == "true"
         outcome = f"result, {'from the engine cache' if cached else 'computed now'}"
         check(cached or "cached" not in summary.inner_text(), "a draft computed now is not labelled cached")
         check_insufficient(page)
-    else:
-        outcome = f"error: {page.get_by_test_id('draft-error').inner_text()}"
     check(took <= 150, f"free idea answered in {took:.1f} s ({outcome})")
 
 
