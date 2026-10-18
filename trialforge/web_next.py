@@ -3,7 +3,7 @@
 Installed by the module hook loop in `routes_graph.install`. Two things:
 
 - `GET /api/build` -> {"sha", "web_next", "built_at"}: the git SHA the container was built from
-  (PROTOCOLOS_BUILD_SHA, legacy TRIALLENS_BUILD_SHA, else "unknown"), whether the static export exists,
+  (env("BUILD_SHA") through settings.env, else "unknown"), whether the static export exists,
   and PROTOCOLOS_BUILT_AT (else the time this process started, UTC).
 - The fallback mount, active only when `web-next/out/index.html` exists: the static export at `/app`
   and a 307 from exactly `/` (empty query) to `/app/`. Any other path, and `/?nct=...`, pass through
