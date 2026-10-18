@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useRef, useState, type FormEvent } from "react";
+import { Fragment, useEffect, useRef, useState, type FormEvent } from "react";
 import { QUESTIONS, investigate, type Investigation, type Question, type Selection, type Statement } from "@/lib/api";
 import { Failed, Frame } from "../components/Frame";
 
@@ -101,6 +101,11 @@ export default function Screen4({ nct, criterionId }: Selection) {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState("");
   const input = useRef<HTMLInputElement>(null);
+  const log = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    log.current?.scrollTo({ top: log.current.scrollHeight });
+  }, [turns]);
   const busy = turns.some((t) => t.run.status === "busy");
   const latest = turns.findLast((t) => t.run.status === "ready")?.run;
 
@@ -150,7 +155,7 @@ export default function Screen4({ nct, criterionId }: Selection) {
       details={details}
     >
       <div className="flex w-full max-w-4xl flex-col gap-4">
-        <div role="log" aria-live="polite" aria-label="Conversation" className="flex max-h-[50vh] flex-col gap-4 overflow-y-auto">
+        <div ref={log} role="log" aria-live="polite" aria-label="Conversation" className="flex max-h-[50vh] flex-col gap-4 overflow-y-auto">
           {turns.map((t) => (
             <Fragment key={t.id}>
               <p data-testid="chat-message" data-role="user" className="max-w-[80%] self-end rounded-md bg-line px-4 py-2 text-ink">
