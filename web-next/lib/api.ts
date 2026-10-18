@@ -232,6 +232,27 @@ export interface Recommendation {
 export const verifyRecommendation = (nct: string, recommendation: Recommendation) =>
   post<Verification>("/api/verify", { nct, recommendation });
 
+// NHANES share of US adults below a "≥" limit (trialforge/nhanes.below_threshold); a general-population measure.
+export interface PopulationBelow {
+  threshold: number;
+  unit: string;
+  overall: { n: number; pct: number; se: number };
+  source: { dataset: string; url: string };
+  caveat: string;
+}
+
+export interface WhatIf {
+  alternative: number;
+  comparators: { nct_id: string; acronym: string | null; threshold: number; relation_to_alternative: string }[];
+  // Built by the engine from the comparators that used exactly the proposed limit.
+  auto_recommendation: Recommendation;
+  verification: Verification["deterministic"];
+  population: { current: PopulationBelow; alternative: PopulationBelow } | null;
+}
+
+export const whatIf = (nct: string, criterionId: string, value: number) =>
+  post<WhatIf>("/api/whatif", { nct, criterion_id: criterionId, value });
+
 export const getPlanted = () => request<Planted>("/api/planted");
 export const getEvals = () => request<Evals>("/api/evals");
 export const getProtocolPage = (nct: string, page: number) =>

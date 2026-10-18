@@ -175,6 +175,26 @@ def main() -> int:
             except Exception as exc:  # noqa: BLE001 - reported as a failed step
                 report("tab-verify runs and shows an outcome", "FAIL", str(exc)[:200])
 
+        # Verify "Try another limit": a criterion without worked examples gets a verdict; hemoglobin also shows the
+        # NHANES share with its caveat. The wording rule still holds once the verifier's output is on screen.
+        for criterion, population in (("washout_corticosteroid", False), ("hemoglobin", True)):
+            step = f"Verify 'Try another limit' on {criterion}"
+            page.goto(review_url(criterion, tab="verify"), wait_until="networkidle")
+            try:
+                page.get_by_test_id("whatif-value").wait_for(timeout=15000)
+                proposed = page.get_by_test_id("whatif-value").input_value()
+                page.get_by_test_id("whatif-run").click()
+                page.get_by_test_id("whatif-outcome").wait_for(timeout=15000)
+                outcome = page.get_by_test_id("whatif-outcome").inner_text()
+                line = page.get_by_test_id("whatif-population")
+                pop_ok = (line.count() == 1 and "not an oncology patient eligibility estimate" in line.inner_text()) if population else True
+                found = wording_problems(visible_text(page))
+                ok = bool(outcome) and pop_ok and not found
+                report(step, "PASS" if ok else "FAIL",
+                       f"{proposed} -> {outcome}" + ("" if pop_ok else ", NHANES line or caveat missing") + (f", wording {found}" if found else ""))
+            except Exception as exc:  # noqa: BLE001 - reported as a failed step
+                report(step, "FAIL", str(exc)[:200])
+
         # Decide: a structured reason and a fresh note reach the markdown packet (needs WS-E's reason buttons).
         page.goto(review_url(tab="decide"), wait_until="networkidle")
         page.wait_for_timeout(800)

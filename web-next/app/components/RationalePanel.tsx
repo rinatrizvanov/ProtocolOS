@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { getGraph, getReview, type Classification, type CriterionReview, type Graph, type Selection } from "@/lib/api";
-import { DISPLAY_CLASSIFICATION, getRationale, type ArmAttribution, type RationaleCategory } from "@/lib/contracts";
+import { getGraph, getReview, type Classification, type CriterionReview, type Selection } from "@/lib/api";
+import { DISPLAY_CLASSIFICATION, getRationale } from "@/lib/contracts";
+import { useApi } from "@/lib/useApi";
 import { EvidenceColumns } from "../screens/EvidenceColumns";
 import { Failed, Pending } from "./Frame";
 import { EyeOffIcon, PeopleIcon } from "./Icons";
@@ -26,39 +26,18 @@ const GROUP_TEXT: Record<string, string> = {
   specific_fda: "FDA guidance specific to this criterion",
 };
 
-type Loaded<T> = { status: "loading" } | { status: "error"; message: string } | { status: "ready"; data: T };
-type RationaleRow = { categories: RationaleCategory[]; arm_attribution: ArmAttribution } | null;
-
-function useLoad<T>(fetcher: () => Promise<T>, deps: unknown[]): Loaded<T> {
-  const [state, setState] = useState<Loaded<T>>({ status: "loading" });
-  useEffect(() => {
-    let live = true;
-    fetcher().then(
-      (data) => live && setState({ status: "ready", data }),
-      (err: unknown) => live && setState({ status: "error", message: err instanceof Error ? err.message : String(err) }),
-    );
-    return () => {
-      live = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
-  return state;
-}
-
 function threshold(row: CriterionReview): string {
   const c = row.criterion;
   return c.value_norm === null ? "no numeric limit" : `${c.operator} ${c.value_norm}${c.unit_norm ? ` ${c.unit_norm}` : ""}`;
 }
 
 // Rationale tab (merges the old Why view): category badges, arm attribution, the scoring rules, the blind spot.
+// The review page keys the tab panel on trial, criterion and tab, so each selection mounts a fresh panel.
 export function RationalePanel({ nct, criterionId }: Selection) {
-  const review = useLoad(() => getReview(nct), [nct]);
-  const graph = useLoad<Graph>(() => getGraph(nct, criterionId), [nct, criterionId]);
+  const review = useApi(() => getReview(nct));
+  const graph = useApi(() => getGraph(nct, criterionId));
   // Fetched in parallel with the review; a failure hides badges and the arm line and implies no finding.
-  const rationale = useLoad<RationaleRow>(
-    () => getRationale(nct).then((r) => r.criteria[criterionId] ?? null),
-    [nct, criterionId],
-  );
+  const rationale = useApi(() => getRationale(nct).then((r) => r.criteria[criterionId] ?? null));
 
   if (review.status === "loading") return <Pending label="Loading the rationale…" />;
   if (review.status === "error") return <Failed message={review.message} />;
@@ -141,12 +120,15 @@ export function RationalePanel({ nct, criterionId }: Selection) {
           <h3 id="open-heading" className="text-sm font-semibold uppercase tracking-wide text-muted">
             Open questions for the team
           </h3>
-          <ul data-role="quote" className="list-disc space-y-1 pl-5 text-sm text-ink">
-            {row.missing_evidence.map((m) => (
-              <li key={m}>{m}</li>
-            ))}
-            {extra.suggested_action ? <li>{extra.suggested_action.text}</li> : null}
-          </ul>
+          <figure className="rounded-md border border-line bg-white/60 px-3 py-2">
+            <figcaption className="text-xs font-medium text-muted">Engine output, verbatim</figcaption>
+            <ul data-role="quote" className="mt-1 list-disc space-y-1 pl-5 text-sm text-ink">
+              {row.missing_evidence.map((m) => (
+                <li key={m}>{m}</li>
+              ))}
+              {extra.suggested_action ? <li>{extra.suggested_action.text}</li> : null}
+            </ul>
+          </figure>
         </section>
       ) : null}
 

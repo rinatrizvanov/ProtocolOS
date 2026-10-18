@@ -10,7 +10,6 @@ const ITEMS = [
 export function AppHeader({ mode }: { mode: "home" | "review" | "draft" | "tour" }) {
   // Every route is one level deep, so "./" from the landing and "../" elsewhere both reach the root.
   const root = mode === "home" ? "./" : "../";
-  const prefix = mode === "home" ? "./" : "../";
   return (
     <header data-mode={mode} className="border-b border-line bg-paper">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-5 gap-y-2 px-4 py-2.5 sm:px-6">
@@ -23,7 +22,7 @@ export function AppHeader({ mode }: { mode: "home" | "review" | "draft" | "tour"
             <a
               key={m}
               data-testid={testid}
-              href={`${prefix}${href}`}
+              href={`${root}${href}`}
               aria-current={m === mode ? "page" : undefined}
               className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink ${
                 m === mode ? "bg-line text-ink" : "text-muted hover:bg-line/60 hover:text-ink"
