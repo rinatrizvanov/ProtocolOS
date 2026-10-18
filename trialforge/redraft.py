@@ -179,12 +179,14 @@ def analyze(review: dict, criterion_id: str, text: str, rationale: str = "", res
 
             if analyte in nhanes.ANALYTES and p["operator"] in GE and not changed["unit"]:
                 cur, new = _below(analyte, crit["value_norm"]), _below(analyte, p["value_norm"])
+                # The Duffy-null sentence of the NHANES caveat concerns neutrophil counts only.
+                caveat = nhanes.CAVEAT if analyte == "anc" else nhanes.CAVEAT.split(". ")[0].rstrip(".") + "."
                 population = {"current_pct": cur["overall"]["pct"], "proposed_pct": new["overall"]["pct"],
-                              "rule": "share of US adults below the limit", "caveat": nhanes.CAVEAT}
+                              "rule": "share of US adults below the limit", "caveat": caveat}
                 versus = f" ({cur['overall']['pct']}% below the protocol's {_fmt(crit['value_norm'])})" if changed["value"] else ""
                 flags.append(_flag("info", "population",
                                    f"{new['overall']['pct']}% of US adults fall below {_fmt(p['value_norm'])} {p['unit_norm']}{versus}. "
-                                   f"{nhanes.CAVEAT}", {"label": "NHANES", "url": None, "page": None}))
+                                   f"{caveat}", {"label": "NHANES", "url": None, "page": None}))
 
     for ev in item.get("evidence", []):
         if ev.get("kind") == "regimen" and ev.get("stance") == "supports":

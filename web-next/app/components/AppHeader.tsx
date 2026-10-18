@@ -1,3 +1,5 @@
+import Image from "next/image";
+import mark from "../../public/protocolos-mark.png";
 import { DocCheckIcon, PenIcon, PlayIcon } from "./Icons";
 
 // Shared top bar. Links are relative so they also resolve under a basePath or the /app export mount.
@@ -18,8 +20,10 @@ export function AppHeader({ mode }: { mode: "home" | "review" | "draft" | "tour"
           href={root}
           className="flex min-h-11 shrink-0 items-center gap-2 text-base font-semibold tracking-tight text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
         >
-          <span aria-hidden className="grid h-6 w-6 place-items-center rounded bg-ink text-xs font-bold text-paper">P</span>
-          ProtocolOS
+          <Image src={mark} alt="" width={24} height={24} priority className="h-6 w-6 rounded" />
+          <span>
+            Protocol<span className="text-[#0066fa]">OS</span>
+          </span>
         </a>
         <nav aria-label="Modes" className="flex items-center gap-0.5 text-sm sm:flex-wrap sm:gap-1">
           {ITEMS.map(({ mode: m, testid, href, label, short, Icon }) => (

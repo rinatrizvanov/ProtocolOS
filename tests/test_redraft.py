@@ -124,3 +124,12 @@ def test_conditions_are_text(review):
     d = analyze(review, crit["id"], f"{crit['label']} {crit['operator']}{crit['value_norm']:g} {crit['unit_norm']}", "")
     assert all(isinstance(c, str) for c in d["original"]["conditions"] + d["changed"]["conditions_dropped"])
     assert not any("{" in f["message"] for f in d["flags"])
+
+
+def test_duffy_caveat_only_on_anc(review):
+    from trialforge.redraft import analyze
+
+    hgb = analyze(review, "hemoglobin", "Hemoglobin ≥ 9.0 g/dL", "")
+    anc = analyze(review, "anc", "Absolute neutrophil count ≥1.0 × 10^9/L", "")
+    assert "Duffy" not in hgb["population"]["caveat"] and "Duffy" in anc["population"]["caveat"]
+    assert not any("Duffy" in f["message"] for f in hgb["flags"])

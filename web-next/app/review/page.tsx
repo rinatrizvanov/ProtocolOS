@@ -53,8 +53,8 @@ function navigate(next: Omit<Parsed, "missing" | "missingCriterion"> & Partial<P
   const params = new URLSearchParams({ nct: next.nct });
   if (next.criterionId) params.set("c", next.criterionId);
   if (next.tab !== "rationale") params.set("tab", next.tab);
-  if (next.missing) params.set("missing", next.missing);
-  if (next.missingCriterion) params.set("missingc", next.missingCriterion);
+  if (next.missing != null) params.set("missing", next.missing);
+  if (next.missingCriterion != null) params.set("missingc", next.missingCriterion);
   // Keep the current path so the page works at /review, /review/ and under any mount point.
   const url = `${window.location.pathname}?${params.toString()}`;
   if (replace) window.history.replaceState(null, "", url);
@@ -63,6 +63,8 @@ function navigate(next: Omit<Parsed, "missing" | "missingCriterion"> & Partial<P
 }
 
 const clip = (s: string, n = 40) => (s.length > n ? `${s.slice(0, n)}…` : s);
+// A notice echoes only what looks like a trial or criterion id; anything else in the URL is not repeated on the page.
+const echo = (s: string | null): string | null => (s === null ? null : /^[A-Za-z0-9_-]{1,24}$/.test(s.trim()) ? s.trim() : "");
 
 function parseSelection(search: string): Parsed {
   const params = new URLSearchParams(search);
@@ -70,11 +72,11 @@ function parseSelection(search: string): Parsed {
   const asked = raw.trim().toUpperCase();
   const rawTab = params.get("tab");
   const tab = (TABS.find((t) => t.id === rawTab)?.id ?? "rationale") as TabId;
-  const missing = params.get("missing");
-  const missingCriterion = params.get("missingc");
+  const missing = echo(params.get("missing"));
+  const missingCriterion = echo(params.get("missingc"));
   return (CACHED_TRIALS as readonly string[]).includes(asked)
     ? { nct: asked, criterionId: params.get("c"), tab, missing, missingCriterion }
-    : { nct: NCT, criterionId: null, tab, missing: clip(raw), missingCriterion: null };
+    : { nct: NCT, criterionId: null, tab, missing: echo(raw), missingCriterion: null };
 }
 
 function threshold(c: Criterion): string {
@@ -292,12 +294,14 @@ function EngineDown({ message, onRetry }: { message: string; onRetry: () => void
 }
 
 function Notice({ missing, missingCriterion, fallbackLabel }: { missing: string | null; missingCriterion: string | null; fallbackLabel: string | null }) {
-  if (!missing && !missingCriterion) return null;
+  if (missing === null && missingCriterion === null) return null;
   return (
     <p data-testid="deeplink-notice" role="status" className="rounded-md border border-look bg-look-soft/50 px-3 py-2 text-sm text-ink">
-      {missing ? `${missing} is not one of the ${CACHED_TRIALS.length} cached trials; showing ${NCT}.` : null}
-      {missing && missingCriterion ? " " : null}
-      {missingCriterion ? `This trial has no criterion "${missingCriterion}"; showing ${fallbackLabel ?? "the first criterion"}.` : null}
+      {missing !== null ? `${missing || "The requested trial"} is not one of the ${CACHED_TRIALS.length} cached trials; showing ${NCT}.` : null}
+      {missing !== null && missingCriterion !== null ? " " : null}
+      {missingCriterion !== null
+        ? `This trial has no criterion ${missingCriterion ? `"${missingCriterion}"` : "by that name"}; showing ${fallbackLabel ?? "the first criterion"}.`
+        : null}
     </p>
   );
 }
