@@ -421,7 +421,7 @@ export default function DraftPage() {
             </p>
           ) : null}
 
-          {run.state === "ready" ? <Result draft={run.draft} presetId={run.presetId} /> : null}
+          {run.state === "ready" ? <Result key={run.draft.draft_id} draft={run.draft} presetId={run.presetId} /> : null}
 
           <footer data-testid="blind-spot" className="mt-auto border-t border-line pt-3 text-xs text-muted">
             <p>{BLIND_SPOT}</p>

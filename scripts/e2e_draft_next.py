@@ -32,7 +32,8 @@ from playwright.sync_api import sync_playwright
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:3767").rstrip("/")
 OUT = Path(os.environ.get("SHOT_DIR", "/tmp/triallens-logs/v2/draft-ui"))
 DRAFT_TIMEOUT_MS = 150_000
-# Phase 2 uveal melanoma has few regimen-matched precedents, so its draft also has insufficient-evidence cards.
+# Phase 2 uveal melanoma has few regimen-matched precedents, so its draft also has insufficient-evidence cards. The
+# engine caches drafts, so only the first run on a fresh cache computes it; the log line says which one happened.
 FREE_IDEA = ("uveal melanoma", ["pembrolizumab", "carboplatin", "etoposide"], "PHASE2")
 
 failures: list[str] = []
@@ -75,6 +76,7 @@ def check_insufficient(page) -> None:
         check(card.get_by_test_id("draft-value").count() == 0, f"{name}: insufficient card has no value")
         reason = card.get_by_test_id("draft-insufficient")
         check(reason.count() == 1 and reason.inner_text().strip() != "", f"{name}: insufficient card states the reason")
+        check("not this value" not in card.inner_text(), f"{name}: no wording about a value the card does not propose")
 
 
 def open_draft_page(page, what: str) -> list[str]:
@@ -133,6 +135,11 @@ def check_before_after(page) -> None:
     differ = page.locator('[data-testid="before-after"] tbody tr[data-differs="true"]').count()
     line = page.get_by_test_id("before-after-count").inner_text()
     check(line.startswith(f"{differ} of {rows.count()} criteria differ"), f"before/after count line matches the rows ({line!r})")
+    # EL3's renal threshold (>30 mL/min) is the value one of the four earlier trials used, not the drafted mode.
+    renal = page.locator('[data-testid="before-after"] tbody tr', has=page.locator('a[href="#draft-renal"]'))
+    used = renal.locator('[data-role="used"]')
+    check(used.count() == 1 and used.inner_text().strip() == "1 of 4 earlier trials used it",
+          f"renal row says how many earlier trials used the written value ({used.inner_text() if used.count() else 'missing'!r})")
 
 
 def check_download(page, draft_id: str) -> None:

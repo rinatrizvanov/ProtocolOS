@@ -211,7 +211,8 @@ export default function DraftCard({ c, precedents }: { c: DraftCriterion; preced
   const drafted = c.status === "drafted" && c.proposed !== null;
   // The engine's last why line repeats the self-critique; its FDA lines are citations, listed under their own toggle.
   const why = c.why_generated.filter((w) => !w.startsWith("Self-critique:"));
-  const plain = why.filter((w) => !w.startsWith("FDA:"));
+  // With no value proposed, the safety line's "not this value" has nothing to point at.
+  const plain = why.filter((w) => !w.startsWith("FDA:")).map((w) => (drafted ? w : w.replace(/, not this value\.$/, ", not a specific value.")));
   const fda = why.filter((w) => w.startsWith("FDA:")).map((w) => w.replace(/^FDA: (FDA, )?/, "FDA, "));
   // The explanation starts with the engine label the verdict chip shows, and ends with the internal score tally.
   const body = (c.critique.explanation.startsWith(`${cls}: `) ? c.critique.explanation.slice(cls.length + 2) : c.critique.explanation).replace(

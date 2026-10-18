@@ -23,32 +23,52 @@ interface ReviewLite {
 
 interface Row {
   c: DraftCriterion;
-  written: string;
+  // null when no criterion for this analyte was extracted from the protocol.
+  written: string | null;
   source: { href: string; page: number } | null;
   drafted: string | null;
   differs: boolean;
+  // How many of the earlier trials that state this criterion used the protocol's written value (k of n), and how many
+  // regimen-matched precedents the draft read in all.
+  used: { k: number; n: number; total: number };
 }
 
-function toRow(c: DraftCriterion, w: ReviewCriterion): Row {
+const sameValue = (a: { operator: string; value: number; unit: string }, op: string, v: number, u: string) =>
+  a.operator === op && a.unit === u && Math.abs(a.value - v) < 1e-9;
+
+function toRow(c: DraftCriterion, w: ReviewCriterion | undefined, total: number): Row {
+  const n = c.distribution.reduce((sum, d) => sum + d.count, 0);
+  const drafted = c.proposed ? `${c.proposed.operator}${fmt(c.proposed.value)} ${c.proposed.unit}` : null;
+  if (!w) return { c, written: null, source: null, drafted, differs: true, used: { k: 0, n, total } };
   const wv = w.value_norm ?? w.value;
   const wu = w.unit_norm ?? w.unit ?? "";
-  const same = c.proposed !== null && wv !== null && c.proposed.operator === w.operator && Math.abs(c.proposed.value - wv) < 1e-9;
+  const same = c.proposed !== null && wv !== null && sameValue(c.proposed, w.operator, wv, wu);
+  const k = wv === null ? 0 : (c.distribution.find((d) => sameValue(d, w.operator, wv, wu))?.count ?? 0);
   return {
     c,
     written: `${w.operator}${wv !== null ? fmt(wv) : "?"} ${wu}`.trim(),
     source: w.source ? { href: `${w.source.url}#page=${w.source.page}`, page: w.source.page } : null,
-    drafted: c.proposed ? `${c.proposed.operator}${fmt(c.proposed.value)} ${c.proposed.unit}` : null,
+    drafted,
     differs: c.proposed !== null && !same,
+    used: { k, n, total },
   };
 }
 
+const trials = (n: number) => `${n} earlier trial${n === 1 ? "" : "s"}`;
+
 function Question({ row }: { row: Row }) {
   if (row.drafted === null) return <span className="text-muted">No precedent value to compare</span>;
-  if (!row.differs) return <span className="text-muted">Same as precedents</span>;
+  if (!row.differs) return <span className="text-muted">Same as drafted</span>;
+  const { k, n, total } = row.used;
   return (
-    <span className="inline-flex items-center gap-1 font-medium text-ink">
-      <Icon d={WARN} className="text-look" />
-      Differs: ask why
+    <span className="inline-flex flex-col gap-0.5">
+      <span className="inline-flex items-center gap-1 font-medium text-ink">
+        <Icon d={WARN} className="text-look" />
+        {row.written === null ? "Not found in the protocol: ask why" : "Differs: ask why"}
+      </span>
+      <span data-role="used" className="text-muted">
+        {row.written === null ? `${n} of ${trials(total)} state it` : k > 0 ? `${k} of ${trials(n)} used it` : "no earlier trial used it"}
+      </span>
     </span>
   );
 }
@@ -62,6 +82,7 @@ function CriterionLink({ c }: { c: DraftCriterion }) {
 }
 
 function Written({ row }: { row: Row }) {
+  if (row.written === null) return <span className="text-muted">Not found</span>;
   return (
     <>
       {row.written}
@@ -94,7 +115,10 @@ export default function BeforeAfter({ draft, nct }: { draft: Draft; nct: string 
   if (!review) return <p className="text-sm text-muted">Loading the protocol as written…</p>;
 
   const written = new Map(review.reviews.map((r) => [r.criterion.analyte ?? r.criterion.id, r.criterion]));
-  const rows = draft.criteria.filter((c) => written.has(c.analyte)).map((c) => toRow(c, written.get(c.analyte)!));
+  // A drafted criterion the protocol does not state is a difference too; an insufficient one with nothing written is not shown.
+  const rows = draft.criteria
+    .filter((c) => written.has(c.analyte) || c.proposed !== null)
+    .map((c) => toRow(c, written.get(c.analyte), draft.precedents.length));
   const differing = rows.filter((r) => r.differs).length;
   const study = review.target.study;
 
@@ -109,7 +133,7 @@ export default function BeforeAfter({ draft, nct }: { draft: Draft; nct: string 
         </p>
       </div>
       <p data-testid="before-after-count" className="text-sm font-medium text-ink">
-        {differing} of {rows.length} criteria differ from what earlier trials used
+        {differing} of {rows.length} criteria differ from the value drafted from earlier trials
       </p>
 
       <div className="hidden overflow-hidden rounded-lg border border-line bg-white sm:block">
