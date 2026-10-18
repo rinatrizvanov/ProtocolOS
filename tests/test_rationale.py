@@ -3,13 +3,13 @@
 Uses the cached reviews in data/reviews/ (no network); a trial whose review is not cached is skipped.
 """
 import copy
-import importlib
 import json
 
 import pytest
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from scripts.brand_check import LEGACY
 from trialforge import rationale
 from trialforge.api import REVIEW_CACHE
 from trialforge.verifier import OVERCLAIM
@@ -92,6 +92,28 @@ def test_arm_driver_rules(arms, driver):
     assert not OVERCLAIM.search(arm["text"]) and "caus" not in arm["text"].lower()
 
 
+def test_arm_text_names_only_matched_agents_and_other_arms():
+    arms = [{"label": "Pembrolizumab", "type": "EXPERIMENTAL", "interventions": []},
+            {"label": "Carboplatin doublet", "type": "ACTIVE_COMPARATOR", "interventions": []},
+            {"label": "Placebo", "type": "PLACEBO_COMPARATOR", "interventions": []}]
+    arm = rationale.arm_attribution(_review(arms, ("carboplatin", "cisplatin", "pembrolizumab")), "anc")
+    assert arm["driver"] == "comparator"
+    assert "Of these, carboplatin is listed in the comparator / standard-of-care arm(s) only ('Carboplatin doublet')" in arm["text"]
+    assert "the other arm(s) ('Pembrolizumab'; 'Placebo') do not list it" in arm["text"]
+    assert "investigational arm(s) (" not in arm["text"] and arm["text"].endswith("matched cisplatin.")
+    assert {a["name"]: a["arms"] for a in arm["agents"]} == {"carboplatin": "comparator", "cisplatin": "undetermined"}
+
+
+def test_all_arms_text_distinguishes_each_from_at_least_one():
+    each = rationale.arm_attribution(_review([{"label": "A", "type": "EXPERIMENTAL", "interventions": ["Drug: Carboplatin"]},
+                                              {"label": "B", "type": "ACTIVE_COMPARATOR", "interventions": ["Drug: Carboplatin"]}]), "anc")
+    assert each["driver"] == "all_arms" and "It is listed in both arms, investigational and comparator alike." in each["text"]
+    some = rationale.arm_attribution(_review([{"label": "A", "type": "EXPERIMENTAL", "interventions": ["Drug: Carboplatin"]},
+                                              {"label": "B", "type": "ACTIVE_COMPARATOR", "interventions": ["Drug: Gemcitabine"]}],
+                                             ("carboplatin", "gemcitabine")), "anc")
+    assert some["driver"] == "all_arms" and "At least one of them is listed in each of the 2 arms" in some["text"]
+
+
 def test_no_flagged_agent_is_not_applicable():
     arm = rationale.arm_attribution(_review([{"label": "Pembrolizumab", "type": "EXPERIMENTAL"}], ("pembrolizumab",)), "anc")
     assert arm["driver"] == "not_applicable" and arm["property"] == "myelosuppression (neutropenia)"
@@ -130,7 +152,7 @@ def test_all_texts_pass_overclaim(nct):
     assert sorted(rep) == REPORT_KEYS and rep["schema_version"] == 1 and rep["nct_id"] == nct
     texts = rationale.texts(rep)
     assert texts and not [t for t in texts if OVERCLAIM.search(t)]
-    assert "ProtocolOS" in rep["blind_spot"] and "TrialLens" not in " ".join(texts)
+    assert "ProtocolOS" in rep["blind_spot"] and not LEGACY.search(" ".join(texts))
     for v in rep["criteria"].values():
         assert "caus" not in v["arm_attribution"]["text"].lower()
 
@@ -170,5 +192,4 @@ def test_route_public_cold_403(client, monkeypatch, el3):
 def test_installed_on_the_api_app(el3):
     import trialforge.api as api
 
-    api = importlib.reload(api)
     assert any(getattr(r, "path", "") == "/api/rationale/{nct}" for r in api.app.routes)

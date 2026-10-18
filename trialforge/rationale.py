@@ -198,31 +198,39 @@ def arm_attribution(review: dict, criterion_id: str) -> dict:
     agents = [{"name": n, "drug_class": druglib.BY_NAME[n].drug_class, "arms": _driver(per_agent[n], roles)}
               for n in flagged]
     driver = _driver(has, roles)
-    names = ", ".join(flagged)
+    listed = [n for n in flagged if any(per_agent[n])]
+    unmatched = [n for n in flagged if not any(per_agent[n])]
     with_arms = [a for a in arms if a["has_agent"]]
     without = [a for a in arms if not a["has_agent"]]
+    one = len(listed) == 1
+    # Subject of the arm sentence: only the agents some arm matched, so an unmatched agent is never placed in an arm.
+    subject = ("It is" if one else "They are") if not unmatched else f"Of these, {', '.join(listed)} {'is' if one else 'are'}"
+    them = "it" if one else "them"
+    lead = f"Regimen agents flagged for this criterion ({why}): {', '.join(flagged)}. "
     if not raw_arms:
-        text = (f"Agents flagged for {why} ({names}) are in the regimen, but the registry lists no arms, so the arm "
-                "that lists them could not be determined.")
-    elif driver == "all_arms":
-        both = {"investigational", "comparator"} <= set(roles)
-        text = (f"Agents flagged for {why} ({names}) are listed in all {len(arms)} arms"
-                + (", investigational and comparator alike." if both else "."))
-    elif driver == "investigational":
-        text = (f"Agents flagged for {why} ({names}) are listed in the investigational arm(s) only "
-                f"({_labels(with_arms)}); the other arm(s) ({_labels(without)}) do not list them.")
-    elif driver == "comparator":
-        text = (f"Agents flagged for {why} ({names}) are listed in the comparator / standard-of-care arm(s) only "
-                f"({_labels(with_arms)}); the investigational arm(s) ({_labels(without)}) do not list them.")
-    elif driver == "mixed":
-        text = (f"Agents flagged for {why} ({names}) are listed in some investigational and some comparator arms "
-                f"({_labels(with_arms)}), not in all arms.")
+        body = "The registry lists no arms, so the arm that lists them could not be determined."
     elif not with_arms:
-        text = (f"Agents flagged for {why} ({names}) are in the regimen, but no registry arm label or intervention "
-                "name lists them, so the arm could not be determined.")
+        body = "No registry arm label or intervention name lists them, so the arm could not be determined."
+    elif driver == "all_arms":
+        alike = ", investigational and comparator alike" if {"investigational", "comparator"} <= set(roles) else ""
+        span = "both arms" if len(arms) == 2 else f"all {len(arms)} arms"
+        every = all(all(per_agent[n]) for n in flagged)
+        body = (f"{'It is' if one else 'Each is'} listed in {span}{alike}." if every
+                else f"At least one of them is listed in each of the {len(arms)} arms{alike}.")
+    elif driver == "investigational":
+        body = (f"{subject} listed in the investigational arm(s) only ({_labels(with_arms)}); the other arm(s) "
+                f"({_labels(without)}) do not list {them}.")
+    elif driver == "comparator":
+        body = (f"{subject} listed in the comparator / standard-of-care arm(s) only ({_labels(with_arms)}); the other "
+                f"arm(s) ({_labels(without)}) do not list {them}.")
+    elif driver == "mixed":
+        body = f"{subject} listed in some investigational and some comparator arms ({_labels(with_arms)}), not in all arms."
     else:
-        text = (f"Agents flagged for {why} ({names}) are listed in {_labels(with_arms)}; the registry does not mark "
-                "those arms as investigational or comparator, so the driving arm could not be determined.")
+        body = (f"{subject} listed in {_labels(with_arms)}; the registry does not mark those arms as investigational or "
+                "comparator, so the driving arm could not be determined.")
+    if with_arms and unmatched:
+        body += f" No registry arm label or intervention name matched {', '.join(unmatched)}."
+    text = lead + body
     return {**base, "driver": driver if raw_arms else "undetermined", "agents": agents, "arms": arms, "text": text}
 
 

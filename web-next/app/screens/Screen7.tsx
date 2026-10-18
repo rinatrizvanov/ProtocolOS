@@ -12,31 +12,37 @@ const NOTE_MAX = 900;
 const CHOICES: { key: DecisionKey; label: string; primary: boolean }[] = [
   { key: "needs_medical_review", label: "Needs medical review", primary: true },
   { key: "reject", label: "Keep as written", primary: false },
-  { key: "defer", label: "Need more evidence", primary: false },
+  { key: "defer", label: "Needs more information", primary: false },
 ];
+
+// Display labels: the engine's option labels (packet.py) and the reason labels (contracts.ts) are shown in this tab's wording.
+const choiceLabel = (key: DecisionKey) =>
+  CHOICES.find((c) => c.key === key)?.label ?? (key === "accept" ? "Accept suggested action" : key);
+const REASON_LABELS: Partial<Record<ReasonKey, string>> = { prior_evidence: "Prior trial data" };
+const reasonLabel = (key: ReasonKey) => REASON_LABELS[key] ?? DECISION_REASONS.find((r) => r.key === key)?.label ?? key;
 
 const focusRing = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
 
 function SavedLine({ item }: { item: PacketItem | undefined }) {
   if (!item?.decision) return <p className="text-lg text-muted">No decision recorded yet.</p>;
-  const { label, reviewer, recorded_at, reason } = item.decision;
+  const { decision, reviewer, recorded_at, reason } = item.decision;
   const parsed = parseReason(reason);
-  const reasonLabel = parsed.key ? DECISION_REASONS.find((r) => r.key === parsed.key)?.label : null;
+  const reasonText = parsed.key ? reasonLabel(parsed.key) : null;
   return (
     <div data-testid="saved-decision" className="flex flex-col gap-1">
       <p className="text-lg text-ink">
-        {item.requirement.label} {item.requirement.threshold}: <span className="font-semibold">{label}</span>, {reviewer},{" "}
+        {item.requirement.label} {item.requirement.threshold}: <span className="font-semibold">{choiceLabel(decision)}</span>, {reviewer},{" "}
         <span className="tabular-nums">{recorded_at}</span>
       </p>
       <p className="text-ink">
-        {reasonLabel ? (
+        {reasonText ? (
           <>
-            Reason: <span className="font-medium">{reasonLabel}</span>
+            Reason: <span className="font-medium">{reasonText}</span>
           </>
         ) : parsed.note ? null : (
           <span className="text-muted">No reason given</span>
         )}
-        {parsed.note ? <span className="text-muted">{reasonLabel ? " / " : ""}Note: {parsed.note}</span> : null}
+        {parsed.note ? <span className="text-muted">{reasonText ? " / " : ""}Note: {parsed.note}</span> : null}
       </p>
       <p className="text-sm text-muted">Saved in the review packet.</p>
     </div>
@@ -90,7 +96,7 @@ export default function Screen7({ nct, criterionId, detailed = false }: Selectio
   const details = packet ? (
     <p className="tabular-nums">
       {Object.entries(packet.decision_summary)
-        .map(([key, count]) => `${key.replaceAll("_", " ")}: ${count}`)
+        .map(([key, count]) => `${choiceLabel(key as DecisionKey)}: ${count}`)
         .join(" / ")}
     </p>
   ) : undefined;
@@ -117,7 +123,7 @@ export default function Screen7({ nct, criterionId, detailed = false }: Selectio
                     on ? "border-ink bg-ink text-paper" : "border-line bg-paper text-ink hover:border-ink"
                   }`}
                 >
-                  {r.label}
+                  {reasonLabel(r.key)}
                 </button>
               );
             })}
