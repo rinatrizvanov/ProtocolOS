@@ -21,8 +21,8 @@ function threshold(c: Criterion): string {
   return `${c.operator} ${c.value_norm}${c.unit_norm ? ` ${c.unit_norm}` : ""}`;
 }
 
-export default function Screen1() {
-  const state = useApi(getReview);
+export default function Screen1({ nct }: { nct: string }) {
+  const state = useApi(() => getReview(nct));
   if (state.status === "loading") return <Pending label="Loading the review…" />;
   if (state.status === "error") return <Failed message={state.message} />;
   const { target, reviews } = state.data;

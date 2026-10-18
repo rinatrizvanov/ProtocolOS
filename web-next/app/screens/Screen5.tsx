@@ -7,19 +7,19 @@ import { Failed, Frame } from "../components/Frame";
 type Run = { status: "idle" } | { status: "busy" } | { status: "error"; message: string } | { status: "ready"; data: Verification };
 
 // The claim is checked in the unit the protocol itself uses for ANC.
-async function verifyInProtocolUnit(): Promise<Verification> {
-  const review = await getReview();
+async function verifyInProtocolUnit(nct: string): Promise<Verification> {
+  const review = await getReview(nct);
   const unit = review.reviews.find((r) => r.criterion.id === "anc")?.criterion.unit_norm;
   if (!unit) throw new Error("The review has no ANC criterion with a unit");
-  return verifyAncClaim(unit);
+  return verifyAncClaim(nct, unit);
 }
 
-export default function Screen5() {
+export default function Screen5({ nct }: { nct: string }) {
   const [run, setRun] = useState<Run>({ status: "idle" });
 
   function verify() {
     setRun({ status: "busy" });
-    verifyInProtocolUnit().then(
+    verifyInProtocolUnit(nct).then(
       (data) => setRun({ status: "ready", data }),
       (err: unknown) => setRun({ status: "error", message: err instanceof Error ? err.message : String(err) }),
     );

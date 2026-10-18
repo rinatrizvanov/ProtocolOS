@@ -1,7 +1,24 @@
 // Typed client for the TrialLens FastAPI engine. Requests go to /api/*, which next.config rewrites to :8766.
 
+// Defaults for the guided tour (EL3, hemoglobin).
 export const NCT = "NCT03409614";
 export const CRITERION = "hemoglobin";
+
+// Trials with a cached review. Public mode refuses a recompute, so the app offers only these.
+export const CACHED_TRIALS = ["NCT03409614", "NCT02578680", "NCT03088540", "NCT02819518"] as const;
+
+export const QUESTIONS = {
+  why_flagged: "Why was it flagged?",
+  contradicting: "What contradicts it?",
+  support_retaining: "What supports keeping it?",
+  what_would_change: "What would change it?",
+} as const;
+export type Question = keyof typeof QUESTIONS;
+
+export interface Selection {
+  nct: string;
+  criterionId: string;
+}
 
 export type Classification = "Review recommended" | "Evidence supports retaining" | "Insufficient evidence";
 export type Direction = "comparator looser" | "same" | "comparator stricter" | "different measure" | "not found";
@@ -153,25 +170,29 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 const post = <T>(path: string, body: unknown) => request<T>(path, { method: "POST", body: JSON.stringify(body) });
 
-// Several screens read the same review; fetch it once per page load.
-let reviewOnce: Promise<Review> | null = null;
-export function getReview(): Promise<Review> {
-  reviewOnce ??= request<Review>(`/api/review/${NCT}`).catch((err: unknown) => {
-    reviewOnce = null;
+// Several views read the same review; fetch each trial's once per page load.
+const reviews = new Map<string, Promise<Review>>();
+export function getReview(nct: string): Promise<Review> {
+  const cached = reviews.get(nct);
+  if (cached) return cached;
+  const pending = request<Review>(`/api/review/${encodeURIComponent(nct)}`).catch((err: unknown) => {
+    reviews.delete(nct);
     throw err;
   });
-  return reviewOnce;
+  reviews.set(nct, pending);
+  return pending;
 }
 
-export const getGraph = () => request<Graph>(`/api/graph/${NCT}?criterion_id=${CRITERION}`);
+export const getGraph = (nct: string, criterionId: string) =>
+  request<Graph>(`/api/graph/${encodeURIComponent(nct)}?criterion_id=${encodeURIComponent(criterionId)}`);
 
-export const investigate = () =>
-  post<Investigation>("/api/investigate", { nct: NCT, criterion_id: CRITERION, question: "why_flagged" });
+export const investigate = (nct: string, criterionId: string, question: Question) =>
+  post<Investigation>("/api/investigate", { nct, criterion_id: criterionId, question });
 
 // The reviewer's deliberately wrong argument on screen 5; the unit comes from the ANC criterion in the review.
-export const verifyAncClaim = (proposedUnit: string) =>
+export const verifyAncClaim = (nct: string, proposedUnit: string) =>
   post<Verification>("/api/verify", {
-    nct: NCT,
+    nct,
     recommendation: {
       criterion_id: "anc",
       action: "relax",
@@ -194,10 +215,10 @@ export const getEvals = () => request<Evals>("/api/evals");
 export const getProtocolPage = (nct: string, page: number) =>
   request<ProtocolPage>(`/api/protocol/${encodeURIComponent(nct)}/page/${page}`);
 
-export const saveDecision = (decision: DecisionKey, reason: string, reviewer: string) =>
-  post<Record<string, DecisionRecord>>("/api/decision", { nct: NCT, criterion_id: CRITERION, decision, reason, reviewer });
+export const saveDecision = (nct: string, criterionId: string, decision: DecisionKey, reason: string, reviewer: string) =>
+  post<Record<string, DecisionRecord>>("/api/decision", { nct, criterion_id: criterionId, decision, reason, reviewer });
 
-export const getPacket = () => request<Packet>(`/api/packet/${NCT}`);
+export const getPacket = (nct: string) => request<Packet>(`/api/packet/${encodeURIComponent(nct)}`);
 
 // For requests the public deploy is meant to refuse: the status code is the result, so a 4xx/5xx is not an error here.
 export async function probeStatus(path: string, init?: RequestInit): Promise<number> {

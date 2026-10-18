@@ -1,111 +1,152 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import Screen1 from "./screens/Screen1";
+import Link from "next/link";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { CACHED_TRIALS, NCT, getReview, type Classification, type Selection } from "@/lib/api";
+import { useApi } from "@/lib/useApi";
+import { Failed, Pending } from "./components/Frame";
 import Screen2 from "./screens/Screen2";
 import Screen3 from "./screens/Screen3";
 import Screen4 from "./screens/Screen4";
 import Screen5 from "./screens/Screen5";
-import Screen6 from "./screens/Screen6";
 import Screen7 from "./screens/Screen7";
 
-const STEPS = [
-  { title: "The rules", Screen: Screen1 },
-  { title: "Compared", Screen: Screen2 },
-  { title: "Why flagged", Screen: Screen3 },
-  { title: "Ask why", Screen: Screen4 },
-  { title: "Caught", Screen: Screen5 },
-  { title: "Tested", Screen: Screen6 },
-  { title: "Decide", Screen: Screen7 },
+// The verifier's demo argument is about EL3's ANC rule, so Challenge exists only for that trial.
+const TABS = [
+  { id: "compare", title: "Compare", render: (s: Selection) => <Screen2 {...s} /> },
+  { id: "why", title: "Why", render: (s: Selection) => <Screen3 {...s} /> },
+  { id: "ask", title: "Ask", render: (s: Selection) => <Screen4 {...s} /> },
+  { id: "challenge", title: "Challenge", render: (s: Selection) => <Screen5 nct={s.nct} />, onlyFor: NCT },
+  { id: "decide", title: "Decide", render: (s: Selection) => <Screen7 {...s} /> },
 ];
 
-// The step lives in the URL hash (#1..#7) so a screen can be opened directly.
-function stepFromHash(): number {
-  const n = Number(window.location.hash.slice(1));
-  return Number.isInteger(n) && n >= 1 && n <= STEPS.length ? n - 1 : 0;
+const TONE: Record<Classification, string> = {
+  "Review recommended": "border-look",
+  "Evidence supports retaining": "border-support",
+  "Insufficient evidence": "border-uncounted",
+};
+
+// The selection lives only in the URL (?nct=&c=), so a reload keeps it; only cached trials are accepted.
+function subscribeToUrl(onChange: () => void) {
+  window.addEventListener("popstate", onChange);
+  return () => window.removeEventListener("popstate", onChange);
 }
 
-export default function Home() {
-  const [step, setStep] = useState<number | null>(null);
+function navigate(nct: string, criterionId: string | null) {
+  const query = criterionId ? `?nct=${nct}&c=${encodeURIComponent(criterionId)}` : `?nct=${nct}`;
+  window.history.replaceState(null, "", `/${query}`);
+  window.dispatchEvent(new PopStateEvent("popstate"));
+}
 
-  const go = useCallback((next: number) => {
-    const clamped = Math.min(Math.max(next, 0), STEPS.length - 1);
-    window.location.hash = String(clamped + 1);
-  }, []);
+function parseSelection(search: string): { nct: string; criterionId: string | null } {
+  const params = new URLSearchParams(search);
+  const nct = params.get("nct") ?? NCT;
+  return (CACHED_TRIALS as readonly string[]).includes(nct)
+    ? { nct, criterionId: params.get("c") }
+    : { nct: NCT, criterionId: null };
+}
 
+function CriteriaList({ nct, selected }: { nct: string; selected: string | null }) {
+  const state = useApi(() => getReview(nct));
+  const first = state.status === "ready" ? state.data.reviews[0]?.criterion.id : undefined;
   useEffect(() => {
-    const sync = () => setStep(stepFromHash());
-    sync();
-    window.addEventListener("hashchange", sync);
-    return () => window.removeEventListener("hashchange", sync);
-  }, []);
+    if (selected === null && first) navigate(nct, first);
+  }, [nct, selected, first]);
 
-  useEffect(() => {
-    if (step === null) return;
-    const onKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (target?.closest("input, textarea, select, [contenteditable]")) return;
-      if (e.key === "ArrowRight") go(step + 1);
-      if (e.key === "ArrowLeft") go(step - 1);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [step, go]);
+  if (state.status === "loading") return <Pending label="Loading the criteria…" />;
+  if (state.status === "error") return <Failed message={state.message} />;
+  return (
+    <ul className="flex flex-col gap-1">
+      {state.data.reviews.map((r) => (
+        <li key={r.criterion.id}>
+          <button
+            type="button"
+            data-testid="criterion-item"
+            data-criterion={r.criterion.id}
+            data-classification={r.classification}
+            aria-current={r.criterion.id === selected ? "true" : undefined}
+            onClick={() => navigate(nct, r.criterion.id)}
+            className={`w-full border-l-4 px-3 py-2 text-left transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink ${TONE[r.classification]} ${
+              r.criterion.id === selected ? "bg-line text-ink" : "text-muted hover:text-ink"
+            }`}
+          >
+            <span className="block font-medium text-ink">{r.criterion.label}</span>
+            <span className="block text-sm tabular-nums">
+              {r.criterion.operator} {r.criterion.value_norm} {r.criterion.unit_norm}
+            </span>
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
-  if (step === null) return null;
-  const { Screen } = STEPS[step];
+export default function App() {
+  const search = useSyncExternalStore(subscribeToUrl, () => window.location.search, () => null);
+  const [tab, setTab] = useState("compare");
+
+  if (search === null) return null;
+  const { nct, criterionId } = parseSelection(search);
+  const tabs = TABS.filter((t) => !t.onlyFor || t.onlyFor === nct);
+  const active = tabs.find((t) => t.id === tab) ?? tabs[0];
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-6xl flex-col px-10 py-8">
-      <nav aria-label="Demo steps" className="flex items-center gap-6">
-        <ol className="flex flex-1 items-center gap-2">
-          {STEPS.map((s, i) => (
-            <li key={s.title}>
-              <button
-                type="button"
-                onClick={() => go(i)}
-                aria-current={i === step ? "step" : undefined}
-                className={`flex items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors duration-150 ${
-                  i === step ? "text-ink" : "text-muted hover:text-ink"
-                }`}
-              >
-                <span
-                  aria-hidden
-                  className={`h-2 w-2 rounded-full ${i === step ? "bg-ink" : i < step ? "bg-muted" : "bg-line"}`}
-                />
-                <span className={i === step ? "font-medium" : ""}>{s.title}</span>
-              </button>
-            </li>
-          ))}
-        </ol>
-        <span className="text-sm tabular-nums text-muted">
-          {step + 1} / {STEPS.length}
-        </span>
-      </nav>
+    <main className="mx-auto flex min-h-screen max-w-7xl flex-col px-8 py-6">
+      <header className="flex items-center gap-6 border-b border-line pb-4">
+        <span className="text-xl font-semibold text-ink">TrialLens</span>
+        <label className="flex items-center gap-2 text-sm text-muted">
+          Trial
+          <select
+            data-testid="trial-picker"
+            value={nct}
+            onChange={(e) => navigate(e.target.value, null)}
+            className="rounded-md border border-line bg-paper px-2 py-1 text-ink tabular-nums focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
+          >
+            {CACHED_TRIALS.map((id) => (
+              <option key={id} value={id}>
+                {id}
+              </option>
+            ))}
+          </select>
+        </label>
+        <Link
+          href="/tour"
+          data-testid="guided-demo"
+          className="ml-auto rounded-md bg-ink px-4 py-2 text-sm text-paper hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+        >
+          Guided demo
+        </Link>
+      </header>
 
-      <div className="mt-10 flex flex-1 flex-col">
-        <Screen key={step} />
+      <div className="mt-6 grid flex-1 grid-cols-[18rem_1fr] gap-8">
+        <nav aria-label="Criteria">
+          <CriteriaList key={nct} nct={nct} selected={criterionId} />
+        </nav>
+        {criterionId ? (
+          <section className="flex min-w-0 flex-col">
+            <div role="tablist" aria-label="Views" className="flex gap-1 border-b border-line">
+              {tabs.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={t.id === active.id}
+                  data-testid={`tab-${t.id}`}
+                  onClick={() => setTab(t.id)}
+                  className={`-mb-px border-b-2 px-4 py-2 text-sm transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink ${
+                    t.id === active.id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink"
+                  }`}
+                >
+                  {t.title}
+                </button>
+              ))}
+            </div>
+            <div key={`${nct}:${criterionId}:${active.id}`} role="tabpanel" className="flex flex-1 flex-col pt-6">
+              {active.render({ nct, criterionId })}
+            </div>
+          </section>
+        ) : null}
       </div>
-
-      <footer className="mt-8 flex items-center justify-between border-t border-line pt-5">
-        <button
-          type="button"
-          onClick={() => go(step - 1)}
-          disabled={step === 0}
-          className="rounded-md px-4 py-2 text-ink transition-colors duration-150 hover:bg-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:invisible"
-        >
-          Back
-        </button>
-        <span className="text-sm text-muted">Arrow keys move between steps</span>
-        <button
-          type="button"
-          onClick={() => go(step + 1)}
-          disabled={step === STEPS.length - 1}
-          className="rounded-md bg-ink px-5 py-2 text-paper transition-opacity duration-150 hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:invisible"
-        >
-          Next
-        </button>
-      </footer>
     </main>
   );
 }

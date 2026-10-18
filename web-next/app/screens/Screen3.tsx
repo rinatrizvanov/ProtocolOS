@@ -1,7 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getGraph, type Graph } from "@/lib/api";
+import { getGraph, type Graph, type Selection } from "@/lib/api";
+
+// Plain-language reading of each scoring rule group; anything else falls back to the edge's own label.
+const GROUP_TEXT: Record<string, string> = {
+  looser_comparators: "Similar trials used a less strict limit",
+  regimen_support: "The regimen needs some limit, not this one",
+};
+
+function axisText(graph: Graph, axis: "support" | "challenge"): string {
+  const edges = graph.edges.filter((e) => e.type === "RULE_SCORES" && e.axis === axis);
+  if (edges.length === 0) return "No scoring rule applied";
+  return edges.map((e) => GROUP_TEXT[e.group ?? ""] ?? e.label ?? e.group ?? "").join("; ");
+}
 import { useApi } from "@/lib/useApi";
 import { Failed, Frame, Pending } from "../components/Frame";
 
@@ -41,8 +53,8 @@ function Balance({ against, support }: { against: number; support: number }) {
   );
 }
 
-export default function Screen3() {
-  const state = useApi(getGraph);
+export default function Screen3({ nct, criterionId }: Selection) {
+  const state = useApi(() => getGraph(nct, criterionId));
   if (state.status === "loading") return <Pending label="Loading the evidence graph…" />;
   if (state.status === "error") return <Failed message={state.message} />;
   const graph = state.data;
@@ -81,12 +93,12 @@ export default function Screen3() {
           <div data-testid="pan-against" data-points={against} className="text-left">
             <p className="text-6xl font-semibold tabular-nums text-ink">+{against}</p>
             <p className="text-base text-ink">Against the rule</p>
-            <p className="text-sm text-muted">Similar trials used a lower limit</p>
+            <p className="text-sm text-muted">{axisText(graph, "challenge")}</p>
           </div>
           <div data-testid="pan-for" data-points={support} className="text-right">
             <p className="text-6xl font-semibold tabular-nums text-ink">+{support}</p>
             <p className="text-base text-ink">For the rule</p>
-            <p className="text-sm text-muted">The chemotherapy needs some limit, not this one</p>
+            <p className="text-sm text-muted">{axisText(graph, "support")}</p>
           </div>
         </div>
         <div data-testid="parked" data-count={passages.length} className="w-full max-w-2xl rounded-lg bg-uncounted-soft p-4 text-muted">

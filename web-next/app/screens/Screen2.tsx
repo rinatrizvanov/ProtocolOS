@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { CRITERION, getProtocolPage, getReview, type ComparatorRow, type ProtocolPage } from "@/lib/api";
+import { getProtocolPage, getReview, type ComparatorRow, type ProtocolPage, type Selection } from "@/lib/api";
 import { useApi } from "@/lib/useApi";
 import { Failed, Frame, Pending } from "../components/Frame";
 
@@ -64,15 +64,15 @@ function ProtocolDrawer({ row, onClose }: { row: Plotted; onClose: () => void })
   );
 }
 
-export default function Screen2() {
-  const state = useApi(getReview);
+export default function Screen2({ nct, criterionId }: Selection) {
+  const state = useApi(() => getReview(nct));
   const [open, setOpen] = useState<Plotted | null>(null);
   const closeDrawer = useCallback(() => setOpen(null), []);
   if (state.status === "loading") return <Pending label="Loading the comparison…" />;
   if (state.status === "error") return <Failed message={state.message} />;
-  const rows = state.data.comparison[CRITERION] ?? [];
-  const target = state.data.reviews.find((r) => r.criterion.id === CRITERION)?.criterion;
-  if (!target || target.value_norm === null) return <Failed message={`no numeric ${CRITERION} limit in the review`} />;
+  const rows = state.data.comparison[criterionId] ?? [];
+  const target = state.data.reviews.find((r) => r.criterion.id === criterionId)?.criterion;
+  if (!target || target.value_norm === null) return <Failed message={`no numeric ${criterionId} limit in the review`} />;
   const targetValue = target.value_norm;
   const plotted = rows.filter(isPlotted);
   const withCriterion = rows.filter((r) => r.criterion !== null);

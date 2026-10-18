@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CRITERION, getPacket, saveDecision, type DecisionKey, type Packet } from "../../lib/api";
+import { getPacket, saveDecision, type DecisionKey, type Packet, type Selection } from "../../lib/api";
 import { Failed, Frame } from "../components/Frame";
 
 type PacketItem = Packet["items"][number];
@@ -22,13 +22,13 @@ function SavedLine({ item }: { item: PacketItem | undefined }) {
   );
 }
 
-export default function Screen7() {
+export default function Screen7({ nct, criterionId }: Selection) {
   const [packet, setPacket] = useState<Packet | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<DecisionKey | null>(null);
 
   const refresh = () =>
-    getPacket().then(setPacket, (err: unknown) => {
+    getPacket(nct).then(setPacket, (err: unknown) => {
       console.error(err);
       setError(err instanceof Error ? err.message : String(err));
     });
@@ -41,7 +41,7 @@ export default function Screen7() {
     setSaving(key);
     setError(null);
     try {
-      await saveDecision(key, "Recorded from the demo", "Demo reviewer");
+      await saveDecision(nct, criterionId, key, "Recorded from the demo", "Demo reviewer");
       await refresh();
     } catch (err: unknown) {
       console.error(err);
@@ -51,7 +51,7 @@ export default function Screen7() {
     }
   };
 
-  const item = packet?.items.find((entry) => entry.criterion_id === CRITERION);
+  const item = packet?.items.find((entry) => entry.criterion_id === criterionId);
   const details = packet ? (
     <p className="tabular-nums">
       {Object.entries(packet.decision_summary)

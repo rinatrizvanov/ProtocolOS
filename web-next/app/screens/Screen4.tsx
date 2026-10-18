@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { investigate, type Investigation, type Statement } from "@/lib/api";
+import { QUESTIONS, investigate, type Investigation, type Question, type Selection, type Statement } from "@/lib/api";
 import { Failed, Frame } from "../components/Frame";
 
 type Run = { status: "idle" } | { status: "busy" } | { status: "error"; message: string } | { status: "ready"; data: Investigation };
@@ -62,12 +62,13 @@ function Result({ data }: { data: Investigation }) {
   );
 }
 
-export default function Screen4() {
+export default function Screen4({ nct, criterionId }: Selection) {
   const [run, setRun] = useState<Run>({ status: "idle" });
+  const [question, setQuestion] = useState<Question>("why_flagged");
 
   function ask() {
     setRun({ status: "busy" });
-    investigate().then(
+    investigate(nct, criterionId, question).then(
       (data) => setRun({ status: "ready", data }),
       (err: unknown) => setRun({ status: "error", message: err instanceof Error ? err.message : String(err) }),
     );
@@ -98,6 +99,23 @@ export default function Screen4() {
         <Result data={run.data} />
       ) : (
         <div className="flex flex-col items-start gap-4">
+          <div role="radiogroup" aria-label="Question" className="flex flex-wrap gap-2">
+            {(Object.keys(QUESTIONS) as Question[]).map((q) => (
+              <button
+                key={q}
+                type="button"
+                role="radio"
+                aria-checked={q === question}
+                data-testid={`question-${q}`}
+                onClick={() => setQuestion(q)}
+                className={`rounded-md border px-3 py-1.5 text-sm transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink ${
+                  q === question ? "border-ink text-ink" : "border-line text-muted hover:text-ink"
+                }`}
+              >
+                {QUESTIONS[q]}
+              </button>
+            ))}
+          </div>
           <button
             type="button"
             data-testid="run-investigation"
@@ -105,7 +123,7 @@ export default function Screen4() {
             disabled={run.status === "busy"}
             className="rounded-md border border-ink bg-ink px-6 py-3 text-lg text-paper transition-opacity duration-150 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
-            {run.status === "busy" ? "Checking the sources…" : "Ask why it was flagged"}
+            {run.status === "busy" ? "Checking the sources…" : QUESTIONS[question]}
           </button>
           {run.status === "error" ? <Failed message={run.message} /> : null}
         </div>
