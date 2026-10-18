@@ -94,7 +94,7 @@
   // Each step drives the real UI and returns { target, html } where html is the caption.
   const STEPS = [
     {
-      title: "The problem",
+      title: "What TrialLens checks",
       async run() {
         const rv = await ensureReview();
         const counts = {};
@@ -105,14 +105,17 @@
           .map((k) => `<span class="tour-pill ${clsKey(k)}">${counts[k] || 0} ${h(k)}</span>`).join("");
         return {
           target: qs("#summary .summary") || qs("#summary"),
-          html: `<p>${name} is loaded from its public protocol PDF: <b>${rv.reviews.length} eligibility criteria</b> reviewed against
+          html: `<p class="tour-plain">Before a clinical trial starts, its protocol lists <b>entry rules</b> (eligibility criteria), for example
+            a minimum blood hemoglobin level. Rules that are stricter than needed can shut out patients who could have joined.
+            TrialLens checks each rule against the evidence and flags the ones the team should look at again.</p>
+            <p>Here: ${name} is loaded from its public protocol PDF: <b>${rv.reviews.length} eligibility criteria</b> reviewed against
             ${plural(rv.comparators.length, "comparable trial")}.</p><div class="tour-pills">${pills}</div>
             <p class="tour-note">Each criterion balances safety, enrichment and generalizability. TrialLens prepares the evidence; the protocol team decides.</p>`,
         };
       },
     },
     {
-      title: "One flag",
+      title: "One rule it questions",
       dock: "left",
       async run() {
         await ensureReview();
@@ -132,7 +135,7 @@
       },
     },
     {
-      title: "Why, as a graph",
+      title: "Why it was questioned",
       dock: "left",
       async run() {
         const root = await ensureGraph();
@@ -152,12 +155,12 @@
         lines.push(`<li><span class="tour-dot context"></span><b>${gPoints >= 0 ? "+" : ""}${gPoints} points</b>: ${plural(guidance.length, "FDA passage")}${retro === guidance.length && guidance.length ? ", all retrospective (issued after the trial started)" : retro ? `, ${retro} retrospective` : ""}.</li>`);
         return {
           target: qs("#graph svg") || root,
-          html: `<p>The score breakdown, built from ${d.nodes.length} nodes and ${d.edges.length} edges:</p><ul class="tour-list">${lines.join("")}</ul>`,
+          html: `<p>How the flag adds up. Each box is a piece of evidence; each line shows whether it argues for or against the rule (${d.nodes.length} pieces in all).</p><ul class="tour-list">${lines.join("")}</ul>`,
         };
       },
     },
     {
-      title: "Every claim has a source",
+      title: "Check the source yourself",
       async run() {
         await ensureGraph();
         const d = await graphData();
@@ -181,7 +184,7 @@
       },
     },
     {
-      title: "Ask why",
+      title: "Ask why, get checked answers",
       async run() {
         closeModal();
         await ensureGraph();
@@ -213,7 +216,7 @@
       },
     },
     {
-      title: "Challenge it",
+      title: "A wrong argument is caught",
       dock: "left",
       async run() {
         closeModal();
@@ -235,7 +238,7 @@
       },
     },
     {
-      title: "Agent safety, live",
+      title: "Built-in safety",
       async run() {
         closeModal();
         const probes = [
@@ -256,7 +259,7 @@
       },
     },
     {
-      title: "How we know it works",
+      title: "How accurate it is",
       async run() {
         closeModal();
         clickTab("evals");
@@ -281,7 +284,7 @@
       },
     },
     {
-      title: "Hand-off",
+      title: "The team decides",
       dock: "top",
       async run() {
         closeModal();
@@ -329,7 +332,23 @@
     return STEPS.map((_, k) => `<button type="button" class="tour-dotnav ${k === T.i ? "on" : k < T.i ? "done" : ""}" data-go="${k}" aria-label="Step ${k + 1}"></button>`).join("");
   }
 
+  const SHORT = ["What it checks", "One rule", "Why", "Source", "Ask why", "Wrong argument", "Safety", "Accuracy", "Decision"];
+
+  function renderBar() {
+    let bar = qs("#tourBar");
+    if (!bar) {
+      bar = document.createElement("nav");
+      bar.id = "tourBar";
+      bar.setAttribute("aria-label", "Demo steps");
+      bar.addEventListener("click", (e) => { const b = e.target.closest("[data-go]"); if (b && T.active) go(+b.dataset.go); });
+      const tabs = qs(".tabs");
+      (tabs ? tabs.parentNode : document.body).insertBefore(bar, tabs || document.body.firstChild);
+    }
+    bar.innerHTML = STEPS.map((_, k) => `<button type="button" data-go="${k}" class="${k === T.i ? "on" : k < T.i ? "done" : ""}"><span>${k + 1}</span>${h(SHORT[k] || "")}</button>`).join("");
+  }
+
   function renderCard(body, mode) {
+    renderBar();
     const s = STEPS[T.i];
     const last = T.i === STEPS.length - 1;
     T.card.dataset.mode = mode;

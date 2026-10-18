@@ -133,3 +133,54 @@ body.demo .modal-body { border-radius: 14px; }
   .tour-hint { left: 16px; right: 16px; }
 }
 @media (prefers-reduced-motion: reduce) { .tour-hole { animation: none; } .tour-spin { animation-duration: 2s; } }
+
+/* ---------------------------------------------------------------- demo mode: quieter, flatter, one path
+   The guided steps replace the tab row; no glow, no pill clutter, sentence-case labels. */
+body.demo .tabs, body.demo #statusbar, body.demo .statusbar, body.demo .chips { display: none !important; }
+body.demo .topbar .loader { opacity: .55; }
+#tourBar { display: none; }
+body.demo #tourBar {
+  display: flex; flex-wrap: wrap; gap: 2px; padding: 8px 24px; background: #fff; border-bottom: 1px solid #e4e7ec;
+  position: sticky; top: 0; z-index: 9100; font: 14px/1.2 -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+body.demo #tourBar button {
+  display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; border: 0; border-bottom: 2px solid transparent;
+  background: none; color: #667085; cursor: pointer; font: inherit;
+}
+body.demo #tourBar button span {
+  display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1px solid #c4c9d2;
+  font-size: 12px; color: #667085;
+}
+body.demo #tourBar button.done { color: #344054; }
+body.demo #tourBar button.done span { background: #f2f4f7; }
+body.demo #tourBar button.on { color: #101828; border-bottom-color: #101828; font-weight: 600; }
+body.demo #tourBar button.on span { background: #101828; border-color: #101828; color: #fff; }
+
+body.demo .tour-shade > div { background: rgba(16, 24, 40, .28); }
+body.demo .tour-hole { box-shadow: 0 0 0 2px #101828; border-radius: 6px; animation: none; }
+body.demo .tour-card {
+  border-radius: 8px; border: 1px solid #d0d5dd; box-shadow: 0 6px 20px rgba(16, 24, 40, .12);
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; padding: 16px 18px 14px;
+}
+body.demo .tour-step { text-transform: none; letter-spacing: 0; font-weight: 500; font-size: 13px; color: #667085; }
+body.demo .tour-title { font-size: 19px; font-weight: 600; letter-spacing: -0.01em; }
+body.demo .tour-plain { background: #f9fafb; border-left: 3px solid #101828; padding: 8px 10px; border-radius: 0 4px 4px 0; }
+body.demo .tour-dots { display: none; }
+body.demo .tour-pill, body.demo .tour-score, body.demo .tour-verdict, body.demo .tour-code { border-radius: 4px; border: 0; }
+body.demo .tour-pill.review, body.demo .tour-score.challenge { background: #fef3e2; color: #93370d; }
+body.demo .tour-pill.retain, body.demo .tour-score.support { background: #ecfdf3; color: #05603a; }
+body.demo .tour-pill.insufficient { background: #f2f4f7; color: #475467; }
+body.demo .tour-btn { border-radius: 6px; font-weight: 500; }
+body.demo .tour-btn.primary { background: #101828; border-color: #101828; }
+body.demo .tour-btn.primary:hover { background: #344054; }
+body.demo .tour-launch { border-radius: 6px; box-shadow: none; border-color: #d0d5dd; color: #344054; }
+body.demo .tour-launch::before { display: none; }
+body.demo.tour-on .tour-launch { display: none; }
+
+body.demo .card { border-radius: 8px; box-shadow: none; border: 1px solid #e4e7ec; }
+body.demo .summary .stat { border-radius: 8px; box-shadow: none; }
+body.demo .modal-body { border-radius: 8px; }
+body.demo #graph .gs-head h3, body.demo .g-svg .g-colhead, body.demo .g-svg .cap, body.demo #graph .g-list-col h4,
+body.demo #graph .g-li .cap, body.demo #graph .gp-cap, body.demo #graph .gp-sub, body.demo #graph .g-inv-head h3,
+body.demo #graph .inv-status { text-transform: none; letter-spacing: 0; }
+body.demo #graph .inv-status { border-radius: 4px; font-weight: 600; }
