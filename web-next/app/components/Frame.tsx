@@ -13,14 +13,16 @@ export function Frame({
   children: ReactNode;
 }) {
   return (
-    <section className="flex min-h-0 flex-1 flex-col gap-6">
-      <h1 data-role="headline" className="text-balance text-4xl font-semibold tracking-tight text-ink">
-        {headline}
-      </h1>
-      <div className="flex min-h-[380px] flex-1 items-center justify-center">{children}</div>
-      <p data-role="caption" className="max-w-3xl text-lg text-muted">
-        {caption}
-      </p>
+    <section className="flex min-h-0 flex-col gap-3">
+      <div className="flex flex-col gap-1">
+        <h1 data-role="headline" className="text-balance text-2xl font-semibold tracking-tight text-ink">
+          {headline}
+        </h1>
+        <p data-role="caption" className="max-w-3xl text-base text-muted">
+          {caption}
+        </p>
+      </div>
+      <div className="flex w-full flex-col">{children}</div>
       {details ? (
         <details className="max-w-3xl text-sm text-muted">
           <summary className="cursor-pointer select-none py-1 text-ink">Details</summary>
@@ -32,12 +34,12 @@ export function Frame({
 }
 
 export function Pending({ label }: { label: string }) {
-  return <p className="text-lg text-muted">{label}</p>;
+  return <p className="text-base text-muted">{label}</p>;
 }
 
 export function Failed({ message }: { message: string }) {
   return (
-    <p role="alert" className="text-lg text-verdict">
+    <p role="alert" className="text-base text-verdict">
       Could not load: {message}
     </p>
   );

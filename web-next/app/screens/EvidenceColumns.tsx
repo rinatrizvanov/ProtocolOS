@@ -171,7 +171,7 @@ export function EvidenceColumns({ graph }: { graph: Graph }) {
 
   return (
     <>
-      <div className="grid w-full grid-cols-3 gap-4">
+      <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
         {COLUMNS.map((col) => (
           <section key={col.stance} data-testid={`evidence-${col.stance}`} className="flex flex-col gap-3">
             <h2 className="text-base font-semibold text-ink">
@@ -184,9 +184,11 @@ export function EvidenceColumns({ graph }: { graph: Graph }) {
             {col.stance === "context" && passages.length > 0 ? (
               <div data-testid="fda-card" data-count={passages.length} className={`rounded-md border-l-4 bg-paper px-4 py-3 shadow-sm ${col.tone}`}>
                 <span className="block font-medium text-ink">
-                  {passages.length} FDA passages, 0 points{retrospective ? ", retrospective" : ""}
+                  {passages.length} FDA passages, 0 points: general guidance
                 </span>
-                {retrospective ? <span className="mt-1 block text-sm text-muted">Issued after the trial started.</span> : null}
+                <span className="mt-1 block text-sm text-muted">
+                  Not specific to this criterion{retrospective ? "; also issued after the trial started (a label, not a score change)" : ""}.
+                </span>
               </div>
             ) : null}
           </section>

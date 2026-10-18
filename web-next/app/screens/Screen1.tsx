@@ -12,8 +12,8 @@ const TILE_CLASS: Record<Classification, string> = {
 
 const LEGEND: { classification: Classification; text: string; swatch: string }[] = [
   { classification: "Review recommended", text: "look again", swatch: "bg-look" },
-  { classification: "Evidence supports retaining", text: "evidence supports", swatch: "bg-support" },
-  { classification: "Insufficient evidence", text: "not enough evidence", swatch: "bg-uncounted" },
+  { classification: "Evidence supports retaining", text: "rationale supports keeping", swatch: "bg-support" },
+  { classification: "Insufficient evidence", text: "Insufficient evidence", swatch: "bg-uncounted" },
 ];
 
 function threshold(c: Criterion): string {
@@ -32,7 +32,7 @@ export default function Screen1({ nct }: { nct: string }) {
   return (
     <Frame
       headline="Who gets into a trial?"
-      caption="ProtocolOS checks each rule against evidence; amber means the team should look again."
+      caption="ProtocolOS checks each rule against precedent and FDA guidance; amber means the team should look again."
       details={
         <>
           <ul>

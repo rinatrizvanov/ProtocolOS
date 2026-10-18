@@ -1,152 +1,79 @@
-"use client";
+import { AppHeader } from "./components/AppHeader";
+import { ArrowRightIcon, DocCheckIcon, EyeOffIcon, PenIcon, PlayIcon } from "./components/Icons";
+import { Onboarding } from "./components/Onboarding";
 
-import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore } from "react";
-import { CACHED_TRIALS, NCT, getReview, type Classification, type Selection } from "@/lib/api";
-import { useApi } from "@/lib/useApi";
-import { Failed, Pending } from "./components/Frame";
-import ChallengeExamples from "./screens/ChallengeExamples";
-import Screen2 from "./screens/Screen2";
-import Screen3 from "./screens/Screen3";
-import Screen4 from "./screens/Screen4";
-import Screen7 from "./screens/Screen7";
-
-// The verifier's demo arguments are about EL3's ANC and hemoglobin rules, so Challenge exists only for that trial.
-const TABS = [
-  { id: "compare", title: "Compare", render: (s: Selection) => <Screen2 {...s} detailed /> },
-  { id: "why", title: "Why", render: (s: Selection) => <Screen3 {...s} detailed /> },
-  { id: "ask", title: "Ask", render: (s: Selection) => <Screen4 {...s} /> },
-  { id: "challenge", title: "Challenge", render: (s: Selection) => <ChallengeExamples {...s} />, onlyFor: NCT },
-  { id: "decide", title: "Decide", render: (s: Selection) => <Screen7 {...s} detailed /> },
+// Landing: two entry modes. Links are relative so they work at "/" and under a mount such as "/app/".
+const MODES = [
+  {
+    testid: "mode-review",
+    href: "./review",
+    Icon: DocCheckIcon,
+    kicker: "Finishing a trial",
+    title: "Review an existing protocol",
+    text: "Open a posted oncology protocol. Every lab, ECOG and washout criterion gets its rationale, the arm that drives it, the values similar trials used, and the deterministic verifier's verdict on any other limit you propose.",
+    cta: "Open the review",
+  },
+  {
+    testid: "mode-draft",
+    href: "./draft",
+    Icon: PenIcon,
+    kicker: "Create criteria from an idea",
+    title: "Draft criteria for a new concept",
+    text: "Describe the condition, drugs and setting. ProtocolOS proposes values only from verified precedents, then critiques its own draft; otherwise it says Insufficient evidence.",
+    cta: "Start a draft",
+  },
 ];
 
-const TONE: Record<Classification, string> = {
-  "Review recommended": "border-look",
-  "Evidence supports retaining": "border-support",
-  "Insufficient evidence": "border-uncounted",
-};
-
-// The selection lives only in the URL (?nct=&c=), so a reload keeps it; only cached trials are accepted.
-function subscribeToUrl(onChange: () => void) {
-  window.addEventListener("popstate", onChange);
-  return () => window.removeEventListener("popstate", onChange);
-}
-
-function navigate(nct: string, criterionId: string | null) {
-  const query = criterionId ? `?nct=${nct}&c=${encodeURIComponent(criterionId)}` : `?nct=${nct}`;
-  window.history.replaceState(null, "", `/${query}`);
-  window.dispatchEvent(new PopStateEvent("popstate"));
-}
-
-function parseSelection(search: string): { nct: string; criterionId: string | null } {
-  const params = new URLSearchParams(search);
-  const nct = params.get("nct") ?? NCT;
-  return (CACHED_TRIALS as readonly string[]).includes(nct)
-    ? { nct, criterionId: params.get("c") }
-    : { nct: NCT, criterionId: null };
-}
-
-function CriteriaList({ nct, selected }: { nct: string; selected: string | null }) {
-  const state = useApi(() => getReview(nct));
-  const first = state.status === "ready" ? state.data.reviews[0]?.criterion.id : undefined;
-  useEffect(() => {
-    if (selected === null && first) navigate(nct, first);
-  }, [nct, selected, first]);
-
-  if (state.status === "loading") return <Pending label="Loading the criteria…" />;
-  if (state.status === "error") return <Failed message={state.message} />;
+export default function Landing() {
   return (
-    <ul className="flex flex-col gap-1">
-      {state.data.reviews.map((r) => (
-        <li key={r.criterion.id}>
-          <button
-            type="button"
-            data-testid="criterion-item"
-            data-criterion={r.criterion.id}
-            data-classification={r.classification}
-            aria-current={r.criterion.id === selected ? "true" : undefined}
-            onClick={() => navigate(nct, r.criterion.id)}
-            className={`w-full border-l-4 px-3 py-2 text-left transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink ${TONE[r.classification]} ${
-              r.criterion.id === selected ? "bg-line text-ink" : "text-muted hover:text-ink"
-            }`}
-          >
-            <span className="block font-medium text-ink">{r.criterion.label}</span>
-            <span className="block text-sm tabular-nums">
-              {r.criterion.operator} {r.criterion.value_norm} {r.criterion.unit_norm}
-            </span>
-          </button>
-        </li>
-      ))}
-    </ul>
-  );
-}
+    <>
+      <AppHeader mode="home" />
+      <main className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-6 sm:px-6">
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-balance text-2xl font-semibold tracking-tight text-ink">
+            The rationale behind every eligibility criterion, before the protocol is final.
+          </h1>
+          <p className="max-w-3xl text-base text-muted">
+            For protocol authors and review teams in oncology. ProtocolOS prepares the rationale; the team decides.
+          </p>
+        </div>
 
-export default function App() {
-  const search = useSyncExternalStore(subscribeToUrl, () => window.location.search, () => null);
-  const [tab, setTab] = useState("compare");
+        <Onboarding />
 
-  if (search === null) return null;
-  const { nct, criterionId } = parseSelection(search);
-  const tabs = TABS.filter((t) => !t.onlyFor || t.onlyFor === nct);
-  const active = tabs.find((t) => t.id === tab) ?? tabs[0];
+        <div className="grid gap-4 md:grid-cols-2">
+          {MODES.map(({ testid, href, Icon, kicker, title, text, cta }) => (
+            <a
+              key={testid}
+              data-testid={testid}
+              href={href}
+              className="group flex flex-col gap-3 rounded-lg border border-line bg-white/70 p-5 transition-colors duration-150 hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+            >
+              <span className="flex items-center gap-2 text-sm font-medium text-muted">
+                <span className="grid h-8 w-8 place-items-center rounded-md bg-ink text-lg text-paper">
+                  <Icon />
+                </span>
+                {kicker}
+              </span>
+              <span className="text-xl font-semibold text-ink">{title}</span>
+              <span className="text-sm leading-relaxed text-muted">{text}</span>
+              <span className="mt-auto flex items-center gap-1.5 text-sm font-medium text-ink">
+                {cta}
+                <ArrowRightIcon className="transition-transform duration-150 group-hover:translate-x-0.5" />
+              </span>
+            </a>
+          ))}
+        </div>
 
-  return (
-    <main className="mx-auto flex min-h-screen max-w-7xl flex-col px-8 py-6">
-      <header className="flex items-center gap-6 border-b border-line pb-4">
-        <span className="text-xl font-semibold text-ink">ProtocolOS</span>
-        <label className="flex items-center gap-2 text-sm text-muted">
-          Trial
-          <select
-            data-testid="trial-picker"
-            value={nct}
-            onChange={(e) => navigate(e.target.value, null)}
-            className="rounded-md border border-line bg-paper px-2 py-1 text-ink tabular-nums focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
-          >
-            {CACHED_TRIALS.map((id) => (
-              <option key={id} value={id}>
-                {id}
-              </option>
-            ))}
-          </select>
-        </label>
-        <Link
-          href="/tour"
-          data-testid="guided-demo"
-          className="ml-auto rounded-md bg-ink px-4 py-2 text-sm text-paper hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-        >
-          Guided demo
-        </Link>
-      </header>
-
-      <div className="mt-6 grid flex-1 grid-cols-[18rem_1fr] gap-8">
-        <nav aria-label="Criteria">
-          <CriteriaList key={nct} nct={nct} selected={criterionId} />
-        </nav>
-        {criterionId ? (
-          <section className="flex min-w-0 flex-col">
-            <div role="tablist" aria-label="Views" className="flex gap-1 border-b border-line">
-              {tabs.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={t.id === active.id}
-                  data-testid={`tab-${t.id}`}
-                  onClick={() => setTab(t.id)}
-                  className={`-mb-px border-b-2 px-4 py-2 text-sm transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink ${
-                    t.id === active.id ? "border-ink text-ink" : "border-transparent text-muted hover:text-ink"
-                  }`}
-                >
-                  {t.title}
-                </button>
-              ))}
-            </div>
-            <div key={`${nct}:${criterionId}:${active.id}`} role="tabpanel" className="flex flex-1 flex-col pt-6">
-              {active.render({ nct, criterionId })}
-            </div>
-          </section>
-        ) : null}
-      </div>
-    </main>
+        <div className="flex flex-col gap-3 border-t border-line pt-4 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
+          <p className="flex items-start gap-2">
+            <EyeOffIcon className="mt-0.5 shrink-0" />
+            Public sources only. Rationale in non-public sources (preclinical toxicology, internal development data, regulator correspondence) cannot be seen by ProtocolOS.
+          </p>
+          <a href="./tour" className="flex shrink-0 items-center gap-1.5 font-medium text-ink hover:underline">
+            <PlayIcon /> Take the 7-step guided tour
+          </a>
+        </div>
+      </main>
+    </>
   );
 }
