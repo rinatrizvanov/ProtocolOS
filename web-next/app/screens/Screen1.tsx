@@ -1,6 +1,7 @@
 "use client";
 
 import { getReview, type Classification, type Criterion } from "@/lib/api";
+import { DISPLAY_CLASSIFICATION } from "@/lib/contracts";
 import { useApi } from "@/lib/useApi";
 import { Failed, Frame, Pending } from "../components/Frame";
 
@@ -10,11 +11,15 @@ const TILE_CLASS: Record<Classification, string> = {
   "Insufficient evidence": "bg-uncounted-soft border-uncounted",
 };
 
-const LEGEND: { classification: Classification; text: string; swatch: string }[] = [
-  { classification: "Review recommended", text: "look again", swatch: "bg-look" },
-  { classification: "Evidence supports retaining", text: "rationale supports keeping", swatch: "bg-support" },
-  { classification: "Insufficient evidence", text: "Insufficient evidence", swatch: "bg-uncounted" },
+// The legend and the tiles use the app's display labels (DISPLAY_CLASSIFICATION), never the raw engine strings.
+const LEGEND: { classification: Classification; swatch: string }[] = [
+  { classification: "Review recommended", swatch: "bg-look" },
+  { classification: "Evidence supports retaining", swatch: "bg-support" },
+  { classification: "Insufficient evidence", swatch: "bg-uncounted" },
 ];
+const SWATCH = Object.fromEntries(LEGEND.map((l) => [l.classification, l.swatch])) as Record<Classification, string>;
+
+const ENROLLMENT_TYPE: Record<string, string> = { ACTUAL: "actual", ESTIMATED: "estimated", ANTICIPATED: "anticipated" };
 
 function threshold(c: Criterion): string {
   if (c.value_norm === null) return "no numeric limit";
@@ -32,20 +37,21 @@ export default function Screen1({ nct }: { nct: string }) {
   return (
     <Frame
       headline="Who gets into a trial?"
-      caption="ProtocolOS checks each rule against precedent and FDA guidance; amber means the team should look again."
+      caption="ProtocolOS checks each rule against precedent and FDA guidance; amber marks a rule the team should review again."
       details={
         <>
           <ul>
             {counts.map((c) => (
               <li key={c.classification}>
-                {c.classification}: <span className="tabular-nums">{c.n}</span>
+                {DISPLAY_CLASSIFICATION[c.classification]}: <span className="tabular-nums">{c.n}</span>
               </li>
             ))}
           </ul>
           <p>Sponsor: {study.sponsor}</p>
           <p>Start date: {study.start_date}</p>
           <p>
-            Enrollment: <span className="tabular-nums">{study.enrollment.count}</span> ({study.enrollment.type})
+            Enrollment: <span className="tabular-nums">{study.enrollment.count}</span> (
+            {ENROLLMENT_TYPE[study.enrollment.type] ?? study.enrollment.type.toLowerCase()})
           </p>
         </>
       }
@@ -65,6 +71,10 @@ export default function Screen1({ nct }: { nct: string }) {
             >
               <p className="text-base font-medium text-ink">{r.criterion.label}</p>
               <p className="mt-1 text-2xl tabular-nums text-ink">{threshold(r.criterion)}</p>
+              <p data-testid="tile-classification" className="mt-2 flex items-center gap-1.5 text-xs text-ink">
+                <span aria-hidden className={`h-2 w-2 shrink-0 rounded-full ${SWATCH[r.classification]}`} />
+                {DISPLAY_CLASSIFICATION[r.classification]}
+              </p>
             </div>
           ))}
         </div>
@@ -72,7 +82,7 @@ export default function Screen1({ nct }: { nct: string }) {
           {LEGEND.map((l) => (
             <span key={l.classification} className="flex items-center gap-2">
               <span aria-hidden className={`inline-block h-3 w-3 rounded-sm ${l.swatch}`} />
-              {l.text}
+              {DISPLAY_CLASSIFICATION[l.classification]}
             </span>
           ))}
         </p>

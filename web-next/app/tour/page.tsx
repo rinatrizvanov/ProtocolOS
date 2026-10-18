@@ -15,7 +15,7 @@ const STEPS = [
   { title: "The rules", render: () => <Screen1 nct={NCT} /> },
   { title: "Compared", render: () => <Screen2 nct={NCT} criterionId={CRITERION} /> },
   { title: "Rationale", render: () => <Screen3 nct={NCT} criterionId={CRITERION} /> },
-  { title: "Ask", render: () => <Screen4 nct={NCT} criterionId={CRITERION} /> },
+  { title: "Ask", render: () => <Screen4 nct={NCT} criterionId={CRITERION} autoAsk="why_flagged" /> },
   { title: "Verify", render: () => <Screen5 nct={NCT} /> },
   { title: "Tested", render: () => <Screen6 /> },
   { title: "Decide", render: () => <Screen7 nct={NCT} criterionId={CRITERION} /> },
@@ -43,6 +43,10 @@ export default function Tour() {
   }, []);
 
   useEffect(() => {
+    if (step !== null) document.title = `Guided tour, step ${step + 1} of ${STEPS.length} · ProtocolOS`;
+  }, [step]);
+
+  useEffect(() => {
     if (step === null) return;
     const onKey = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -60,15 +64,24 @@ export default function Tour() {
     <>
       <AppHeader mode="tour" />
       <main className="mx-auto flex max-w-6xl flex-col px-4 py-4 sm:px-6">
-        <nav aria-label="Demo steps" className="flex flex-wrap items-center gap-x-6 gap-y-2">
-          <ol className="flex flex-1 flex-wrap items-center gap-2">
+        <nav aria-label="Demo steps" className="flex items-center gap-x-3 sm:flex-wrap sm:gap-x-6 sm:gap-y-2">
+          {/* Phones: one row with the step name, a progress row of dots and Exit; Back and Next sit in the footer. */}
+          <p className="min-w-0 flex-1 truncate text-sm text-ink sm:hidden" aria-live="polite">
+            Step <span className="tabular-nums">{step + 1}</span> of <span className="tabular-nums">{STEPS.length}</span> · {STEPS[step].title}
+          </p>
+          <span aria-hidden className="flex shrink-0 items-center gap-1 sm:hidden">
+            {STEPS.map((s, i) => (
+              <span key={s.title} className={`h-2 w-2 rounded-full ${i === step ? "bg-ink" : i < step ? "bg-muted" : "bg-line"}`} />
+            ))}
+          </span>
+          <ol className="hidden flex-1 flex-wrap items-center gap-2 sm:flex">
             {STEPS.map((s, i) => (
               <li key={s.title}>
                 <button
                   type="button"
                   onClick={() => go(i)}
                   aria-current={i === step ? "step" : undefined}
-                  className={`flex items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors duration-150 ${
+                  className={`flex items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink ${
                     i === step ? "text-ink" : "text-muted hover:text-ink"
                   }`}
                 >
@@ -81,15 +94,15 @@ export default function Tour() {
               </li>
             ))}
           </ol>
-          <span className="text-sm tabular-nums text-muted">
+          <span className="hidden text-sm tabular-nums text-muted sm:inline">
             {step + 1} / {STEPS.length}
           </span>
           <a
             href={`../review?nct=${NCT}&c=${CRITERION}`}
             data-testid="exit-demo"
-            className="rounded-md px-3 py-1 text-sm text-ink hover:bg-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
+            className="flex min-h-11 shrink-0 items-center rounded-md px-3 text-sm text-ink hover:bg-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink sm:min-h-0 sm:py-1"
           >
-            Exit to the review
+            Exit<span className="hidden sm:inline">&nbsp;to the review</span>
           </a>
         </nav>
 
@@ -108,7 +121,7 @@ export default function Tour() {
           >
             Back
           </button>
-          <span className="text-sm text-muted">Arrow keys move between steps</span>
+          <span className="text-sm text-muted pointer-coarse:hidden">Arrow keys move between steps</span>
           <button
             type="button"
             onClick={() => go(step + 1)}

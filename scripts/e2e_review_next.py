@@ -1,7 +1,7 @@
 """Browser check of the ProtocolOS web-next landing and /review (plan-v2 WS-B acceptance 2-6).
 
 Usage:
-    BASE_URL=http://localhost:3766 /tmp/pw/bin/python scripts/e2e_review_next.py [--strict]
+    BASE_URL=http://localhost:3766 /tmp/pw/bin/python scripts/e2e_review_next.py [--strict] [--data-dir DIR] [--write-decision]
 
 Use localhost, not 127.0.0.1, against `next dev`: Next 16 blocks its dev resources for the 127.0.0.1 origin
 unless next.config.ts lists it in allowedDevOrigins, and the page never hydrates.
@@ -9,6 +9,10 @@ unless next.config.ts lists it in allowedDevOrigins, and the page never hydrates
 Each step prints PASS, FAIL or SKIP. A step SKIPs when the piece it needs is not merged yet (for example
 /api/rationale answers 404, or the Decide tab has no structured reason buttons). A skip is never a pass:
 with --strict any SKIP makes the run fail. Screenshots go to /tmp/triallens-logs/v2/ui/.
+
+The Decide step saves a decision. Against a local BASE_URL it first backs up data/decisions/<nct>.json of the engine's
+data directory (--data-dir, else $PROTOCOLOS_DATA_DIR, else this checkout's data/) and restores it byte for byte, or
+removes it if it did not exist. Against any other BASE_URL the step is skipped unless --write-decision is passed.
 """
 
 from __future__ import annotations
@@ -21,6 +25,7 @@ import subprocess
 import sys
 import uuid
 from pathlib import Path
+from urllib.parse import urlparse
 
 from playwright.sync_api import Page, sync_playwright
 
@@ -30,7 +35,9 @@ SHOTS = Path("/tmp/triallens-logs/v2/ui")
 REPO = Path(__file__).resolve().parents[1]
 TABS = ("rationale", "compare", "ask", "verify", "decide")
 BANNED = re.compile(r"feedback loop|learns from|safe to|will increase enrol", re.I)
-EVIDENCE = re.compile(r"\bevidence\b", re.I)
+# Any "evidence", including inside a word ("Counterevidence"), outside a verbatim quote is a wording problem.
+EVIDENCE = re.compile(r"evidence", re.I)
+QUESTIONS = ("why_flagged", "contradicting", "support_retaining", "what_would_change")
 # "Insufficient evidence" is the fixed classification. The Decide tab shows the stored reason "Prior evidence"
 # (DECISION_REASONS in web-next/lib/contracts.ts) as "Prior trial data", so it needs no exception here.
 ALLOWED_EVIDENCE = re.compile(r"insufficient evidence", re.I)
@@ -81,9 +88,16 @@ def grep_empty(pattern: str) -> tuple[bool, str]:
     return out == "", out[:300]
 
 
+def is_local(url: str) -> bool:
+    return (urlparse(url).hostname or "") in {"localhost", "127.0.0.1", "::1"}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--strict", action="store_true", help="treat any SKIP as a failure")
+    parser.add_argument("--data-dir", default=os.environ.get("PROTOCOLOS_DATA_DIR", str(REPO / "data")),
+                        help="the engine's data directory, for the decision backup (default: this checkout's data/)")
+    parser.add_argument("--write-decision", action="store_true", help="also save a decision against a non-local BASE_URL")
     args = parser.parse_args()
     SHOTS.mkdir(parents=True, exist_ok=True)
 
@@ -183,6 +197,35 @@ def main() -> int:
         except Exception as exc:  # noqa: BLE001 - reported as a failed step
             report(step, "FAIL", str(exc)[:200])
 
+        # Ask: all four questions on EL3 hemoglobin. Each chip runs its question; the investigator's sentences are shown
+        # verbatim inside a quote, so any "evidence" (also "Counterevidence") outside one is a wording problem. The score
+        # line repeats the review's own points, never a count of statements.
+        step = "Ask: 4 questions on EL3 hemoglobin, verbatim answers, score line equals the review"
+        try:
+            page.goto(review_url("hemoglobin", tab="ask"), wait_until="networkidle")
+            page.get_by_test_id("question-why_flagged").wait_for(timeout=15000)
+            for q in QUESTIONS:
+                before = page.locator("[data-testid=chat-turn]").count()
+                page.get_by_test_id(f"question-{q}").click()
+                page.wait_for_function(
+                    "(n) => document.querySelectorAll('[data-testid=chat-turn]').length > n"
+                    " && !document.body.innerText.includes('Checking the sources')", arg=before, timeout=30000)
+            statements = page.locator("[data-testid=statement]").count()
+            outside = page.evaluate("() => [...document.querySelectorAll('[data-testid=statement]')]"
+                                    ".filter((s) => !s.closest('[data-role=quote]')).length")
+            scores = page.evaluate("async (n) => (await (await fetch('/api/review/' + n)).json()).reviews"
+                                   ".find((r) => r.criterion.id === 'hemoglobin').scores", NCT)
+            score_text = page.get_by_test_id("ask-score").inner_text()
+            score_ok = f"+{scores['challenge']} against" in score_text and f"+{scores['support']} for" in score_text
+            found = wording_problems(visible_text(page))
+            page.screenshot(path=str(SHOTS / "review-ask-4q-1440.png"), full_page=True)
+            ok = statements > 0 and outside == 0 and score_ok and not found
+            report(step, "PASS" if ok else "FAIL",
+                   f"{statements} statements, {outside} outside a quote; score {score_text!r} vs {scores}"
+                   + (f"; wording {found[:4]}" if found else ""))
+        except Exception as exc:  # noqa: BLE001 - reported as a failed step
+            report(step, "FAIL", str(exc)[:200])
+
         # Compare on a trial where the engine found no similar trial: the caption says so instead of claiming agreement.
         step = "Compare claims no precedent on a trial without similar trials"
         bare = "NCT02819518"
@@ -215,28 +258,47 @@ def main() -> int:
             except Exception as exc:  # noqa: BLE001 - reported as a failed step
                 report(step, "FAIL", str(exc)[:200])
 
-        # Decide: a structured reason and a fresh note reach the markdown packet (needs WS-E's reason buttons).
+        # Decide: a structured reason and a fresh note reach the markdown packet (needs WS-E's reason buttons). The
+        # decisions file is backed up first and restored byte for byte, so the demo trial never keeps test data.
         page.goto(review_url(tab="decide"), wait_until="networkidle")
         page.wait_for_timeout(800)
         reason = page.get_by_test_id("reason-safety_concern")
         step = "decide -> packet md has 'Reason: Safety concern. Note: <nonce>'"
+        local = is_local(BASE_URL)
+        decisions = Path(args.data_dir) / "decisions" / f"{NCT}.json"
         if reason.count() == 0:
             report(step, "SKIP", "reason-safety_concern not merged")
+        elif not local and not args.write_decision:
+            report(step, "SKIP", f"{BASE_URL} is not local; pass --write-decision to save a decision there")
         else:
+            backup = decisions.read_bytes() if local and decisions.exists() else None
             # A unique note proves this run's decision reached the packet, not an earlier one.
             nonce = f"e2e-{uuid.uuid4().hex[:8]}"
-            reason.click()
-            page.get_by_test_id("decision-note").fill(nonce)
-            page.get_by_test_id("decide-needs_medical_review").click()
             try:
+                reason.click()
+                page.get_by_test_id("decision-note").fill(nonce)
+                page.get_by_test_id("decide-needs_medical_review").click()
+                checked = page.get_by_test_id("decide-needs_medical_review").get_attribute("aria-checked")
+                page.get_by_test_id("save-decision").click()
                 page.get_by_test_id("saved-decision").filter(has_text=nonce).wait_for(timeout=15000)
                 packet = page.evaluate(
                     "async (n) => await (await fetch('/api/packet/' + n + '?format=md')).text()", NCT
                 )
                 expected = f"Reason: Safety concern. Note: {nonce}"
-                report(step, "PASS" if expected in packet else "FAIL", expected)
+                report(step, "PASS" if expected in packet and checked == "true" else "FAIL",
+                       f"{expected}; radio aria-checked={checked}")
             except Exception as exc:  # noqa: BLE001
                 report(step, "FAIL", str(exc)[:200])
+            finally:
+                if local:
+                    wrote = decisions.exists() and nonce in decisions.read_text()
+                    if backup is None:
+                        decisions.unlink(missing_ok=True)
+                    else:
+                        decisions.write_bytes(backup)
+                    restored = (decisions.read_bytes() == backup) if backup is not None else not decisions.exists()
+                    report("decide: decisions file restored byte for byte", "PASS" if wrote and restored else "FAIL",
+                           f"{decisions}" + ("" if wrote else " did not receive the decision (pass --data-dir)"))
 
         # 6. Phone width: no horizontal scroll at 390px on the landing, every review tab and the Compare plot of
         # every EL3 criterion (the plot is the widest view); screenshots at both sizes.

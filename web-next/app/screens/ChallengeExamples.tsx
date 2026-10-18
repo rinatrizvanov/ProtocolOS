@@ -16,6 +16,9 @@ import { useApi } from "@/lib/useApi";
 import { Failed, Frame, Pending } from "../components/Frame";
 import Screen5 from "./Screen5";
 
+// Not mounted on /review since the Redraft workspace replaced the Verify examples (e0a8800); kept, with the review-side
+// wording fixes, for a return of the worked examples.
+
 type ExampleKey = "made_up" | "honest_risky" | "cautious";
 type Run = { status: "idle" } | { status: "busy" } | { status: "error"; message: string } | { status: "ready"; data: Verification };
 
@@ -72,15 +75,10 @@ const HEMOGLOBIN_EXAMPLES: { key: ExampleKey; title: string; body: Recommendatio
 
 const OUTCOME_TONE: Record<string, string> = {
   Rejected: "text-verdict",
-  "Needs medical review": "text-look",
+  "Needs medical review": "text-look-ink",
   Supported: "text-support",
 };
 
-function reasonOf(data: Verification): string {
-  const checks = data.deterministic.checks;
-  const shown = checks.find((c) => c.result === "fail") ?? checks.find((c) => c.result === "warn");
-  return shown?.detail ?? "Every check passed.";
-}
 
 function ExampleCard({ nct, example }: { nct: string; example: (typeof HEMOGLOBIN_EXAMPLES)[number] }) {
   const [run, setRun] = useState<Run>({ status: "idle" });
@@ -105,7 +103,7 @@ function ExampleCard({ nct, example }: { nct: string; example: (typeof HEMOGLOBI
         data-testid={`challenge-${example.key}`}
         onClick={verify}
         disabled={run.status === "busy"}
-        className="self-start rounded-md border border-ink bg-ink px-4 py-2 text-base text-paper transition-opacity duration-150 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+        className="self-start rounded-md border border-ink bg-paper px-4 py-2 text-base text-ink transition-colors duration-150 hover:bg-line disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
       >
         {run.status === "busy" ? "Checking…" : "Run the verifier"}
       </button>
@@ -117,22 +115,26 @@ function ExampleCard({ nct, example }: { nct: string; example: (typeof HEMOGLOBI
           >
             {run.data.deterministic.outcome}
           </span>
-          <figure>
-            <figcaption className="text-xs font-medium text-muted">Verifier, verbatim</figcaption>
-            <p data-testid={`reason-${example.key}`} data-role="quote" className="text-base text-ink">
-              {reasonOf(run.data)}
+          {distinct(run.data.deterministic.checks).some((c) => c.result !== "pass") ? (
+            <figure data-testid={`reason-${example.key}`}>
+              <figcaption className="text-xs font-medium text-muted">Verifier checks that did not pass, verbatim</figcaption>
+              <CheckList checks={distinct(run.data.deterministic.checks).filter((c) => c.result !== "pass")} />
+            </figure>
+          ) : (
+            <p data-testid={`reason-${example.key}`} className="text-base text-ink">
+              Every check passed.
             </p>
-          </figure>
+          )}
         </div>
       ) : null}
-      {run.status === "error" ? <Failed message={run.message} /> : null}
+      {run.status === "error" ? <Failed message={run.message} action="run the verifier" /> : null}
     </li>
   );
 }
 
 const RESULT: Record<string, { label: string; tone: string }> = {
   fail: { label: "Fail", tone: "text-verdict" },
-  warn: { label: "Warning", tone: "text-look" },
+  warn: { label: "Warning", tone: "text-look-ink" },
   pass: { label: "Pass", tone: "text-support" },
 };
 
@@ -169,7 +171,25 @@ function CheckList({ checks }: { checks: Check[] }) {
   );
 }
 
-function WhatIfResult({ data, operator, current, unit }: { data: WhatIf; operator: string; current: number; unit: string }) {
+// The NHANES caveat's Duffy-null sentence is about neutrophil counts; other analytes show only the general sentence.
+function caveatFor(caveat: string, criterionId: string): string {
+  const sentences = caveat.match(/[^.]+(?:\.|$)/g)?.map((x) => x.trim()).filter(Boolean) ?? [caveat];
+  return sentences.filter((x) => criterionId === "anc" || !/duffy/i.test(x)).join(" ");
+}
+
+function WhatIfResult({
+  data,
+  operator,
+  current,
+  unit,
+  criterionId,
+}: {
+  data: WhatIf;
+  operator: string;
+  current: number;
+  unit: string;
+  criterionId: string;
+}) {
   const checks = distinct(data.verification.checks);
   const flagged = checks.filter((c) => c.result !== "pass");
   const passed = checks.filter((c) => c.result === "pass");
@@ -215,11 +235,11 @@ function WhatIfResult({ data, operator, current, unit }: { data: WhatIf; operato
       {pop ? (
         <div data-testid="whatif-population" className="flex flex-col gap-1 rounded-md bg-line/40 px-3 py-2">
           <p className="text-sm tabular-nums text-ink">
-            US adults below the limit ({pop.current.source.dataset}, n = {pop.current.overall.n.toLocaleString("en-US")}):{" "}
-            <span className="font-semibold">{pop.current.overall.pct}%</span> at {operator} {current} {unit},{" "}
-            <span className="font-semibold">{pop.alternative.overall.pct}%</span> at {operator} {data.alternative} {unit}.
+            Share of US adults below each limit ({pop.current.source.dataset}, n = {pop.current.overall.n.toLocaleString("en-US")}):{" "}
+            <span className="font-semibold">{pop.current.overall.pct}%</span> below {current} {unit} (current) ·{" "}
+            <span className="font-semibold">{pop.alternative.overall.pct}%</span> below {data.alternative} {unit} (proposed).
           </p>
-          <p className="text-xs text-muted">{pop.current.caveat}</p>
+          <p className="text-xs text-muted">{caveatFor(pop.current.caveat, criterionId)}</p>
         </div>
       ) : null}
     </div>
@@ -252,13 +272,19 @@ function WhatIfPanel({ nct, criterionId }: Selection) {
       continue;
     }
     stated += 1;
+    // The engine counts a washout within 10% as "same" (this trial's limit); offering it as another limit would send a
+    // "tighten" through the verifier and get a wrong rejection.
+    if (row.direction === "same") continue;
     if (v !== current) counts.set(v, (counts.get(v) ?? 0) + 1);
   }
   const used = [...counts.entries()].sort((a, b) => b[1] - a[1] || Math.abs(a[0] - current) - Math.abs(b[0] - current));
   const value = draft ?? (used.length > 0 ? String(used[0][0]) : "");
   const proposed = Number(value);
+  // ECOG is a whole-number scale from 0 to 4.
+  const ecog = criterionId === "ecog" || criterion.label.toLowerCase().includes("ecog");
+  const notWhole = ecog && value.trim() !== "" && Number.isFinite(proposed) && (!Number.isInteger(proposed) || proposed > 4);
   const isCurrent = value.trim() !== "" && proposed === current;
-  const valid = value.trim() !== "" && Number.isFinite(proposed) && proposed >= 0 && !isCurrent;
+  const valid = value.trim() !== "" && Number.isFinite(proposed) && proposed >= 0 && !isCurrent && !notWhole;
 
   function check() {
     if (!valid) return;
@@ -297,12 +323,14 @@ function WhatIfPanel({ nct, criterionId }: Selection) {
               data-testid="whatif-value"
               type="number"
               inputMode="decimal"
-              step="any"
+              step={ecog ? 1 : "any"}
               min={0}
+              max={ecog ? 4 : undefined}
               value={value}
               onChange={(e) => setDraft(e.target.value)}
-              aria-describedby={isCurrent ? "whatif-hint" : undefined}
-              className="w-28 rounded-md border border-line bg-paper px-2 py-1.5 tabular-nums text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
+              aria-invalid={notWhole || undefined}
+              aria-describedby={isCurrent || notWhole ? "whatif-hint" : undefined}
+              className="w-28 rounded-md border border-uncounted bg-paper px-2 py-1.5 tabular-nums text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
             />
             <span>{unit}</span>
           </span>
@@ -319,6 +347,10 @@ function WhatIfPanel({ nct, criterionId }: Selection) {
       {isCurrent ? (
         <p id="whatif-hint" className="text-sm text-muted">
           That is the current limit; enter a different one.
+        </p>
+      ) : notWhole ? (
+        <p id="whatif-hint" className="text-sm text-verdict">
+          ECOG is a whole-number scale from 0 to 4.
         </p>
       ) : null}
       {used.length > 0 ? (
@@ -347,8 +379,8 @@ function WhatIfPanel({ nct, criterionId }: Selection) {
                 : "Every similar trial with a comparable numeric limit for this criterion used this one."}
         </p>
       )}
-      {run.status === "ready" ? <WhatIfResult data={run.data} operator={criterion.operator} current={current} unit={unit} /> : null}
-      {run.status === "error" ? <Failed message={run.message} /> : null}
+      {run.status === "ready" ? <WhatIfResult data={run.data} operator={criterion.operator} current={current} unit={unit} criterionId={criterionId} /> : null}
+      {run.status === "error" ? <Failed message={run.message} action="run the verifier" /> : null}
     </section>
   );
 }
@@ -361,7 +393,7 @@ export default function ChallengeExamples({ nct, criterionId }: Selection) {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
-          <p data-testid="examples-label" className="text-xs font-medium uppercase tracking-wide text-muted">{EXAMPLES_LABEL}</p>
+          <p data-testid="examples-label" className="text-xs font-semibold text-muted">{EXAMPLES_LABEL}</p>
           <Screen5 nct={nct} />
         </div>
         <WhatIfPanel nct={nct} criterionId={criterionId} />
@@ -377,7 +409,7 @@ export default function ChallengeExamples({ nct, criterionId }: Selection) {
       >
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
-            <p data-testid="examples-label" className="text-xs font-medium uppercase tracking-wide text-muted">{EXAMPLES_LABEL}</p>
+            <p data-testid="examples-label" className="text-xs font-semibold text-muted">{EXAMPLES_LABEL}</p>
             <ul className="grid w-full grid-cols-1 gap-3 lg:grid-cols-3">
               {HEMOGLOBIN_EXAMPLES.map((example) => (
                 <ExampleCard key={example.key} nct={nct} example={example} />

@@ -6,7 +6,11 @@ import { CloseIcon } from "./Icons";
 const KEY = "protocolos.onboarding.v2";
 const STEPS = [
   { n: 1, title: "Pick a trial or an idea", text: "Review a posted protocol, or draft criteria for a new concept." },
-  { n: 2, title: "Read the rationale", text: "Each criterion shows its likely rationale, which arm drives it, and what similar trials used." },
+  {
+    n: 2,
+    title: "Read the rationale",
+    text: "Each criterion shows its likely rationale, which arm it comes from where a drug link exists, and what similar trials used.",
+  },
   { n: 3, title: "Verify, then decide", text: "Propose another limit, see the deterministic verifier's verdict, then record the team's reason." },
 ];
 
@@ -24,9 +28,10 @@ function subscribe(cb: () => void) {
   return () => listeners.delete(cb);
 }
 
-// First-run strip: three steps, dismissible; storage may be blocked, so every access is guarded.
+// First-run strip: three steps, dismissible; storage may be blocked, so every access is guarded. The server renders it
+// (so its height is in the first paint); the inline script in layout.tsx hides it before paint once it was dismissed.
 export function Onboarding() {
-  const dismissed = useSyncExternalStore(subscribe, () => dismissedThisLoad || readDismissed(), () => true);
+  const dismissed = useSyncExternalStore(subscribe, () => dismissedThisLoad || readDismissed(), () => false);
   if (dismissed) return null;
   const dismiss = () => {
     dismissedThisLoad = true;
@@ -35,18 +40,19 @@ export function Onboarding() {
     } catch {
       /* storage unavailable: hide for this page load only */
     }
+    document.documentElement.dataset.onboarding = "dismissed";
     listeners.forEach((l) => l());
   };
   return (
     <section data-testid="onboarding" aria-label="How ProtocolOS works" className="rounded-lg border border-line bg-white/60 p-4">
       <div className="flex items-start justify-between gap-4">
-        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">How it works</h2>
+        <h2 className="text-sm font-semibold text-muted">How it works</h2>
         <button
           type="button"
           data-testid="onboarding-dismiss"
           onClick={dismiss}
           aria-label="Dismiss the introduction"
-          className="rounded p-1 text-muted hover:bg-line hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
+          className="-m-2 grid h-11 w-11 place-items-center rounded text-muted hover:bg-line hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
         >
           <CloseIcon />
         </button>

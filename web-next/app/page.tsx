@@ -10,7 +10,7 @@ const MODES = [
     Icon: DocCheckIcon,
     kicker: "Finishing a trial",
     title: "Review an existing protocol",
-    text: "Open a posted oncology protocol. Every lab, ECOG and washout criterion gets its rationale, the arm that drives it, the values similar trials used, and the deterministic verifier's verdict on any other limit you propose.",
+    text: "Open a posted oncology protocol. Each lab, ECOG and washout criterion gets its likely rationale (inferred unless the protocol states it), the arm whose drugs are linked to it where a drug link exists, the values similar trials used, and the deterministic verifier's verdict on any other limit you propose.",
     cta: "Open the review",
   },
   {
