@@ -594,7 +594,7 @@ def _classification_statement(c: _Ctx) -> dict:
     sc = c.item.get("scores") or {}
     lead = f"ProtocolOS classified {_crit_text(c.crit)} as '{c.classification}' (support score {sc.get('support')}, challenge score {sc.get('challenge')})."
     rest = {CLASS_REVIEW: "This is a question for the protocol team to review, not a finding that the threshold is wrong.",
-            CLASS_INSUFFICIENT: "The retrieved evidence does not settle this threshold either way."}.get(c.classification, "")
+            CLASS_INSUFFICIENT: "The retrieved sources do not settle this threshold either way."}.get(c.classification, "")
     ids = [i for i in (c.assess, c.class_id) if i in c.nodes] + c.anchors()
     return _stmt(lead, rest, "neutral", ids)
 
@@ -692,7 +692,7 @@ def _loose_statements(c: _Ctx, stance: str, nodes: list[dict]) -> list[dict]:
         out.append(_stmt("Curated pharmacology (not scored here).", summary, stance, [n["id"] for n in facts]))
     other = [n for n in nodes if n["type"] not in ("Passage", "ComparatorThreshold", "GuidancePassage", "CuratedFact")]
     if other:
-        out.append(_stmt(f"Further {stance} evidence: {_join(sorted({n['type'] for n in other}))}.", "", stance, [n["id"] for n in other]))
+        out.append(_stmt(f"Further {stance} sources: {_join(sorted({n['type'] for n in other}))}.", "", stance, [n["id"] for n in other]))
     return out
 
 
@@ -723,7 +723,7 @@ def _missing_statements(c: _Ctx, per_item: bool) -> list[dict]:
         return []
     if not per_item:
         texts = "; ".join(str((n.get("data") or {}).get("text", "")).rstrip(".") for n in items)
-        return [_stmt(f"Missing evidence: {texts}.", "", "neutral", [n["id"] for n in items] + [c.assess])]
+        return [_stmt(f"Not found in the sources: {texts}.", "", "neutral", [n["id"] for n in items] + [c.assess])]
     out = []
     for n in items:
         d = n.get("data") or {}
@@ -743,14 +743,14 @@ def _compose(question: str, c: _Ctx) -> tuple[list[dict], list[str], set]:
     if question == "what_would_change":
         main = _missing_statements(c, per_item=True)
         if not main:
-            stmts.append(_stmt(f"The review lists no missing-evidence items for {crit}.",
+            stmts.append(_stmt(f"The review lists nothing missing for {crit}.",
                                "ProtocolOS cannot say what further information would change this classification.", "neutral", [c.assess]))
         stmts += main
     else:
         main = _side_statements(c, primary)
         if not main:
             label = {"supports": "support-side", "challenges": "challenge-side"}[primary]
-            stmts.append(_stmt(f"No {label} evidence for {crit} is in the graph.",
+            stmts.append(_stmt(f"No {label} source for {crit} is in the graph.",
                                "Insufficient evidence: without comparable precedent or protocol rationale on this side there is nothing to cite.",
                                "neutral", [c.assess]))
         stmts += main
