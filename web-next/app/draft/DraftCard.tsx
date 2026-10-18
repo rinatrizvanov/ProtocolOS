@@ -56,7 +56,7 @@ function Distribution({ c }: { c: DraftCriterion }) {
                     const p = byNct.get(n);
                     const label = p?.acronym ?? n;
                     return p?.url ? (
-                      <a key={n} href={p.url} target="_blank" rel="noreferrer" className="underline decoration-line underline-offset-2 hover:text-ink" title={p.quote}>
+                      <a key={n} href={p.page ? `${p.url}#page=${p.page}` : p.url} target="_blank" rel="noreferrer" className="underline decoration-line underline-offset-2 hover:text-ink" title={p.quote}>
                         {label}
                         {p.page ? ` p.${p.page}` : ""}
                       </a>
@@ -116,6 +116,11 @@ function Checks({ c }: { c: DraftCriterion }) {
 export default function DraftCard({ c }: { c: DraftCriterion }) {
   const cls = c.critique.classification;
   const drafted = c.status === "drafted" && c.proposed !== null;
+  // The engine's last why line repeats the self-critique shown below, and its explanation starts with the engine label
+  // that the chip already shows under its display name.
+  const why = c.why_generated.filter((w) => !w.startsWith("Self-critique:"));
+  const rest = c.critique.explanation.startsWith(`${cls}: `) ? c.critique.explanation.slice(cls.length + 2) : c.critique.explanation;
+  const explanation = rest.charAt(0).toUpperCase() + rest.slice(1);
   return (
     <article
       data-testid="draft-criterion"
@@ -152,18 +157,16 @@ export default function DraftCard({ c }: { c: DraftCriterion }) {
 
       <Distribution c={c} />
 
-      <details data-testid="draft-why" className="text-sm" open={c.why_generated.length > 0 && c.why_generated.length <= 3}>
-        <summary className="cursor-pointer select-none font-medium text-ink">Why this value</summary>
-        {c.why_generated.length > 0 ? (
+      {why.length > 0 ? (
+        <section data-testid="draft-why" className="text-sm">
+          <h4 className="font-medium text-ink">{drafted ? "Why this value" : "Context"}</h4>
           <ul className="mt-1 flex list-disc flex-col gap-0.5 pl-5 text-muted">
-            {c.why_generated.map((w, i) => (
+            {why.map((w, i) => (
               <li key={i}>{w}</li>
             ))}
           </ul>
-        ) : (
-          <p className="mt-1 text-muted">No value, so there is nothing to explain.</p>
-        )}
-      </details>
+        </section>
+      ) : null}
 
       <Checks c={c} />
 
@@ -172,7 +175,7 @@ export default function DraftCard({ c }: { c: DraftCriterion }) {
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Self-critique</span>
           <span className={`rounded px-1.5 text-xs font-medium ${CHIP[cls]}`}>{DISPLAY_CLASSIFICATION[cls]}</span>
         </p>
-        <p className="mt-1 text-ink">{c.critique.explanation}</p>
+        <p className="mt-1 text-ink">{explanation}</p>
         {c.critique.missing_evidence.length > 0 ? (
           <p className="mt-1 text-xs text-muted">Missing: {c.critique.missing_evidence.join("; ")}</p>
         ) : null}

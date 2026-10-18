@@ -39,7 +39,7 @@ function setQuery(query: string) {
 
 function describe(err: unknown): string {
   if (err instanceof ApiError) {
-    if (err.status === 422) return `The idea was not accepted (422)${err.detail ? `: ${err.detail}` : ". Check the condition (3-120 characters) and 1-8 drugs."}`;
+    if (err.status === 422) return `The idea was not accepted (422)${err.detail ? `: ${err.detail}` : ". Check the condition (3-120 characters) and 1-8 drugs, each 2-40 characters."}`;
     if (err.status === 429) return err.detail ?? "New ideas limit reached on the public demo; presets still work.";
     if (err.status === 503) return err.detail ?? "ClinicalTrials.gov not reachable. Try again or use a preset.";
     if (err.status === 404) return err.detail ?? "That draft is not cached. Run the idea again.";
@@ -75,7 +75,7 @@ function Svg({ d }: { d: string }) {
 function Summary({ draft }: { draft: Draft }) {
   const s = draft.summary;
   return (
-    <div data-testid="draft-summary" data-draft-id={draft.draft_id} className="flex flex-col gap-1">
+    <div data-testid="draft-summary" data-draft-id={draft.draft_id} data-cached={s.cached} className="flex flex-col gap-1">
       <p className="text-base text-ink">
         <span className="font-semibold">{s.drafted} drafted</span>
         <span className="text-muted"> · </span>
@@ -110,22 +110,22 @@ function Result({ draft, presetId }: { draft: Draft; presetId: string | null }) 
   const href = useMemo(() => `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(draft, null, 2))}`, [draft]);
   const drafted = draft.criteria.filter((c) => c.status === "drafted");
   const insufficient = draft.criteria.filter((c) => c.status !== "drafted");
+  // The blind-spot sentence is in the page footer; the notes keep everything else.
+  const notes = draft.notes.map((n) => n.replace(BLIND_SPOT, "").trim()).filter((n) => n.length > 0);
 
   return (
     <div data-testid="draft-result" className="flex flex-col gap-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <Summary draft={draft} />
-        {href ? (
-          <a
-            data-testid="draft-download"
-            href={href}
-            download={`${draft.draft_id}.json`}
-            className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-2.5 py-1.5 text-sm text-ink hover:border-muted"
-          >
-            <Svg d="M8 2v8M4.5 7L8 10.5 11.5 7M3 13h10" />
-            Download draft (JSON)
-          </a>
-        ) : null}
+        <a
+          data-testid="draft-download"
+          href={href}
+          download={`${draft.draft_id}.json`}
+          className="inline-flex items-center gap-1.5 rounded-md border border-line bg-white px-2.5 py-1.5 text-sm text-ink hover:border-muted"
+        >
+          <Svg d="M8 2v8M4.5 7L8 10.5 11.5 7M3 13h10" />
+          Download draft (JSON)
+        </a>
       </div>
 
       {draft.status !== "ok" ? (
@@ -182,7 +182,7 @@ function Result({ draft, presetId }: { draft: Draft; presetId: string | null }) 
       ) : null}
 
       <section data-testid="draft-notes" className="flex flex-col gap-1 border-t border-line pt-3 text-xs text-muted">
-        {draft.notes.map((n, i) => (
+        {notes.map((n, i) => (
           <p key={i}>{n}</p>
         ))}
       </section>
@@ -205,6 +205,8 @@ export default function DraftPage() {
   }, []);
 
   const go = useCallback((label: string, cold: boolean, fetcher: () => Promise<Draft>, presetId: string | null, query: (d: Draft) => string) => {
+    // Any run settles the URL, so the deep-link effect below only ever handles the query present at first load.
+    started.current = true;
     const mine = ++ticket.current;
     setRun({ state: "loading", cold, label });
     withTimeout(fetcher()).then(

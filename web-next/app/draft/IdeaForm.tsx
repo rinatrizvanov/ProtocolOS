@@ -4,6 +4,8 @@ import { useState, type FormEvent, type KeyboardEvent } from "react";
 import type { DraftVocabulary, Idea, SettingTag } from "@/lib/contracts";
 
 const ALL_SETTINGS: SettingTag[] = ["first-line", "metastatic", "non-squamous", "squamous", "perioperative/locally-advanced"];
+const MAX_DRUGS = 8;
+const MAX_DRUG_CHARS = 40;
 
 // Matches a typed drug against the vocabulary by name or alias; null when the engine would not recognize it.
 function lookup(vocab: DraftVocabulary | null, raw: string) {
@@ -26,6 +28,7 @@ export default function IdeaForm({
   const [pending, setPending] = useState("");
   const [setting, setSetting] = useState<SettingTag[]>([]);
   const [phase, setPhase] = useState<Idea["phase"]>("PHASE3");
+  const [notice, setNotice] = useState<string | null>(null);
   const settings = vocabulary?.settings ?? ALL_SETTINGS;
   const phases = vocabulary?.phases ?? ["PHASE2", "PHASE3"];
 
@@ -35,7 +38,20 @@ export default function IdeaForm({
       .map((p) => p.trim())
       .filter((p) => p.length > 0);
     const next = [...drugs];
-    for (const p of parts) if (!next.some((d) => d.toLowerCase() === p.toLowerCase()) && next.length < 8) next.push(p);
+    const badLength: string[] = [];
+    let overflow = 0;
+    // The engine accepts 1-8 drugs of 2-40 characters each; anything else is reported here instead of as a 422.
+    for (const p of parts) {
+      if (next.some((d) => d.toLowerCase() === p.toLowerCase())) continue;
+      if (p.length < 2 || p.length > MAX_DRUG_CHARS) badLength.push(p.length > MAX_DRUG_CHARS ? `${p.slice(0, 24)}…` : p);
+      else if (next.length >= MAX_DRUGS) overflow += 1;
+      else next.push(p);
+    }
+    const problems = [
+      badLength.length ? `each drug name needs 2-${MAX_DRUG_CHARS} characters (${badLength.join(", ")})` : "",
+      overflow ? `at most ${MAX_DRUGS} drugs (${overflow} more not added)` : "",
+    ].filter(Boolean);
+    setNotice(problems.length ? `Not added: ${problems.join("; ")}.` : null);
     setDrugs(next);
     setPending("");
     return next;
@@ -123,6 +139,11 @@ export default function IdeaForm({
             ))}
           </datalist>
         </div>
+        {notice ? (
+          <p data-testid="idea-drugs-notice" role="status" className="text-xs text-look">
+            {notice}
+          </p>
+        ) : null}
       </div>
 
       <fieldset className="flex flex-col gap-1 text-sm">
