@@ -241,9 +241,12 @@ function WhatIfPanel({ nct, criterionId }: Selection) {
 
   // Limits the similar trials used that differ from this one, most common first; the first prefills the field.
   const counts = new Map<number, number>();
+  let stated = 0;
   for (const row of review.data.comparison[criterionId] ?? []) {
     const v = row.criterion?.value_norm;
-    if (v !== null && v !== undefined && v !== current) counts.set(v, (counts.get(v) ?? 0) + 1);
+    if (v === null || v === undefined) continue;
+    stated += 1;
+    if (v !== current) counts.set(v, (counts.get(v) ?? 0) + 1);
   }
   const used = [...counts.entries()].sort((a, b) => b[1] - a[1] || Math.abs(a[0] - current) - Math.abs(b[0] - current));
   const value = draft ?? (used.length > 0 ? String(used[0][0]) : "");
@@ -327,7 +330,13 @@ function WhatIfPanel({ nct, criterionId }: Selection) {
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted">Every similar trial with a numeric limit used this one.</p>
+        <p data-testid="whatif-precedent" className="text-sm text-muted">
+          {review.data.comparators.length === 0
+            ? "No similar trial was found for this protocol, so a change would cite none."
+            : stated === 0
+              ? "No similar trial states a numeric limit for this criterion, so a change would cite none."
+              : "Every similar trial that states a numeric limit for this criterion used this one."}
+        </p>
       )}
       {run.status === "ready" ? <WhatIfResult data={run.data} operator={criterion.operator} current={current} unit={unit} /> : null}
       {run.status === "error" ? <Failed message={run.message} /> : null}

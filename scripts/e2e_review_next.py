@@ -195,6 +195,24 @@ def main() -> int:
             except Exception as exc:  # noqa: BLE001 - reported as a failed step
                 report(step, "FAIL", str(exc)[:200])
 
+        # Verify on a trial where the engine found no similar trial: the panel says so instead of claiming agreement,
+        # and so does the Compare caption.
+        step = "Verify and Compare claim no precedent on a trial without similar trials"
+        bare = "NCT02819518"
+        try:
+            page.goto(review_url("anc", tab="verify", nct=bare), wait_until="networkidle")
+            page.get_by_test_id("whatif-precedent").wait_for(timeout=15000)
+            count = page.evaluate("async (n) => (await (await fetch('/api/review/' + n)).json()).comparators.length", bare)
+            verify_text = page.get_by_test_id("whatif-precedent").inner_text()
+            page.goto(review_url("anc", tab="compare", nct=bare), wait_until="networkidle")
+            page.get_by_test_id("target-marker").wait_for(timeout=15000)
+            compare_text = page.get_by_role("tabpanel").inner_text()
+            ok = count == 0 and "Every similar trial" not in verify_text and "No similar trial was found" in verify_text \
+                and "No similar trial was found for this protocol." in compare_text
+            report(step, "PASS" if ok else "FAIL", f"{count} similar trials; Verify: {verify_text}")
+        except Exception as exc:  # noqa: BLE001 - reported as a failed step
+            report(step, "FAIL", str(exc)[:200])
+
         # Decide: a structured reason and a fresh note reach the markdown packet (needs WS-E's reason buttons).
         page.goto(review_url(tab="decide"), wait_until="networkidle")
         page.wait_for_timeout(800)

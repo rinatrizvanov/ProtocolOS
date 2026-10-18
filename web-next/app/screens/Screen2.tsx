@@ -105,8 +105,10 @@ export default function Screen2({ nct, criterionId, detailed = false }: Selectio
   const hi = Math.max(...values) + pad;
   const pct = (v: number) => ((v - lo) / (hi - lo)) * 100;
   const caption =
-    withCriterion.length === 0
-      ? "None of the similar trials states this criterion."
+    state.data.comparators.length === 0
+      ? "No similar trial was found for this protocol."
+      : withCriterion.length === 0
+        ? "None of the similar trials states this criterion."
       : `${looser} of ${withCriterion.length} similar trials used a ${word} limit; differences are questions for the team.`;
   const at = pct(targetValue);
   // Text near an edge grows inward: translating by -at% keeps the block inside the track at any width.

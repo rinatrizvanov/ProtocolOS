@@ -23,6 +23,8 @@ const GROUP_TEXT: Record<string, string> = {
   same_comparators: "Two or more similar trials used the same limit, none less strict",
   stricter_comparators: "A similar trial used a stricter limit",
   regimen_support: "The regimen's known toxicity supports having a limit, not this value",
+  regimen_challenge: "No drug in any arm is flagged for this toxicity in the curated pharmacology table",
+  protocol_value_specific: "The protocol text references this limit's value",
   specific_fda: "FDA guidance specific to this criterion",
 };
 
@@ -99,12 +101,14 @@ export function RationalePanel({ nct, criterionId }: Selection) {
             ))}
           </ul>
         ) : null}
-        <p data-testid="fda-note" className="text-sm text-muted">
-          {fdaScored
-            ? "FDA guidance specific to this criterion counted in the score."
-            : `${passages.length} FDA passage${passages.length === 1 ? "" : "s"}, 0 points: the passages are general guidance, not specific to this criterion, so they are shown as context only.`}{" "}
-          FDA guidance issued after the trial started is labelled retrospective; the date alone does not change the score.
-        </p>
+        {graph.status === "ready" ? (
+          <p data-testid="fda-note" className="text-sm text-muted">
+            {fdaScored
+              ? "FDA guidance specific to this criterion counted in the score."
+              : `${passages.length} FDA passage${passages.length === 1 ? "" : "s"}, 0 points: the passages are general guidance, not specific to this criterion, so they are shown as context only.`}{" "}
+            FDA guidance issued after the trial started is labelled retrospective; the date alone does not change the score.
+          </p>
+        ) : null}
         {extra.explanation ? (
           <figure className="rounded-md border border-line bg-white/60 px-3 py-2">
             <figcaption className="text-xs font-medium text-muted">Engine output, verbatim</figcaption>

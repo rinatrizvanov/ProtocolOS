@@ -171,7 +171,7 @@ export function EvidenceColumns({ graph }: { graph: Graph }) {
 
   return (
     <>
-      <div className="grid w-full grid-cols-3 gap-4">
+      <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
         {COLUMNS.map((col) => (
           <section key={col.stance} data-testid={`evidence-${col.stance}`} className="flex flex-col gap-3">
             <h2 className="text-base font-semibold text-ink">

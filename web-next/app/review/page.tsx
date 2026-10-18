@@ -106,6 +106,29 @@ function CriteriaList({ nct, selected, tab }: { nct: string; selected: string | 
   );
 }
 
+// Phones get the panel first: this picker switches criteria above the tabs, and the full list follows the panel.
+function CriterionPicker({ nct, selected, tab }: { nct: string; selected: string; tab: TabId }) {
+  const state = useApi(() => getReview(nct));
+  if (state.status !== "ready") return null;
+  return (
+    <label className="flex flex-col gap-1 pb-3 text-sm text-muted md:hidden">
+      Criterion
+      <select
+        data-testid="criterion-picker"
+        value={selected}
+        onChange={(e) => navigate({ nct, criterionId: e.target.value, tab })}
+        className="w-full rounded-md border border-line bg-paper px-2 py-1.5 text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
+      >
+        {state.data.reviews.map((r) => (
+          <option key={r.criterion.id} value={r.criterion.id}>
+            {`${[r.criterion.label, r.criterion.operator, r.criterion.value_norm, r.criterion.unit_norm].filter((x) => x !== null && x !== "").join(" ")} (${DISPLAY_CLASSIFICATION[r.classification]})`}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
 export default function ReviewPage() {
   const search = useSyncExternalStore(subscribeToUrl, () => window.location.search, () => null);
   if (search === null) return null;
@@ -136,13 +159,14 @@ export default function ReviewPage() {
         </div>
 
         <div className="grid gap-4 md:grid-cols-[16rem_minmax(0,1fr)]">
-          <nav aria-label="Criteria" className="flex flex-col gap-4">
+          <nav aria-label="Criteria" className="order-last flex flex-col gap-4 md:order-none">
             <CriteriaList key={nct} nct={nct} selected={criterionId} tab={tab} />
             <MissingCriteria nct={nct} />
           </nav>
           {criterionId ? (
             <section className="flex min-w-0 flex-col">
-              <div role="tablist" aria-label="Views" className="flex gap-1 overflow-x-auto border-b border-line">
+              <CriterionPicker key={nct} nct={nct} selected={criterionId} tab={tab} />
+              <div role="tablist" aria-label="Views" className="flex gap-1 border-b border-line">
                 {TABS.map((t) => (
                   <button
                     key={t.id}
@@ -151,7 +175,7 @@ export default function ReviewPage() {
                     aria-selected={t.id === active.id}
                     data-testid={`tab-${t.id}`}
                     onClick={() => navigate({ nct, criterionId, tab: t.id })}
-                    className={`-mb-px flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2 text-sm transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink ${
+                    className={`-mb-px flex min-w-0 flex-1 flex-col items-center gap-1 border-b-2 px-1 py-2 text-xs transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink sm:flex-none sm:flex-row sm:gap-1.5 sm:px-3 sm:text-sm ${
                       t.id === active.id ? "border-ink font-medium text-ink" : "border-transparent text-muted hover:text-ink"
                     }`}
                   >
