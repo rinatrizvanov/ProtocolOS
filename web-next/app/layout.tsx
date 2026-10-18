@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "ProtocolOS",
-  description: "Evidence-grounded review of oncology eligibility criteria.",
+  description: "The rationale behind each oncology eligibility criterion, checked against precedent and FDA guidance.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

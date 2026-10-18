@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { verifyRecommendation, type Recommendation, type Selection, type Verification } from "@/lib/api";
+import { NCT, verifyRecommendation, type Recommendation, type Selection, type Verification } from "@/lib/api";
 import { Failed, Frame } from "../components/Frame";
 import Screen5 from "./Screen5";
 
@@ -86,9 +86,9 @@ function ExampleCard({ nct, example }: { nct: string; example: (typeof HEMOGLOBI
   }
 
   return (
-    <li className="flex flex-col gap-4 rounded-md border border-line p-5">
+    <li className="flex flex-col gap-3 rounded-md border border-line bg-white/60 p-4">
       <h2 className="text-base font-semibold text-ink">{example.title}</h2>
-      <blockquote className="border-l-4 border-line pl-4 text-lg font-medium text-ink">{example.body.text}</blockquote>
+      <blockquote className="border-l-4 border-line pl-4 text-base font-medium text-ink">{example.body.text}</blockquote>
       <button
         type="button"
         data-testid={`challenge-${example.key}`}
@@ -116,16 +116,27 @@ function ExampleCard({ nct, example }: { nct: string; example: (typeof HEMOGLOBI
   );
 }
 
-export default function ChallengeExamples({ nct, criterionId }: Selection) {
-  if (criterionId === "anc") return <Screen5 nct={nct} />;
+const EXAMPLES_LABEL = "Example arguments written by the ProtocolOS team";
 
-  if (criterionId === "hemoglobin") {
+// Verify tab. The worked examples are about EL3's ANC and hemoglobin rules, so they appear only for that trial.
+export default function ChallengeExamples({ nct, criterionId }: Selection) {
+  if (nct === NCT && criterionId === "anc") {
+    return (
+      <div className="flex flex-col gap-2">
+        <p data-testid="examples-label" className="text-xs font-medium uppercase tracking-wide text-muted">{EXAMPLES_LABEL}</p>
+        <Screen5 nct={nct} />
+      </div>
+    );
+  }
+
+  if (nct === NCT && criterionId === "hemoglobin") {
     return (
       <Frame
         headline="Three arguments, one verifier."
         caption="Each suggestion is checked against the protocols and the FDA text; a false citation is rejected, a risky relaxation goes to medical review."
       >
-        <ul className="grid w-full grid-cols-1 gap-6 lg:grid-cols-3">
+        <p data-testid="examples-label" className="text-xs font-medium uppercase tracking-wide text-muted">{EXAMPLES_LABEL}</p>
+        <ul className="grid w-full grid-cols-1 gap-3 lg:grid-cols-3">
           {HEMOGLOBIN_EXAMPLES.map((example) => (
             <ExampleCard key={example.key} nct={nct} example={example} />
           ))}
@@ -135,8 +146,8 @@ export default function ChallengeExamples({ nct, criterionId }: Selection) {
   }
 
   return (
-    <Frame headline="Challenge a criterion." caption="Pick ANC or hemoglobin to see the verifier check a reviewer's argument.">
-      <p className="text-lg text-muted">No challenge examples for this criterion yet.</p>
+    <Frame headline="Verify a change." caption="The worked examples cover the EL3 trial's ANC and hemoglobin rules; pick one of those to see the verifier check an argument.">
+      <p className="text-base text-muted">No worked example for this criterion yet.</p>
     </Frame>
   );
 }

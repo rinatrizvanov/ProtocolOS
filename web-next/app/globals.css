@@ -13,6 +13,13 @@
   --color-uncounted: #8a867e;
   --color-uncounted-soft: #ecebe7;
   --color-verdict: #b42318;
+  /* Rationale categories: safety, efficacy enrichment, regulatory precedent. */
+  --color-safety: #8a3b12;
+  --color-safety-soft: #f8e9df;
+  --color-enrich: #24577a;
+  --color-enrich-soft: #e1ecf4;
+  --color-precedent: #4b4a7a;
+  --color-precedent-soft: #e8e7f3;
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
@@ -20,6 +27,7 @@ body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
+  overflow-x: hidden;
 }
 
 @media (prefers-reduced-motion: reduce) {

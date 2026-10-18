@@ -151,7 +151,7 @@ export default function Screen4({ nct, criterionId }: Selection) {
   return (
     <Frame
       headline="Ask why. Every sentence is checked."
-      caption="Ask in your own words or pick a question. Answers come from the evidence graph, and every sentence is checked before it appears."
+      caption="Ask in your own words or pick a question. Answers come from the rationale graph, and every sentence is checked before it appears."
       details={details}
     >
       <div className="flex w-full max-w-4xl flex-col gap-4">
@@ -164,7 +164,7 @@ export default function Screen4({ nct, criterionId }: Selection) {
               <div data-testid="chat-message" data-role="assistant" className="flex flex-col gap-2">
                 {t.key === null ? (
                   <>
-                    <p className="text-ink">I answer from this rule&apos;s evidence graph, so I can take these questions:</p>
+                    <p className="text-ink">I answer from this rule&apos;s rationale graph, so I can take these questions:</p>
                     <Suggestions prefix="retry" onPick={suggest} />
                   </>
                 ) : null}

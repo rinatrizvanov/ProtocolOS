@@ -116,7 +116,7 @@ export default function Screen2({ nct, criterionId, detailed = false }: Selectio
         </ul>
       }
     >
-      <div className={`relative w-full max-w-4xl px-8 pt-24 ${detailed ? "pb-96" : "pb-52"}`}>
+      <div className={`relative w-full max-w-4xl px-8 pt-24 ${detailed ? "pb-72" : "pb-48"}`}>
         <div className="h-0.5 w-full bg-line" />
         <div
           data-testid="target-marker"

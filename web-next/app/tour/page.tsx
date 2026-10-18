@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { CRITERION, NCT } from "@/lib/api";
+import { AppHeader } from "../components/AppHeader";
 import Screen1 from "../screens/Screen1";
 import Screen2 from "../screens/Screen2";
 import Screen3 from "../screens/Screen3";
@@ -14,9 +14,9 @@ import Screen7 from "../screens/Screen7";
 const STEPS = [
   { title: "The rules", render: () => <Screen1 nct={NCT} /> },
   { title: "Compared", render: () => <Screen2 nct={NCT} criterionId={CRITERION} /> },
-  { title: "Why flagged", render: () => <Screen3 nct={NCT} criterionId={CRITERION} /> },
-  { title: "Ask why", render: () => <Screen4 nct={NCT} criterionId={CRITERION} /> },
-  { title: "Caught", render: () => <Screen5 nct={NCT} /> },
+  { title: "Rationale", render: () => <Screen3 nct={NCT} criterionId={CRITERION} /> },
+  { title: "Ask", render: () => <Screen4 nct={NCT} criterionId={CRITERION} /> },
+  { title: "Verify", render: () => <Screen5 nct={NCT} /> },
   { title: "Tested", render: () => <Screen6 /> },
   { title: "Decide", render: () => <Screen7 nct={NCT} criterionId={CRITERION} /> },
 ];
@@ -57,9 +57,11 @@ export default function Tour() {
   if (step === null) return null;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-6xl flex-col px-10 py-8">
-      <nav aria-label="Demo steps" className="flex items-center gap-6">
-        <ol className="flex flex-1 items-center gap-2">
+    <>
+    <AppHeader mode="tour" />
+    <main className="mx-auto flex max-w-6xl flex-col px-4 py-4 sm:px-6">
+      <nav aria-label="Demo steps" className="flex flex-wrap items-center gap-x-6 gap-y-2">
+        <ol className="flex flex-1 flex-wrap items-center gap-2">
           {STEPS.map((s, i) => (
             <li key={s.title}>
               <button
@@ -82,22 +84,22 @@ export default function Tour() {
         <span className="text-sm tabular-nums text-muted">
           {step + 1} / {STEPS.length}
         </span>
-        <Link
-          href={`/?nct=${NCT}&c=${CRITERION}`}
+        <a
+          href={`../review?nct=${NCT}&c=${CRITERION}`}
           data-testid="exit-demo"
           className="rounded-md px-3 py-1 text-sm text-ink hover:bg-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
         >
-          Exit demo
-        </Link>
+          Exit to the review
+        </a>
       </nav>
 
-      <div className="mt-10 flex flex-1 flex-col">
+      <div className="mt-4 flex flex-1 flex-col">
         <div key={step} className="flex flex-1 flex-col">
           {STEPS[step].render()}
         </div>
       </div>
 
-      <footer className="mt-8 flex items-center justify-between border-t border-line pt-5">
+      <footer className="mt-4 flex items-center justify-between border-t border-line pt-3">
         <button
           type="button"
           onClick={() => go(step - 1)}
@@ -117,5 +119,6 @@ export default function Tour() {
         </button>
       </footer>
     </main>
+    </>
   );
 }

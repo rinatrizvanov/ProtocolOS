@@ -67,7 +67,7 @@ function regimenSentence(row: CriterionReview | undefined): string | undefined {
 export default function Screen3({ nct, criterionId, detailed = false }: Selection & { detailed?: boolean }) {
   const state = useApi(() => getGraph(nct, criterionId));
   const review = useApi(() => getReview(nct));
-  if (state.status === "loading") return <Pending label="Loading the evidence graph…" />;
+  if (state.status === "loading") return <Pending label="Loading the rationale graph…" />;
   if (state.status === "error") return <Failed message={state.message} />;
   const graph = state.data;
   const against = sumAxis(graph, "challenge");
@@ -79,7 +79,7 @@ export default function Screen3({ nct, criterionId, detailed = false }: Selectio
   return (
     <Frame
       headline="Why it was flagged."
-      caption={`Points against the rule: ${against}; for it: ${support}. FDA passages issued after the trial started are retrospective and not counted.`}
+      caption={`Points against the rule: ${against}; for it: ${support}. FDA passages score only when specific to the criterion; general passages count 0.`}
       details={
         <>
           <EvidenceColumns graph={graph} />
@@ -109,13 +109,13 @@ export default function Screen3({ nct, criterionId, detailed = false }: Selectio
           </div>
         </div>
         <div data-testid="parked" data-count={passages.length} className="w-full max-w-2xl rounded-lg bg-uncounted-soft p-4 text-muted">
-          <span className="text-3xl tabular-nums">0</span> points: {passages.length} FDA passages, retrospective: issued after the trial started
+          <span className="text-3xl tabular-nums">0</span> points: {passages.length} FDA passages, general guidance, not specific to this criterion
         </div>
         {row ? (
           <div data-testid="missing-evidence" className="w-full max-w-2xl">
-            <p className="text-base font-medium text-ink">What&apos;s missing</p>
+            <p className="text-base font-medium text-ink">Open questions</p>
             {row.missing_evidence.length ? (
-              <ul className="mt-1 list-disc pl-5 text-sm text-muted">
+              <ul data-role="quote" className="mt-1 list-disc pl-5 text-sm text-muted">
                 {row.missing_evidence.map((m) => (
                   <li key={m}>{m}</li>
                 ))}
