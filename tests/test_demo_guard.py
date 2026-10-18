@@ -8,7 +8,7 @@ EL3 = "NCT03409614"
 
 
 def _ensure_graph_routes(app):
-    """After WS-A merges but before the api.py hook, routes_graph is importable but not installed."""
+    """Install the graph routes if this app instance does not have them (api.py normally installs them)."""
     rg = pytest.importorskip("trialforge.routes_graph")
     if not any(getattr(r, "path", "") == "/api/graph/{nct}" for r in app.routes):
         rg.install(app)
@@ -32,7 +32,7 @@ def public(monkeypatch, decisions_dir):
     for name in ("PROTOCOLOS_ALLOW_MODEL", "TRIALLENS_ALLOW_MODEL"):
         monkeypatch.delenv(name, raising=False)
     api = importlib.reload(api)
-    demo_guard.install(api.app)  # no-op when the C2 hook already installed it
+    demo_guard.install(api.app)  # no-op when the api.py install hook already installed it
     with TestClient(api.app) as client:
         yield client, api
     monkeypatch.delenv("PROTOCOLOS_PUBLIC")

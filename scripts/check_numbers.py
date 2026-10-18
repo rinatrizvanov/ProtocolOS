@@ -1,4 +1,4 @@
-"""Check every fraction and percentage in the pitch documents against the committed results.
+"""Check every fraction and percentage in the README, Devpost text and deck against the committed results.
 
     python -m scripts.check_numbers            # exit 0 when every number is backed, 1 otherwise
 
@@ -12,8 +12,8 @@ Allowed set, built only from committed result files: `data/*.json`, `evals/first
   Percentages are not derived from arbitrary integer pairs: that would let coincidental values pass.
 Documents: README.md, docs/DEVPOST.md, docs/deck/deck.html (style/script blocks, tags and URLs removed).
 "a/b", "a of b", ranges "a-b/n" and "a-b of n" count as fractions. Latency claims (`2.0 s`, `~1 min`)
-are never in the allowed set: re-measure them or remove them. Then the headline manifest of plan.md 5.7.
-Offenders are printed as `file:line`; they are change requests for the document owner, not edits.
+are never in the allowed set: re-measure them or remove them. Then the headline manifest: each headline
+number is recomputed from its JSON field. Offenders are printed as `file:line`; the documents are never edited.
 """
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ SOURCES = sorted((ROOT / "data").glob("*.json")) + [
     ROOT / "evals" / "draft" / "results.json",
     ROOT / "evals" / "impact" / "impact_numbers.json",
 ]
-# Numbers from an external, cited source that the document owner has checked against that source.
+# Numbers from an external, cited source, each checked by hand against that source.
 # Format: {"57%": "Getz et al. 2016, <table/page>"}.
 EXTERNAL_CITED: dict[str, str] = {
     # Checked 2026-10-18 against the PubMed abstract (efetch PMID 30227022), RESULTS section, verbatim.
@@ -149,7 +149,7 @@ def _pair(rel: str, path: str) -> str:
 
 
 def manifest() -> list[tuple[str, str, str]]:
-    """(headline claim, value computed from the JSON field, source) for plan.md 5.7."""
+    """(headline claim, value computed from the JSON field, source) for each headline number."""
     ev = _load("data/eval_results.json")["suites"]["extraction"]
     ch = _load("data/chalk_eval_run.json")
     return [

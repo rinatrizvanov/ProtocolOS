@@ -4,7 +4,7 @@ Usage: BASE_URL=http://localhost:3767 python scripts/e2e_draft_next.py
 Needs Playwright (for example the throwaway venv /tmp/pw). Exits 0 when every check passes.
 Use localhost against `next dev`: it blocks dev resources for 127.0.0.1 (allowedDevOrigins), so the page never hydrates.
 
-Checks (task-triallens-v2-draft-ui.md, acceptance 2-5):
+Checks:
 - /draft with no query opens the first preset (nsclc-pd1-chemo) with one request, without scrolling;
 - that draft shows at least 3 drafted criteria, each with passing checks, a verdict chip and the precedent's own
   words in its compact row, and (once expanded) a non-empty "Why this value" and a self-critique; insufficient cards

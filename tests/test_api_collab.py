@@ -1,4 +1,4 @@
-"""API checks for the ProtocolOS rename and the unguarded as_of validation (CR-v2-8).
+"""API checks for the ProtocolOS rename and the as_of validation that holds without the public guard.
 
 Uses the cached EL3 review in data/reviews/; the as_of checks fail before any network call.
 """

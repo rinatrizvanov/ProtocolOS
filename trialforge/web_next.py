@@ -1,4 +1,4 @@
-"""Build info and the optional static web-next mount (ProtocolOS deploy, plan-v2 sections 4 and 6.2).
+"""Build info and the optional static web-next mount for the single-container deploy.
 
 Installed by the module hook loop in `routes_graph.install`. Two things:
 

@@ -1,12 +1,13 @@
 """Evidence provenance graph built from a stored review (no retrieval, no new claims).
 
 Every evidence item of `run_review()` becomes a typed, sourced node; stances become edges; and the
-score totals in `review["reviews"][i]["scores"]` are attributed to rule groups that mirror
-`review.py:166-271`. Points sit only on `RULE_SCORES` edges (ScoreRule -> Assessment). If the
-attributed sums differ from the stored scores the graph carries `attribution_mismatch:{cid}` in
-`warnings` and the UI hides attribution for that criterion.
+score totals in `review["reviews"][i]["scores"]` are attributed to rule groups that mirror the four
+numbered scoring sections of `review.review_criterion`. Points sit only on `RULE_SCORES` edges
+(ScoreRule -> Assessment). If the attributed sums differ from the stored scores the graph carries
+`attribution_mismatch:{cid}` in `warnings` and the UI hides attribution for that criterion.
 
-Shape and ids are frozen in the P0 contract (spec task-triallens-graph.md).
+Node types, edge types and id formats are a contract shared with the investigator, the dashboard graph
+tab and the web app; change them together.
 """
 from __future__ import annotations
 
@@ -61,7 +62,7 @@ def _pick(rows: list[dict], direction: str) -> list[dict]:
 
 
 def contributions(review_item: dict, comparison_rows: list[dict]) -> list[dict]:
-    """Rule-level score attribution for one criterion, mirroring review.py:166-271.
+    """Rule-level score attribution for one criterion, mirroring the scoring in review.review_criterion.
 
     Returns one dict per rule group that has members: `{group, axis, points, fires, label, members}`.
     `points` is what the group adds (0 when it does not fire). Members reference evidence items by
@@ -79,16 +80,16 @@ def contributions(review_item: dict, comparison_rows: list[dict]) -> list[dict]:
 
     idx = lambda pred: [{"evidence_index": i} for i, e in enumerate(ev) if pred(e)]  # noqa: E731
 
-    # 1. regimen (review.py:166-190): supports +1 (existence of a threshold only); challenges +2
+    # 1. regimen (review_criterion section 1): supports +1 (existence of a threshold only); challenges +2
     add("regimen_support", "support", 1, True, "+1 support (existence of a threshold, not its value)",
         idx(lambda e: e.get("kind") == "regimen" and e.get("stance") == "supports"))
     add("regimen_challenge", "challenge", 2, True, "+2 challenge",
         idx(lambda e: e.get("kind") == "regimen" and e.get("stance") == "challenges"))
-    # 2. protocol (review.py:192-206): one +2 support for any value-specific passage
+    # 2. protocol (review_criterion section 2): one +2 support for any value-specific passage
     add("protocol_value_specific", "support", 2, True, "+2 support (value-specific protocol text)",
         idx(lambda e: e.get("kind") == "protocol" and e.get("stance") == "supports"))
 
-    # 3. comparators (review.py:208-246): groups are computed over comparison rows, as review.py does
+    # 3. comparators (review_criterion section 3): groups are computed over comparison rows, as review.py does
     ev_by_nct = {e.get("nct_id"): i for i, e in enumerate(ev) if e.get("kind") == "comparator"}
 
     def members(rows):
@@ -105,7 +106,7 @@ def contributions(review_item: dict, comparison_rows: list[dict]) -> list[dict]:
         "+1 support (2 or more used the same threshold, none more permissive)", members(same))
     add("stricter_comparators", "support", 1, True, "+1 support (a comparator used a stricter value)", members(stricter))
 
-    # 4. FDA (review.py:248-271): specific + challenges -> +2, or +1 with a PK-based alternative
+    # 4. FDA (review_criterion section 4): specific + challenges -> +2, or +1 with a PK-based alternative
     pk_alt = any(c.get("when") == "PK-based alternative" for c in crit.get("conditions", []))
     pts = 1 if pk_alt else 2
     add("specific_fda", "challenge", pts, True,

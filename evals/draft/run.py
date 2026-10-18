@@ -1,4 +1,4 @@
-"""Leave-one-out draft eval (plan-v2 WS-C acceptance 4, gate G4).
+"""Leave-one-out draft eval: drafts for known trials, scored against their own protocols.
 
 For each cached trial review (data/reviews/*_auto.json): build an idea from the trial's own condition,
 recognized regimen drugs and setting tags, with as_of = the trial's start date and the trial itself excluded,

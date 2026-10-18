@@ -1,4 +1,4 @@
-"""Measured numbers for the impact slide (plan-v2 WS-F). Writes evals/impact/impact_numbers.json.
+"""Measured numbers for the impact slide. Writes evals/impact/impact_numbers.json.
 
 Only measured values, never predicted gains:
 - the NHANES share of US adults below the EL3 (NCT03409614) hemoglobin threshold, at the trial's own value and

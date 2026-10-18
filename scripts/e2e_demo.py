@@ -1,4 +1,4 @@
-"""End-to-end check of the exact demo flow (plan.md 5.4) in a real browser.
+"""End-to-end check of the demo flow on the vanilla dashboard in a real browser.
 
     python3.13 -m venv /tmp/pw && /tmp/pw/bin/pip install playwright && /tmp/pw/bin/playwright install chromium
     BASE_URL=http://localhost:8765 /tmp/pw/bin/python scripts/e2e_demo.py

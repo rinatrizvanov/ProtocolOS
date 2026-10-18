@@ -1,4 +1,4 @@
-"""Authoring-mode HTTP routes (plan-v2 section 6.2): vocabulary, presets, POST /api/draft, GET /api/draft/{id}.
+"""Authoring-mode HTTP routes: vocabulary, presets, POST /api/draft, GET /api/draft/{id}.
 
 Installed by the routes_graph module loop; install(app) is idempotent (app.state flag).
 """
@@ -65,7 +65,7 @@ def presets() -> list[dict]:
         did = draft.draft_id_for(p["idea"], p.get("exclude") or ())
         hit = draft.cached(did)
         if hit is not None and hit.get("summary", {}).get("drafted", 0) < 2:
-            continue  # plan-v2 6.2: a preset with fewer than 2 drafted criteria is dropped
+            continue  # a preset that drafts fewer than 2 criteria is not offered as an example
         out.append({"id": pid, "title": p["title"], "idea": p["idea"], "draft_id": did, "cached": hit is not None})
     return out
 

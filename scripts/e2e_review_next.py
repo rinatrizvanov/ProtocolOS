@@ -1,4 +1,4 @@
-"""Browser check of the ProtocolOS web-next landing and /review (plan-v2 WS-B acceptance 2-6).
+"""Browser check of the ProtocolOS web-next landing and /review.
 
 Usage:
     BASE_URL=http://localhost:3766 /tmp/pw/bin/python scripts/e2e_review_next.py [--strict] [--data-dir DIR] [--write-decision]
@@ -6,8 +6,8 @@ Usage:
 Use localhost, not 127.0.0.1, against `next dev`: Next 16 blocks its dev resources for the 127.0.0.1 origin
 unless next.config.ts lists it in allowedDevOrigins, and the page never hydrates.
 
-Each step prints PASS, FAIL or SKIP. A step SKIPs when the piece it needs is not merged yet (for example
-/api/rationale answers 404, or the Decide tab has no structured reason buttons). A skip is never a pass:
+Each step prints PASS, FAIL or SKIP. A step SKIPs when the piece it needs is missing from the deployment (for
+example /api/rationale answers 404, or the Decide tab has no structured reason buttons). A skip is never a pass:
 with --strict any SKIP makes the run fail. Screenshots go to /tmp/triallens-logs/v2/ui/.
 
 The Decide step saves a decision. Against a local BASE_URL it first backs up data/decisions/<nct>.json of the engine's
@@ -124,7 +124,7 @@ def main() -> int:
         href = page.get_by_test_id("mode-review").get_attribute("href") or ""
         report("mode-review link is relative", "PASS" if not href.startswith("/") else "FAIL", href)
 
-        # 2. Review: rationale badge and arm line (need /api/rationale from WS-E).
+        # 2. Review: rationale badge and arm line (need /api/rationale).
         page.goto(review_url(), wait_until="networkidle")
         page.get_by_test_id("classification").wait_for(timeout=15000)
         rationale_status = api_status(page, f"/api/rationale/{NCT}")
@@ -258,8 +258,9 @@ def main() -> int:
             except Exception as exc:  # noqa: BLE001 - reported as a failed step
                 report(step, "FAIL", str(exc)[:200])
 
-        # Decide: a structured reason and a fresh note reach the markdown packet (needs WS-E's reason buttons). The
-        # decisions file is backed up first and restored byte for byte, so the demo trial never keeps test data.
+        # Decide: a structured reason and a fresh note reach the markdown packet (needs the structured reason
+        # buttons). The decisions file is backed up first and restored byte for byte, so the demo trial never keeps
+        # test data.
         page.goto(review_url(tab="decide"), wait_until="networkidle")
         page.wait_for_timeout(800)
         reason = page.get_by_test_id("reason-safety_concern")

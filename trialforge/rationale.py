@@ -95,7 +95,7 @@ def _enrichment_label(enrich: list[dict]) -> str:
 
 
 def categories(item: dict, review: dict) -> list[dict]:
-    """RationaleCategory dicts (plan-v2 section 6.1) for one `review_criterion` output."""
+    """RationaleCategory dicts (the shape in web-next/lib/contracts.ts) for one `review_criterion` output."""
     status = _status(item)
     purposes = item.get("purposes", [])
     evidence = item.get("evidence", [])
@@ -199,7 +199,7 @@ def _labels(arms: list[dict]) -> str:
 
 
 def arm_attribution(review: dict, criterion_id: str) -> dict:
-    """ArmAttribution dict (plan-v2 section 6.1) for one criterion of the target trial."""
+    """ArmAttribution dict (the shape in web-next/lib/contracts.ts) for one criterion of the target trial."""
     target = review["target"]
     crit = next((c for c in target["criteria"] if c["id"] == criterion_id), None)
     analyte = crit["analyte"] if crit else criterion_id
@@ -336,7 +336,7 @@ def missing_criteria(review: dict) -> list[dict]:
 
 
 def rationale_report(review: dict) -> dict:
-    """RationaleReport dict (plan-v2 section 6.1) for a cached review."""
+    """RationaleReport dict (the shape in web-next/lib/contracts.ts) for a cached review."""
     criteria = {}
     for item in review["reviews"]:
         cid = item["criterion"]["id"]

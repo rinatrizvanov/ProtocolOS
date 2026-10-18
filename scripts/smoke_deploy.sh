@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Smoke-check a ProtocolOS deployment: expected vs actual HTTP status for each check.
 #   scripts/smoke_deploy.sh https://<demo-url>        (or DEMO_URL=... scripts/smoke_deploy.sh)
-# /api/rationale and /api/draft/presets are required once routes_rationale.py / routes_draft.py exist in this
-# checkout, else SKIPPED (not merged). Graph and investigate routes report NOT INSTALLED (not a failure) while the app has no such route.
+# /api/rationale and /api/draft/presets are required when routes_rationale.py / routes_draft.py exist in this
+# checkout, else reported as SKIPPED. Graph and investigate routes report NOT INSTALLED (not a failure) while the app has no such route.
 # Requests that would recompute a review or call a model run only after the guard is shown to be active.
 set -u
 BASE="${1:-${DEMO_URL:-http://127.0.0.1:8765}}"
@@ -42,7 +42,7 @@ check "GET /api/status" 200 GET "/api/status"
 check "GET /api/review/$NCT" 200 GET "/api/review/$NCT" "" '"Review recommended"'
 check "GET /api/build" 200 GET "/api/build" "" '"sha"'
 
-# required once the module is merged in this checkout; before that SKIPPED (not merged), never a pass
+# required when the module exists in this checkout; otherwise reported as SKIPPED, never a pass
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 skips=0
 if [ -f "$ROOT/trialforge/routes_rationale.py" ]; then

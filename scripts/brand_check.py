@@ -1,4 +1,4 @@
-"""G8: the product name is ProtocolOS wherever a person reads it.
+"""Brand check: the product name is ProtocolOS wherever a person reads it.
 
 Scans every tracked file (and tracked file names) for the legacy name TrialLens/triallens. Each hit must
 match an allowlist entry below, each with its reason; anything else counts as `unlisted_legacy`.
@@ -27,11 +27,11 @@ ALLOW: list[tuple[str, str, str]] = [
     ("docs/INSTALL.md", r"TRIALLENS_", "documents the legacy env prefix"),
     ("trialforge/demo_guard.py", r"legacy TRIALLENS_PUBLIC", "documents the legacy env name"),
     ("web-next/README.md", r"legacy `TRIALLENS_API_URL`", "documents the legacy env name"),
-    # Chalk identifiers that are deployed; renaming them needs `chalk apply` (NH7).
+    # Chalk identifiers that are deployed; renaming them needs a new `chalk apply`.
     ("*", r"triallens_registry_profile", "deployed Chalk query name"),
     ("*", r"\bteam\W+(?:<code>|`)?triallens", "Chalk team name"),
     ("tests/*", r"not in", "a negative check that the old name is gone"),
-    # Paths: the local folder is renamed only after submission (NH11); log dirs and spec ids keep the name.
+    # Paths: the local checkout folder and the default log directories keep the old name.
     ("*", r"triallens/|/tl-|triallens-logs|task-triallens-", "local folder, log directory or spec id"),
     ("*", r"rinatrizvanov/triallens", "old GitHub URL (redirects to ProtocolOS)"),
     # The one "formerly" line that connects the old name with the new one.
@@ -41,8 +41,8 @@ ALLOW: list[tuple[str, str, str]] = [
     ("scripts/brand_check.py", r".", "this checker names the legacy string"),
 ]
 
-# Collaborator-owned files: renamed through CR-v2-R (plan-v2 section 9) unless NH5/NH12 is granted.
-CR_PENDING: list[str] = []  # all applied on 2026-10-18 (user approved direct edits at 03:55 ET)
+# Files whose rename is still pending (globs); every hit in them counts as listed. Empty: every file is renamed.
+CR_PENDING: list[str] = []
 
 # Generated files: regenerated after the rename, never hand-edited.
 GENERATED: list[str] = []
