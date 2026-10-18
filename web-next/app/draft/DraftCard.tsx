@@ -30,13 +30,15 @@ function fmt(v: number): string {
 }
 
 // One bar per distinct precedent value; each trial id links to the protocol page the verifier matched.
-function Distribution({ c }: { c: DraftCriterion }) {
+function Distribution({ c, drafted }: { c: DraftCriterion; drafted: boolean }) {
   if (c.distribution.length === 0) return null;
   const total = c.distribution.reduce((s, d) => s + d.count, 0) || 1;
   const byNct = new Map(c.rationale.precedents.map((p) => [p.nct_id, p]));
   return (
     <div data-testid="draft-distribution" className="flex flex-col gap-1">
-      <p className="text-xs font-medium uppercase tracking-wide text-muted">What regimen-matched precedents used</p>
+      <p className="text-xs font-medium uppercase tracking-wide text-muted">
+        {drafted ? "What regimen-matched precedents used" : "Values in matched trials (context only, no value proposed)"}
+      </p>
       <ul className="flex flex-col gap-1">
         {c.distribution.map((d) => {
           const chosen = c.proposed !== null && d.operator === c.proposed.operator && d.value === c.proposed.value;
@@ -120,7 +122,10 @@ export default function DraftCard({ c }: { c: DraftCriterion }) {
   // that the chip already shows under its display name.
   const why = c.why_generated.filter((w) => !w.startsWith("Self-critique:"));
   const rest = c.critique.explanation.startsWith(`${cls}: `) ? c.critique.explanation.slice(cls.length + 2) : c.critique.explanation;
-  const explanation = rest.charAt(0).toUpperCase() + rest.slice(1);
+  // On an insufficient card the reason is already stated above the strip; the critique repeats it, so it is shown once.
+  const reason = drafted ? null : c.insufficient_reason;
+  const explanation = reason && rest.includes(reason) ? null : rest.charAt(0).toUpperCase() + rest.slice(1);
+  const missing = c.critique.missing_evidence.filter((m) => m !== reason);
   return (
     <article
       data-testid="draft-criterion"
@@ -155,7 +160,7 @@ export default function DraftCard({ c }: { c: DraftCriterion }) {
 
       {c.rationale.categories.length > 0 ? <RationaleBadges categories={c.rationale.categories} size="sm" /> : null}
 
-      <Distribution c={c} />
+      <Distribution c={c} drafted={drafted} />
 
       {why.length > 0 ? (
         <section data-testid="draft-why" className="text-sm">
@@ -175,9 +180,16 @@ export default function DraftCard({ c }: { c: DraftCriterion }) {
           <span className="text-xs font-medium uppercase tracking-wide text-muted">Self-critique</span>
           <span className={`rounded px-1.5 text-xs font-medium ${CHIP[cls]}`}>{DISPLAY_CLASSIFICATION[cls]}</span>
         </p>
-        <p className="mt-1 text-ink">{explanation}</p>
-        {c.critique.missing_evidence.length > 0 ? (
-          <p className="mt-1 text-xs text-muted">Missing: {c.critique.missing_evidence.join("; ")}</p>
+        {explanation ? <p className="mt-1 text-ink">{explanation}</p> : null}
+        {missing.length > 0 ? (
+          <div className="mt-1 text-xs text-muted">
+            <p className="font-medium">Missing evidence</p>
+            <ul className="list-disc pl-4">
+              {missing.map((m, i) => (
+                <li key={i}>{m}</li>
+              ))}
+            </ul>
+          </div>
         ) : null}
         {c.critique.suggested_action.text ? <p className="mt-1 text-xs text-muted">Next: {c.critique.suggested_action.text}</p> : null}
       </section>

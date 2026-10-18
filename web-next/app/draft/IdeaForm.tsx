@@ -7,7 +7,8 @@ const ALL_SETTINGS: SettingTag[] = ["first-line", "metastatic", "non-squamous", 
 const MAX_DRUGS = 8;
 const MAX_DRUG_CHARS = 40;
 
-// Matches a typed drug against the vocabulary by name or alias; null when the engine would not recognize it.
+// Matches a typed drug against the vocabulary by name or alias; null when the engine would not recognize it,
+// undefined while the vocabulary is loading or could not be loaded.
 function lookup(vocab: DraftVocabulary | null, raw: string) {
   const q = raw.trim().toLowerCase();
   if (!vocab) return undefined;
@@ -16,10 +17,12 @@ function lookup(vocab: DraftVocabulary | null, raw: string) {
 
 export default function IdeaForm({
   vocabulary,
+  vocabularyFailed,
   busy,
   onSubmit,
 }: {
   vocabulary: DraftVocabulary | null;
+  vocabularyFailed: boolean;
   busy: boolean;
   onSubmit: (idea: Idea) => void;
 }) {
@@ -102,10 +105,10 @@ export default function IdeaForm({
               <span
                 key={d}
                 data-testid="drug-chip"
-                data-recognized={unknown ? "false" : "true"}
+                data-recognized={hit ? "true" : unknown ? "false" : "unchecked"}
                 title={hit ? hit.drug_class : unknown ? "Not in the drug vocabulary; it will not be matched" : undefined}
                 className={`inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs ${
-                  unknown ? "bg-look-soft text-ink ring-1 ring-look" : "bg-uncounted-soft text-ink"
+                  unknown ? "bg-look-soft text-ink ring-1 ring-look" : hit ? "bg-uncounted-soft text-ink" : "bg-white text-ink ring-1 ring-line"
                 }`}
               >
                 {d}
@@ -144,6 +147,11 @@ export default function IdeaForm({
             {notice}
           </p>
         ) : null}
+        {vocabularyFailed ? (
+          <p data-testid="idea-vocabulary-error" className="text-xs text-muted">
+            Could not load the drug vocabulary, so names are not checked here; the summary lists any the engine did not recognize.
+          </p>
+        ) : null}
       </div>
 
       <fieldset className="flex flex-col gap-1 text-sm">
@@ -180,9 +188,12 @@ export default function IdeaForm({
         ))}
       </fieldset>
 
+      {/* Keeping focus in the drug input on mousedown stops its blur from adding a chip, which would move the button
+          before mouseup and lose the click; submit() commits the pending text itself. */}
       <button
         type="submit"
         data-testid="draft-submit"
+        onMouseDown={(e) => e.preventDefault()}
         disabled={busy || !ready}
         className="rounded-md bg-ink px-3 py-2 text-sm font-medium text-paper disabled:cursor-not-allowed disabled:opacity-50"
       >

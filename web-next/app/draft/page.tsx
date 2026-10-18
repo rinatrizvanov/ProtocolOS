@@ -42,7 +42,8 @@ function describe(err: unknown): string {
     if (err.status === 422) return `The idea was not accepted (422)${err.detail ? `: ${err.detail}` : ". Check the condition (3-120 characters) and 1-8 drugs, each 2-40 characters."}`;
     if (err.status === 429) return err.detail ?? "New ideas limit reached on the public demo; presets still work.";
     if (err.status === 503) return err.detail ?? "ClinicalTrials.gov not reachable. Try again or use a preset.";
-    if (err.status === 404) return err.detail ?? "That draft is not cached. Run the idea again.";
+    // The engine's 400/404 detail is a route message (a draft_id pattern, "draft not cached"), not copy for users.
+    if (err.status === 400 || err.status === 404) return "That draft is not cached or the link is malformed. Run the idea again.";
     return err.detail ?? err.message;
   }
   return err instanceof Error ? err.message : String(err);
@@ -195,13 +196,14 @@ export default function DraftPage() {
   const [presets, setPresets] = useState<DraftPreset[] | null>(null);
   const [presetsFailed, setPresetsFailed] = useState(false);
   const [vocabulary, setVocabulary] = useState<DraftVocabulary | null>(null);
+  const [vocabularyFailed, setVocabularyFailed] = useState(false);
   const [run, setRun] = useState<Run>({ state: "idle" });
   const ticket = useRef(0);
   const started = useRef(false);
 
   useEffect(() => {
     getDraftPresets().then(setPresets, () => setPresetsFailed(true));
-    getDraftVocabulary().then(setVocabulary, () => setVocabulary(null));
+    getDraftVocabulary().then(setVocabulary, () => setVocabularyFailed(true));
   }, []);
 
   const go = useCallback((label: string, cold: boolean, fetcher: () => Promise<Draft>, presetId: string | null, query: (d: Draft) => string) => {
@@ -299,7 +301,7 @@ export default function DraftPage() {
 
           <section className="flex flex-col gap-1.5 rounded-lg border border-line bg-white p-3" aria-label="Your idea">
             <h2 className="text-xs font-medium uppercase tracking-wide text-muted">Or describe your own</h2>
-            <IdeaForm vocabulary={vocabulary} busy={busy} onSubmit={submitIdea} />
+            <IdeaForm vocabulary={vocabulary} vocabularyFailed={vocabularyFailed} busy={busy} onSubmit={submitIdea} />
           </section>
         </aside>
 

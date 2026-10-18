@@ -9,6 +9,7 @@ Checks (task-triallens-v2-draft-ui.md, acceptance 2-5):
   "Why this value" and a self-critique; insufficient cards show the reason and no value;
 - the downloaded JSON deep-equals GET /api/draft/{draft_id};
 - a free idea (a condition plus 3 known drugs) returns a result or a visible error within 150 s;
+- typing the last drug without Enter and clicking "Draft criteria" submits on the first click;
 - each preset click or idea sends exactly one draft request;
 - screenshots at 1440x900 and 390x844, and no horizontal scroll at 390 px.
 """
@@ -126,21 +127,32 @@ def check_free_idea(page) -> None:
     sent = track_draft_requests(page)
     page.get_by_test_id("idea-condition").fill(condition)
     box = page.get_by_test_id("idea-drugs")
-    for d in drugs:
-        box.fill(d)
-        box.press("Enter")
-    chips = page.get_by_test_id("drug-chip")
-    check(chips.count() == 3 and all(chips.nth(i).get_attribute("data-recognized") == "true" for i in range(3)),
-          "3 drug chips, all recognized by the vocabulary")
     toggle = page.get_by_test_id("idea-setting-metastatic")
     toggle.click()
     on = toggle.get_attribute("aria-pressed")
     toggle.click()
     check((on, toggle.get_attribute("aria-pressed")) == ("true", "false"), "setting toggle switches on and off")
     page.locator(f'input[name="phase"][value="{phase}"]').check()
+    for d in drugs[:-1]:
+        box.fill(d)
+        box.press("Enter")
+    # The last drug stays typed in the box, as a user would leave it, and the click goes to where the button is now:
+    # committing that text must not move the button between mousedown and mouseup.
+    box.fill(drugs[-1])
+    button = page.get_by_test_id("draft-submit").bounding_box()
     start = time.monotonic()
-    page.get_by_test_id("draft-submit").click()
+    page.mouse.click(button["x"] + button["width"] / 2, button["y"] + button["height"] / 2)
+    try:
+        page.wait_for_selector('[data-testid="draft-progress"], [data-testid="draft-result"], [data-testid="draft-error"]', timeout=5000)
+        check(True, "first click on Draft criteria with the last drug still typed starts the draft")
+    except Exception:
+        check(False, f"first click on Draft criteria with the last drug still typed starts the draft (requests: {sent or 'none'})")
+        return
     took = wait_for_draft(page, sent, "free idea") - start
+    check(sent == ["POST /api/draft"], f"free idea sent POST /api/draft ({', '.join(sent) or 'none'})")
+    chips = page.get_by_test_id("drug-chip")
+    check(chips.count() == 3 and all(chips.nth(i).get_attribute("data-recognized") == "true" for i in range(3)),
+          "3 drug chips, all recognized by the vocabulary")
     if page.get_by_test_id("draft-result").count():
         summary = page.get_by_test_id("draft-summary")
         cached = summary.get_attribute("data-cached") == "true"
