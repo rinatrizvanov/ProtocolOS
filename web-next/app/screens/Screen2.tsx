@@ -104,7 +104,10 @@ export default function Screen2({ nct, criterionId, detailed = false }: Selectio
   const lo = Math.min(...values) - pad;
   const hi = Math.max(...values) + pad;
   const pct = (v: number) => ((v - lo) / (hi - lo)) * 100;
-  const caption = `${looser} of ${withCriterion.length} similar trials used a ${word} limit; differences are questions for the team.`;
+  const caption =
+    withCriterion.length === 0
+      ? "None of the similar trials states this criterion."
+      : `${looser} of ${withCriterion.length} similar trials used a ${word} limit; differences are questions for the team.`;
   const at = pct(targetValue);
   // Text near an edge grows inward: translating by -at% keeps the block inside the track at any width.
   const align = at < 34 ? "text-left" : at > 66 ? "text-right" : "text-center";
@@ -115,13 +118,15 @@ export default function Screen2({ nct, criterionId, detailed = false }: Selectio
       headline="One rule, compared."
       caption={caption}
       details={
-        <ul className="list-disc pl-5">
-          {rows.map((r) => (
-            <li key={r.nct_id}>
-              {r.acronym ?? r.nct_id}: {r.criterion ? `${r.direction}, coverage ${r.coverage.status}` : "not found"}
-            </li>
-          ))}
-        </ul>
+        rows.length > 0 ? (
+          <ul className="list-disc pl-5">
+            {rows.map((r) => (
+              <li key={r.nct_id}>
+                {r.acronym ?? r.nct_id}: {r.criterion ? `${r.direction}, coverage ${r.coverage.status}` : "not found"}
+              </li>
+            ))}
+          </ul>
+        ) : undefined
       }
     >
       {/* One row per similar trial on a shared scale; the vertical line is this trial's limit. Rows never overlap, so the plot fits any width. */}
@@ -144,7 +149,7 @@ export default function Screen2({ nct, criterionId, detailed = false }: Selectio
           </div>
         </div>
         {plotted.length === 0 ? (
-          <p className="border-t border-line py-3 text-sm text-muted">No similar trial in the comparison states a numeric limit for this criterion.</p>
+          <p className="border-t border-line py-3 text-sm text-muted">No similar trial&apos;s limit to plot.</p>
         ) : null}
         {plotted.map((r) => {
           const v = pct(r.criterion.value_norm);
@@ -187,14 +192,16 @@ export default function Screen2({ nct, criterionId, detailed = false }: Selectio
             </button>
           );
         })}
-        <div className={`${ROW} border-t border-line pt-1`}>
-          <span />
-          <span className="flex justify-between gap-2 text-xs text-muted">
-            <span>{floor ? "less strict" : "stricter"}</span>
-            <span>{unit}</span>
-            <span>{floor ? "stricter" : "less strict"}</span>
-          </span>
-        </div>
+        {plotted.length > 0 ? (
+          <div className={`${ROW} border-t border-line pt-1`}>
+            <span />
+            <span className="flex justify-between gap-2 text-xs text-muted">
+              <span>{floor ? "less strict" : "stricter"}</span>
+              <span>{unit}</span>
+              <span>{floor ? "stricter" : "less strict"}</span>
+            </span>
+          </div>
+        ) : null}
       </div>
       {open && (
         <ProtocolDrawer
