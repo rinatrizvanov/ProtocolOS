@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { getPacket, saveDecision, type DecisionKey, type Packet, type Selection } from "../../lib/api";
 import { Failed, Frame } from "../components/Frame";
 
@@ -27,19 +27,26 @@ export default function Screen7({ nct, criterionId }: Selection) {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<DecisionKey | null>(null);
 
-  const refresh = () =>
-    getPacket(nct).then(setPacket, (err: unknown) => {
-      console.error(err);
-      setError(err instanceof Error ? err.message : String(err));
-    });
+  const [comment, setComment] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const refresh = useCallback(
+    () =>
+      getPacket(nct).then(setPacket, (err: unknown) => {
+        console.error(err);
+        setError(err instanceof Error ? err.message : String(err));
+      }),
+    [nct],
+  );
 
   useEffect(() => {
     void refresh();
-  }, []);
+  }, [refresh]);
 
   const decide = async (key: DecisionKey) => {
     setSaving(key);
     setError(null);
+    setSubmitted(false);
     try {
       await saveDecision(nct, criterionId, key, "Recorded from the demo", "Demo reviewer");
       await refresh();
@@ -52,6 +59,27 @@ export default function Screen7({ nct, criterionId }: Selection) {
   };
 
   const item = packet?.items.find((entry) => entry.criterion_id === criterionId);
+
+  // The comment rides on the decision already recorded: it is re-saved as that decision's reason.
+  const submitFeedback = async (e: FormEvent) => {
+    e.preventDefault();
+    const current = item?.decision;
+    const text = comment.trim();
+    if (!current || !text) return;
+    setSaving(current.decision);
+    setError(null);
+    try {
+      await saveDecision(nct, criterionId, current.decision, text, "Demo reviewer");
+      await refresh();
+      setComment("");
+      setSubmitted(true);
+    } catch (err: unknown) {
+      console.error(err);
+      setError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setSaving(null);
+    }
+  };
   const details = packet ? (
     <p className="tabular-nums">
       {Object.entries(packet.decision_summary)
@@ -80,6 +108,39 @@ export default function Screen7({ nct, criterionId }: Selection) {
           ))}
         </div>
         {error ? <Failed message={error} /> : packet ? <SavedLine item={item} /> : <p className="text-lg text-muted">Loading packet</p>}
+        {item?.decision ? (
+          <form onSubmit={submitFeedback} className="flex flex-col gap-2">
+            <label htmlFor="feedback" className="text-sm text-ink">
+              Comment for TrialLens
+            </label>
+            <textarea
+              id="feedback"
+              data-testid="feedback-input"
+              rows={3}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Why this decision? What did TrialLens miss?"
+              className="rounded-md border border-line bg-paper px-3 py-2 text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
+            />
+            <button
+              type="submit"
+              data-testid="feedback-submit"
+              disabled={!comment.trim() || saving !== null}
+              className="self-start rounded-md border border-ink px-5 py-2 text-ink transition-colors duration-150 hover:bg-line disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+            >
+              Submit
+            </button>
+          </form>
+        ) : null}
+        <div aria-live="polite">
+          {submitted && item?.decision ? (
+            <div data-testid="feedback-submitted" className="flex flex-col gap-1">
+              <p className="font-medium text-support">Submitted to the feedback loop</p>
+              <p className="text-ink">&ldquo;{item.decision.reason}&rdquo; ({item.decision.recorded_at})</p>
+              <p className="text-sm text-muted">Saved with this decision in the review packet.</p>
+            </div>
+          ) : null}
+        </div>
       </div>
     </Frame>
   );
