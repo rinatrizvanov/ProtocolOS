@@ -1,6 +1,6 @@
 # ProtocolOS demo and test guide
 
-For the team and for judges. ProtocolOS checks the rationale behind each eligibility criterion of an
+For judges and reviewers. ProtocolOS checks the rationale behind each eligibility criterion of an
 oncology trial (mode A, "Finishing a trial") and drafts criteria for a new trial idea (mode B, "Create
 criteria from an idea"). The team decides; ProtocolOS prepares the rationale.
 
@@ -17,7 +17,7 @@ The public deploy runs with the demo guard on: cached reviews only, no recompute
 
 ## 2. Run it locally
 
-From the repository root (Python 3.13 venv in `.venv`, see `docs/INSTALL.md`):
+From the repository root (Python virtual environment in `.venv`, see [INSTALL.md](INSTALL.md)):
 
 ```bash
 # terminal 1: engine with the public-demo guard, port 8765
@@ -77,7 +77,9 @@ dev resources for `127.0.0.1`, and the page does not hydrate.
 ## 6. Automated checks
 
 Run from the repository root unless noted. The engine must run on 8765 and the web app on the port
-named in `BASE_URL` for the browser checks.
+named in `BASE_URL` for the browser checks. The browser checks need Playwright, for example in a separate
+virtual environment:
+`python3 -m venv /tmp/pw && /tmp/pw/bin/pip install playwright && /tmp/pw/bin/python -m playwright install chromium`.
 
 | Command | What it proves |
 |---|---|

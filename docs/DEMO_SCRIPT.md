@@ -1,6 +1,6 @@
 # ProtocolOS: 3-minute live demo script
 
-The collaborator narrates; the user drives the app. Step-by-step clicks and the checks behind them are in [DEMO_GUIDE.md](DEMO_GUIDE.md).
+One presenter narrates while another drives the app. Step-by-step clicks and the checks behind them are in [DEMO_GUIDE.md](DEMO_GUIDE.md).
 
 **Setup (before judges arrive):**
 - Open tabs: https://protocolos-web.vercel.app (pick "Finishing a trial"); `/review?nct=NCT03409614&c=hemoglobin`; `/draft?preset=el3-design-time`; https://protocolos-api-production.up.railway.app/docs; the exported packet.
