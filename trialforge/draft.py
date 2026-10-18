@@ -53,7 +53,7 @@ DISPLAY_CLASSIFICATION = {
     review.CLASS_RETAIN: "Rationale supports keeping",
     review.CLASS_INSUFFICIENT: "Insufficient evidence",
 }
-CATEGORY_LABELS = {"safety": "Safety", "enrichment": "Efficacy enrichment", "precedent": "Regulatory precedent"}
+CATEGORY_LABELS = {"safety": "Safety", "enrichment": "Efficacy enrichment", "precedent": "Precedent"}
 
 
 def _el3_as_of() -> tuple[str | None, str]:
@@ -119,6 +119,7 @@ def normalize_idea(idea: dict) -> dict:
 def draft_id_for(idea: dict, exclude=()) -> str:
     n = normalize_idea(idea)
     key = {k: n[k] for k in ("condition", "drugs", "setting", "phase", "as_of")}
+    key["condition"] = key["condition"].lower()  # "NSCLC" and "nsclc" are one idea
     key["drugs"] = sorted(d.lower() for d in key["drugs"])
     if exclude:
         key["exclude"] = sorted(str(x).upper() for x in exclude)
@@ -279,6 +280,7 @@ def _rewrite(s: str) -> str:
     s = s.replace("This is a clinical review question, not a finding that the threshold is wrong.",
                   "This is a clinical review question for the draft.")
     s = s.replace("Keep the existing rationale documented.", "Document the rationale in the draft protocol.")
+    s = s.replace("arms include", "the regimen includes")  # a draft has a regimen, not arms
     return s
 
 
@@ -452,7 +454,8 @@ def draft_criteria(idea: dict, fixed_precedents: list[dict] | None = None, exclu
             d0 = s["distribution"][0]
             base = next(c for _, c, _, _ in s["pvals"] if (c["operator"], c["value_norm"], c["unit_norm"]) == (d0["operator"], d0["value"], d0["unit"]))
             v, u = base["value_norm"], base["unit_norm"]
-        text = f"{base['label']} {base['operator']}{_fmtv(v)} {u}"
+        unit_s = "" if u and u.lower() in base["label"].lower() else f" {u}"  # "ECOG performance status ≤1", not "≤1 ECOG"
+        text = f"{base['label']} {base['operator']}{_fmtv(v)}{unit_s}"
         s["dcrit"] = {"id": s["cid"], "analyte": s["analyte"], "category": s["category"], "label": base["label"],
                       "section": base["section"], "operator": base["operator"], "value": v, "unit": u,
                       "value_norm": v, "unit_norm": u, "conditions": copy.deepcopy(base.get("conditions") or []),
@@ -529,7 +532,7 @@ def draft_criteria(idea: dict, fixed_precedents: list[dict] | None = None, exclu
                                              "text": _rewrite(item["suggested_action"]["text"])}}
         else:
             critique = {"classification": review.CLASS_INSUFFICIENT,
-                        "explanation": f"{review.CLASS_INSUFFICIENT}: no value was proposed; {insufficient_reason}",
+                        "explanation": f"{review.CLASS_INSUFFICIENT}: no value was proposed. {insufficient_reason}",
                         "scores": {"support": 0, "challenge": 0}, "missing_evidence": [insufficient_reason],
                         "suggested_action": {"action": "justify_in_protocol",
                                              "text": "Gather regimen-matched precedent or document a rationale before adding this criterion."}}
@@ -637,7 +640,10 @@ def _write(d: dict) -> None:
 def _cap() -> int | None:
     v = settings.env("MAX_COLD_DRAFTS")
     if v is not None:
-        return int(v)
+        try:
+            return int(v)
+        except ValueError:
+            pass  # a malformed setting falls back to the default instead of failing every request
     return 10 if settings.flag("PUBLIC") else None
 
 

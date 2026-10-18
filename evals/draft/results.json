@@ -27,7 +27,7 @@
         "phase": "PHASE3",
         "as_of": "2016-01-15"
       },
-      "draft_id": "d-a031830182a1",
+      "draft_id": "d-bad3f3798427",
       "status": "ok",
       "summary": {
         "drafted": 10,
@@ -35,7 +35,7 @@
         "precedents": 4,
         "candidates_checked": 4,
         "skipped": 0,
-        "elapsed_s": 2.12,
+        "elapsed_s": 1.85,
         "cached": false
       },
       "precedents": [
@@ -135,7 +135,7 @@
         }
       ],
       "overclaim_hits": [],
-      "wall_s": 2.13
+      "wall_s": 1.86
     },
     {
       "nct_id": "NCT02819518",
@@ -155,7 +155,7 @@
         "phase": "PHASE3",
         "as_of": "2016-07-27"
       },
-      "draft_id": "d-4b0c9cc8ad20",
+      "draft_id": "d-709f6ecb6949",
       "status": "no_precedents",
       "summary": {
         "drafted": 0,
@@ -192,7 +192,7 @@
         "phase": "PHASE3",
         "as_of": "2017-05-29"
       },
-      "draft_id": "d-82994fa5f0ca",
+      "draft_id": "d-089f06791c28",
       "status": "ok",
       "summary": {
         "drafted": 12,
@@ -200,7 +200,7 @@
         "precedents": 4,
         "candidates_checked": 4,
         "skipped": 0,
-        "elapsed_s": 2.6,
+        "elapsed_s": 2.15,
         "cached": false
       },
       "precedents": [
@@ -308,7 +308,7 @@
         }
       ],
       "overclaim_hits": [],
-      "wall_s": 2.61
+      "wall_s": 2.16
     },
     {
       "nct_id": "NCT03409614",
@@ -331,7 +331,7 @@
         "phase": "PHASE3",
         "as_of": "2018-03-06"
       },
-      "draft_id": "d-03988c323aaf",
+      "draft_id": "d-7f876db8711f",
       "status": "ok",
       "summary": {
         "drafted": 12,
@@ -339,7 +339,7 @@
         "precedents": 4,
         "candidates_checked": 4,
         "skipped": 0,
-        "elapsed_s": 1.79,
+        "elapsed_s": 1.52,
         "cached": false
       },
       "precedents": [
@@ -447,8 +447,8 @@
         }
       ],
       "overclaim_hits": [],
-      "wall_s": 1.8
+      "wall_s": 1.52
     }
   ],
-  "computed_at": "2026-10-18T00:47:37-0400"
+  "computed_at": "2026-10-18T01:00:20-0400"
 }

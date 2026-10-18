@@ -20,3 +20,6 @@ data/investigations/
 
 # not ours to redistribute
 Regeneron starter-kit/
+
+# the Next.js app deploys separately (Vercel), so the image never contains web-next/
+web-next/
