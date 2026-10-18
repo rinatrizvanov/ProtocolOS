@@ -112,3 +112,34 @@ log for `prewarm: documents done` with cached trials before relying on it. Spons
 - If no deployment serves EL3 by 01:30 ET (plan.md section 10): submit with the repo and the video, demo from
   localhost, and say in Devpost that no demo URL is live.
 - After any rollback: `scripts/smoke_deploy.sh https://<demo-url>`.
+
+## 9. Live deploys and redeploy commands (2026-10-18)
+
+- Backend: Railway project `protocolos-api`, service `protocolos-api`, https://protocolos-api-production.up.railway.app
+  (variables `PROTOCOLOS_PUBLIC=1`, `PROTOCOLOS_BUILD_SHA`; no model keys).
+- Frontend: Vercel project `protocolos-web`, root `web-next/`, https://protocolos-web.vercel.app (production variable
+  `PROTOCOLOS_API_URL` = the Railway URL; `/api/*` goes through the `next.config.ts` rewrite).
+
+Redeploy integrated `main` (user confirms each deploy), from the main checkout:
+
+```bash
+# Railway: link this checkout to the existing project/service once, then deploy
+railway link --project protocolos-api --service protocolos-api
+railway variables --set PROTOCOLOS_BUILD_SHA=$(git rev-parse HEAD)
+railway up --detach --no-gitignore      # .railwayignore keeps .env, .venv/, web-next/ and keys out
+railway logs                            # wait for the health check (/api/review/NCT03409614)
+scripts/smoke_deploy.sh https://protocolos-api-production.up.railway.app
+curl -s https://protocolos-api-production.up.railway.app/api/build    # sha must equal git rev-parse main
+
+# Vercel: link web-next/ to the existing project once, then deploy to production
+cd web-next
+npx -y vercel@latest link --yes --project protocolos-web
+printf '%s' https://protocolos-api-production.up.railway.app | npx -y vercel@latest env add PROTOCOLOS_API_URL production   # only if not set yet
+npx -y vercel@latest deploy --prod --yes
+curl -s https://protocolos-web.vercel.app/ | grep -c ProtocolOS
+curl -s -o /dev/null -w '%{http_code}\n' https://protocolos-web.vercel.app/api/review/NCT03409614
+```
+
+`--no-gitignore` uploads the gitignored document caches in `data/` (real copies, not symlinks) so the image does not
+depend on ClinicalTrials.gov answering Railway; `.railwayignore` is what keeps secrets out, so keep it current.
+`web-next/.vercel/` holds the local project link and is gitignored.
