@@ -1,0 +1,454 @@
+{
+  "summary": {
+    "drafted_without_verified_precedent": 0,
+    "overclaim_failures": 0,
+    "agreement": "22/31",
+    "agreement_k": 22,
+    "agreement_m": 31,
+    "trials": 4
+  },
+  "trials": [
+    {
+      "nct_id": "NCT02578680",
+      "idea": {
+        "condition": "Non-Small-Cell Lung Carcinoma",
+        "drugs": [
+          "pembrolizumab",
+          "carboplatin",
+          "cisplatin",
+          "pemetrexed"
+        ],
+        "setting": [
+          "first-line",
+          "metastatic",
+          "non-squamous",
+          "squamous"
+        ],
+        "phase": "PHASE3",
+        "as_of": "2016-01-15"
+      },
+      "draft_id": "d-a031830182a1",
+      "status": "ok",
+      "summary": {
+        "drafted": 10,
+        "insufficient": 2,
+        "precedents": 4,
+        "candidates_checked": 4,
+        "skipped": 0,
+        "elapsed_s": 2.12,
+        "cached": false
+      },
+      "precedents": [
+        "NCT02220894",
+        "NCT02142738",
+        "NCT02477826",
+        "NCT02066636"
+      ],
+      "criteria": [
+        {
+          "id": "hemoglobin",
+          "status": "drafted",
+          "drafted": "\u22659.0 g/dL",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "\u22659.0 g/dL",
+          "agrees": true
+        },
+        {
+          "id": "anc",
+          "status": "drafted",
+          "drafted": "\u22651.5 \u00d710\u2079/L",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "\u22651.5 \u00d710\u2079/L",
+          "agrees": true
+        },
+        {
+          "id": "platelets",
+          "status": "drafted",
+          "drafted": "\u2265100.0 \u00d710\u2079/L",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "\u2265100.0 \u00d710\u2079/L",
+          "agrees": true
+        },
+        {
+          "id": "renal",
+          "status": "drafted",
+          "drafted": "\u226550.0 mL/min",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "\u226550.0 mL/min",
+          "agrees": true
+        },
+        {
+          "id": "bilirubin",
+          "status": "insufficient_evidence"
+        },
+        {
+          "id": "ast_alt",
+          "status": "insufficient_evidence"
+        },
+        {
+          "id": "ecog",
+          "status": "drafted",
+          "drafted": "\u22641.0 ECOG",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "\u22641.0 ECOG",
+          "agrees": true
+        },
+        {
+          "id": "washout_corticosteroid",
+          "status": "drafted",
+          "drafted": "\u226514.0 days",
+          "source_nct_id": "NCT02477826",
+          "trial_value": null,
+          "agrees": null
+        },
+        {
+          "id": "washout_investigational",
+          "status": "drafted",
+          "drafted": "\u226528.0 days",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "\u226528.0 days",
+          "agrees": true
+        },
+        {
+          "id": "washout_radiotherapy",
+          "status": "drafted",
+          "drafted": "\u2265180.0 days",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "\u2265180.0 days",
+          "agrees": true
+        },
+        {
+          "id": "washout_surgery",
+          "status": "drafted",
+          "drafted": "\u226521.0 days",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "\u226521.0 days",
+          "agrees": true
+        },
+        {
+          "id": "washout_vaccine",
+          "status": "drafted",
+          "drafted": "\u226530.0 days",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "\u226530.0 days",
+          "agrees": true
+        }
+      ],
+      "overclaim_hits": [],
+      "wall_s": 2.13
+    },
+    {
+      "nct_id": "NCT02819518",
+      "idea": {
+        "condition": "Triple Negative Breast Cancer (TNBC)",
+        "drugs": [
+          "pembrolizumab",
+          "carboplatin",
+          "nab-paclitaxel",
+          "paclitaxel",
+          "gemcitabine"
+        ],
+        "setting": [
+          "first-line",
+          "metastatic"
+        ],
+        "phase": "PHASE3",
+        "as_of": "2016-07-27"
+      },
+      "draft_id": "d-4b0c9cc8ad20",
+      "status": "no_precedents",
+      "summary": {
+        "drafted": 0,
+        "insufficient": 0,
+        "precedents": 0,
+        "candidates_checked": 0,
+        "skipped": 0,
+        "elapsed_s": 0.0,
+        "cached": false
+      },
+      "precedents": [],
+      "criteria": [],
+      "overclaim_hits": [],
+      "wall_s": 0.0
+    },
+    {
+      "nct_id": "NCT03088540",
+      "idea": {
+        "condition": "Carcinoma\uff0cNon-Small-Cell Lung",
+        "drugs": [
+          "cemiplimab",
+          "carboplatin",
+          "cisplatin",
+          "pemetrexed",
+          "paclitaxel",
+          "gemcitabine"
+        ],
+        "setting": [
+          "first-line",
+          "metastatic",
+          "non-squamous",
+          "squamous"
+        ],
+        "phase": "PHASE3",
+        "as_of": "2017-05-29"
+      },
+      "draft_id": "d-82994fa5f0ca",
+      "status": "ok",
+      "summary": {
+        "drafted": 12,
+        "insufficient": 0,
+        "precedents": 4,
+        "candidates_checked": 4,
+        "skipped": 0,
+        "elapsed_s": 2.6,
+        "cached": false
+      },
+      "precedents": [
+        "NCT02142738",
+        "NCT02477826",
+        "NCT02220894",
+        "NCT03850444"
+      ],
+      "criteria": [
+        {
+          "id": "hemoglobin",
+          "status": "drafted",
+          "drafted": "\u22659.0 g/dL",
+          "source_nct_id": "NCT02142738",
+          "trial_value": "\u22659.0 g/dL",
+          "agrees": true
+        },
+        {
+          "id": "anc",
+          "status": "drafted",
+          "drafted": "\u22651.5 \u00d710\u2079/L",
+          "source_nct_id": "NCT02142738",
+          "trial_value": "\u22651.5 \u00d710\u2079/L",
+          "agrees": true
+        },
+        {
+          "id": "platelets",
+          "status": "drafted",
+          "drafted": "\u2265100.0 \u00d710\u2079/L",
+          "source_nct_id": "NCT02142738",
+          "trial_value": "\u2265100.0 \u00d710\u2079/L",
+          "agrees": true
+        },
+        {
+          "id": "renal",
+          "status": "drafted",
+          "drafted": "\u226550.0 mL/min",
+          "source_nct_id": "NCT02477826",
+          "trial_value": ">30.0 mL/min",
+          "agrees": false
+        },
+        {
+          "id": "bilirubin",
+          "status": "drafted",
+          "drafted": "\u22641.5 \u00d7ULN",
+          "source_nct_id": "NCT02477826",
+          "trial_value": "\u22641.5 \u00d7ULN",
+          "agrees": true
+        },
+        {
+          "id": "ast_alt",
+          "status": "drafted",
+          "drafted": "\u22642.5 \u00d7ULN",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "\u22643.0 \u00d7ULN",
+          "agrees": false
+        },
+        {
+          "id": "ecog",
+          "status": "drafted",
+          "drafted": "\u22641.0 ECOG",
+          "source_nct_id": "NCT02142738",
+          "trial_value": "\u22641.0 ECOG",
+          "agrees": true
+        },
+        {
+          "id": "washout_corticosteroid",
+          "status": "drafted",
+          "drafted": "\u22653.0 days",
+          "source_nct_id": "NCT02142738",
+          "trial_value": "\u226514.0 days",
+          "agrees": false
+        },
+        {
+          "id": "washout_investigational",
+          "status": "drafted",
+          "drafted": "\u226528.0 days",
+          "source_nct_id": "NCT02142738",
+          "trial_value": "\u226530.0 days",
+          "agrees": false
+        },
+        {
+          "id": "washout_radiotherapy",
+          "status": "drafted",
+          "drafted": "\u2265180.0 days",
+          "source_nct_id": "NCT02142738",
+          "trial_value": null,
+          "agrees": null
+        },
+        {
+          "id": "washout_surgery",
+          "status": "drafted",
+          "drafted": "\u226521.0 days",
+          "source_nct_id": "NCT02142738",
+          "trial_value": "\u226528.0 days",
+          "agrees": false
+        },
+        {
+          "id": "washout_vaccine",
+          "status": "drafted",
+          "drafted": "\u226530.0 days",
+          "source_nct_id": "NCT02142738",
+          "trial_value": "\u226530.0 days",
+          "agrees": true
+        }
+      ],
+      "overclaim_hits": [],
+      "wall_s": 2.61
+    },
+    {
+      "nct_id": "NCT03409614",
+      "idea": {
+        "condition": "Non-small Cell Lung Cancer",
+        "drugs": [
+          "cemiplimab",
+          "ipilimumab",
+          "pemetrexed",
+          "carboplatin",
+          "cisplatin",
+          "paclitaxel"
+        ],
+        "setting": [
+          "first-line",
+          "metastatic",
+          "non-squamous",
+          "squamous"
+        ],
+        "phase": "PHASE3",
+        "as_of": "2018-03-06"
+      },
+      "draft_id": "d-03988c323aaf",
+      "status": "ok",
+      "summary": {
+        "drafted": 12,
+        "insufficient": 0,
+        "precedents": 4,
+        "candidates_checked": 4,
+        "skipped": 0,
+        "elapsed_s": 1.79,
+        "cached": false
+      },
+      "precedents": [
+        "NCT03215706",
+        "NCT03351361",
+        "NCT02477826",
+        "NCT02220894"
+      ],
+      "criteria": [
+        {
+          "id": "hemoglobin",
+          "status": "drafted",
+          "drafted": "\u22659.0 g/dL",
+          "source_nct_id": "NCT03215706",
+          "trial_value": "\u226510.0 g/dL",
+          "agrees": false
+        },
+        {
+          "id": "anc",
+          "status": "drafted",
+          "drafted": "\u22651.5 \u00d710\u2079/L",
+          "source_nct_id": "NCT03215706",
+          "trial_value": "\u22651.5 \u00d710\u2079/L",
+          "agrees": true
+        },
+        {
+          "id": "platelets",
+          "status": "drafted",
+          "drafted": "\u2265100.0 \u00d710\u2079/L",
+          "source_nct_id": "NCT03215706",
+          "trial_value": "\u2265100.0 \u00d710\u2079/L",
+          "agrees": true
+        },
+        {
+          "id": "renal",
+          "status": "drafted",
+          "drafted": "\u226550.0 mL/min",
+          "source_nct_id": "NCT03215706",
+          "trial_value": ">30.0 mL/min",
+          "agrees": false
+        },
+        {
+          "id": "bilirubin",
+          "status": "drafted",
+          "drafted": "\u22641.5 \u00d7ULN",
+          "source_nct_id": "NCT03215706",
+          "trial_value": "\u22641.5 \u00d7ULN",
+          "agrees": true
+        },
+        {
+          "id": "ast_alt",
+          "status": "drafted",
+          "drafted": "\u22643.0 \u00d7ULN",
+          "source_nct_id": "NCT03215706",
+          "trial_value": "\u22643.0 \u00d7ULN",
+          "agrees": true
+        },
+        {
+          "id": "ecog",
+          "status": "drafted",
+          "drafted": "\u22641.0 ECOG",
+          "source_nct_id": "NCT03215706",
+          "trial_value": "\u22641.0 ECOG",
+          "agrees": true
+        },
+        {
+          "id": "washout_corticosteroid",
+          "status": "drafted",
+          "drafted": "\u226514.0 days",
+          "source_nct_id": "NCT02477826",
+          "trial_value": "\u226514.0 days",
+          "agrees": true
+        },
+        {
+          "id": "washout_investigational",
+          "status": "drafted",
+          "drafted": "\u226528.0 days",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "\u226530.0 days",
+          "agrees": false
+        },
+        {
+          "id": "washout_radiotherapy",
+          "status": "drafted",
+          "drafted": "\u2265180.0 days",
+          "source_nct_id": "NCT02220894",
+          "trial_value": null,
+          "agrees": null
+        },
+        {
+          "id": "washout_surgery",
+          "status": "drafted",
+          "drafted": "\u226521.0 days",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "\u226528.0 days",
+          "agrees": false
+        },
+        {
+          "id": "washout_vaccine",
+          "status": "drafted",
+          "drafted": "\u226530.0 days",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "\u226530.0 days",
+          "agrees": true
+        }
+      ],
+      "overclaim_hits": [],
+      "wall_s": 1.8
+    }
+  ],
+  "computed_at": "2026-10-18T00:47:37-0400"
+}

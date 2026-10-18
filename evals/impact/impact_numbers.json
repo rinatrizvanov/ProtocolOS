@@ -1,0 +1,141 @@
+{
+ "note": "Measured numbers only. NHANES shares describe US adults, not trial-eligible patients; they are not predicted enrollment changes.",
+ "nhanes_hemoglobin": {
+  "status": "measured",
+  "nct_id": "NCT03409614",
+  "criterion_id": "hemoglobin",
+  "trial_threshold": "≥ 10.0 g/dL",
+  "rows": [
+   {
+    "role": "comparator",
+    "threshold": 9.0,
+    "unit": "g/dL",
+    "used_by": [
+     "CheckMate 9LA",
+     "CheckMate 227",
+     "NCT02220894"
+    ],
+    "rule": "hemoglobin < 9.0 g/dL (fails '≥ 9.0')",
+    "overall_pct": 0.36,
+    "overall_se": 0.08,
+    "n": 5271
+   },
+   {
+    "role": "comparator",
+    "threshold": 10.0,
+    "unit": "g/dL",
+    "used_by": [
+     "eNERGY"
+    ],
+    "rule": "hemoglobin < 10.0 g/dL (fails '≥ 10.0')",
+    "overall_pct": 1.02,
+    "overall_se": 0.16,
+    "n": 5271
+   },
+   {
+    "role": "trial",
+    "threshold": 10.0,
+    "unit": "g/dL",
+    "used_by": [
+     "NCT03409614"
+    ],
+    "rule": "hemoglobin < 10.0 g/dL (fails '≥ 10.0')",
+    "overall_pct": 1.02,
+    "overall_se": 0.16,
+    "n": 5271
+   }
+  ],
+  "source": {
+   "dataset": "NHANES 2017-2018 (DEMO_J, CBC_J)",
+   "url": "https://wwwn.cdc.gov/nchs/nhanes/continuousnhanes/default.aspx?BeginYear=2017",
+   "population": "US civilian non-institutionalized population; adults (age ≥18) with a valid CBC measurement",
+   "weights": "WTMEC2YR (MEC exam weights); variance: Taylor linearization with SDMVSTRA/SDMVPSU"
+  },
+  "caveat": "US general-population estimate, not an oncology patient eligibility estimate. Race/ethnicity is self-reported and is not a substitute for Duffy-null phenotype, which NHANES does not measure."
+ },
+ "draft_eval": {
+  "status": "not measured",
+  "reason": "evals/draft/results.json is not committed yet"
+ },
+ "by_reference": {
+  "planted": {
+   "source": "data/planted_results.json",
+   "summary": {
+    "label": "Synthetic modifications to authentic, previously unseen protocols (5 bases). Not clinical validation.",
+    "stricter": {
+     "n": 24,
+     "extracted": [
+      24,
+      24
+     ],
+     "discrepancy_surfaced": [
+      14,
+      24
+     ],
+     "escalated_strict": [
+      16,
+      24
+     ],
+     "escalated_lenient": [
+      24,
+      24
+     ],
+     "differential_detection_where_control_not_flagged": [
+      6,
+      14
+     ],
+     "control_already_flagged": [
+      10,
+      24
+     ],
+     "cautious_action": [
+      24,
+      24
+     ]
+    },
+    "looser": {
+     "n": 10,
+     "extracted": [
+      10,
+      10
+     ],
+     "false_over_restriction_flags": [
+      0,
+      10
+     ]
+    },
+    "controls": {
+     "criteria": 42,
+     "review_recommended": 14,
+     "by_criterion": {
+      "anc": 5,
+      "ast_alt": 0,
+      "bilirubin": 1,
+      "ecog": 4,
+      "hemoglobin": 0,
+      "platelets": 0,
+      "renal": 0,
+      "washout_corticosteroid": 0,
+      "washout_investigational": 1,
+      "washout_radiotherapy": 3,
+      "washout_surgery": 0,
+      "washout_vaccine": 0
+     },
+     "note": "Flags on unmodified protocols are not counted as errors: several come from criterion-specific FDA recommendations (ECOG PS2, Duffy-null ANC). They are reported so differential detection can be interpreted."
+    },
+    "seconds": 56.2
+   }
+  },
+  "verifier_chalk_evaluation": {
+   "source": "data/chalk_eval_run.json",
+   "status": "EvaluationRunStatus.SUCCEEDED",
+   "rows": 39,
+   "verdicts_matching_expectation": 39,
+   "fault_rejected": 24,
+   "n_fault": 24,
+   "valid_rejected": 0,
+   "n_valid": 10,
+   "ambiguous_flagged": 5
+  }
+ }
+}

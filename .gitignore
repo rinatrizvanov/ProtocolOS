@@ -37,3 +37,6 @@ chalk_project/triallens_investigator_eval.py
 chalk_project/protocolos_investigator_eval.py
 chalk_project/investigator_dataset.jsonl
 !.env.example
+
+# authoring-mode draft cache (rebuilt on demand)
+data/drafts/
