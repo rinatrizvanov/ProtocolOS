@@ -1,9 +1,9 @@
 """Chalk online query for the registry profile of a trial.
 
 The Trial feature class and its resolver live in chalk_project/feature_store and are deployed to the
-Chalk environment; the resolver pulls the ClinicalTrials.gov record inside Chalk. TrialLens uses the
+Chalk environment; the resolver pulls the ClinicalTrials.gov record inside Chalk. ProtocolOS uses the
 result to show, for each reviewed trial, whether the registry text even contains lab thresholds
-(it usually does not, which is why TrialLens reads the protocol PDF).
+(it usually does not, which is why ProtocolOS reads the protocol PDF).
 
 If Chalk is not configured or unreachable, the profile is reported as unavailable; nothing is faked.
 """

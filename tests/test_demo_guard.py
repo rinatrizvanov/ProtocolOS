@@ -1,4 +1,4 @@
-"""Public-demo guard (TRIALLENS_PUBLIC=1). Uses the cached EL3 review in data/reviews/; no network."""
+"""Public-demo guard (PROTOCOLOS_PUBLIC=1, legacy TRIALLENS_PUBLIC=1). Uses the cached EL3 review in data/reviews/; no network."""
 import importlib
 
 import pytest
@@ -27,13 +27,15 @@ def public(monkeypatch, decisions_dir):
     import trialforge.api as api
     from trialforge import demo_guard
 
-    monkeypatch.setenv("TRIALLENS_PUBLIC", "1")
-    monkeypatch.delenv("TRIALLENS_ALLOW_MODEL", raising=False)
+    monkeypatch.delenv("TRIALLENS_PUBLIC", raising=False)
+    monkeypatch.setenv("PROTOCOLOS_PUBLIC", "1")
+    for name in ("PROTOCOLOS_ALLOW_MODEL", "TRIALLENS_ALLOW_MODEL"):
+        monkeypatch.delenv(name, raising=False)
     api = importlib.reload(api)
     demo_guard.install(api.app)  # no-op when the C2 hook already installed it
     with TestClient(api.app) as client:
         yield client, api
-    monkeypatch.delenv("TRIALLENS_PUBLIC")
+    monkeypatch.delenv("PROTOCOLOS_PUBLIC")
     importlib.reload(api)
 
 
@@ -41,7 +43,8 @@ def public(monkeypatch, decisions_dir):
 def open_app(monkeypatch, decisions_dir):
     import trialforge.api as api
 
-    monkeypatch.delenv("TRIALLENS_PUBLIC", raising=False)
+    for name in ("PROTOCOLOS_PUBLIC", "TRIALLENS_PUBLIC"):
+        monkeypatch.delenv(name, raising=False)
     api = importlib.reload(api)
     with TestClient(api.app) as client:
         yield client, api
@@ -159,3 +162,31 @@ def test_nothing_blocked_without_public(open_app, decisions_dir):
     r = client.post("/api/decision", json={"nct": EL3, "criterion_id": "not_a_criterion", "decision": "defer", "reason": "x" * 1001})
     assert r.status_code == 200
     assert client.get(f"/api/review/{EL3}").status_code == 200
+
+
+def test_legacy_public_alias_turns_guard_on(monkeypatch, decisions_dir):
+    """The legacy TRIALLENS_PUBLIC=1 still turns the guard on after the ProtocolOS rename."""
+    import trialforge.api as api
+
+    monkeypatch.delenv("PROTOCOLOS_PUBLIC", raising=False)
+    monkeypatch.setenv("TRIALLENS_PUBLIC", "1")
+    api = importlib.reload(api)
+    try:
+        assert getattr(api.app.state, "demo_guard_installed", False)
+        with TestClient(api.app) as client:
+            assert client.get(f"/api/review/{EL3}?refresh=1").status_code == 403
+    finally:
+        monkeypatch.delenv("TRIALLENS_PUBLIC")
+        importlib.reload(api)
+
+
+def test_settings_alias_prefers_new_name(monkeypatch):
+    from trialforge import settings
+
+    monkeypatch.setenv("TRIALLENS_PUBLIC", "0")
+    monkeypatch.setenv("PROTOCOLOS_PUBLIC", "1")
+    assert settings.flag("PUBLIC") and settings.env("PUBLIC") == "1"
+    monkeypatch.delenv("PROTOCOLOS_PUBLIC")
+    assert not settings.flag("PUBLIC")
+    monkeypatch.delenv("TRIALLENS_PUBLIC")
+    assert settings.env("PUBLIC", "x") == "x"

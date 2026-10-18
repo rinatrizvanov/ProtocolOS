@@ -13,7 +13,8 @@ const nextConfig: NextConfig = {
   },
   // The FastAPI engine runs as a separate process; the browser only ever talks to this origin.
   async rewrites() {
-    const api = process.env.TRIALLENS_API_URL ?? "http://127.0.0.1:8765";
+    // PROTOCOLOS_API_URL, else the legacy TRIALLENS_API_URL (renamed 2026-10-17).
+    const api = process.env.PROTOCOLOS_API_URL ?? process.env.TRIALLENS_API_URL ?? "http://127.0.0.1:8765";
     return [{ source: "/api/:path*", destination: `${api}/api/:path*` }];
   },
 };

@@ -592,7 +592,7 @@ def _stmt(lead: str, rest: str, polarity: str, ids: list[str]) -> dict:
 
 def _classification_statement(c: _Ctx) -> dict:
     sc = c.item.get("scores") or {}
-    lead = f"TrialLens classified {_crit_text(c.crit)} as '{c.classification}' (support score {sc.get('support')}, challenge score {sc.get('challenge')})."
+    lead = f"ProtocolOS classified {_crit_text(c.crit)} as '{c.classification}' (support score {sc.get('support')}, challenge score {sc.get('challenge')})."
     rest = {CLASS_REVIEW: "This is a question for the protocol team to review, not a finding that the threshold is wrong.",
             CLASS_INSUFFICIENT: "The retrieved evidence does not settle this threshold either way."}.get(c.classification, "")
     ids = [i for i in (c.assess, c.class_id) if i in c.nodes] + c.anchors()
@@ -744,7 +744,7 @@ def _compose(question: str, c: _Ctx) -> tuple[list[dict], list[str], set]:
         main = _missing_statements(c, per_item=True)
         if not main:
             stmts.append(_stmt(f"The review lists no missing-evidence items for {crit}.",
-                               "TrialLens cannot say what further information would change this classification.", "neutral", [c.assess]))
+                               "ProtocolOS cannot say what further information would change this classification.", "neutral", [c.assess]))
         stmts += main
     else:
         main = _side_statements(c, primary)
@@ -794,7 +794,7 @@ def _grade(statements: list[dict], counter: list[str], question: str, c: _Ctx, m
 
 LABEL_RANK = {"insufficient_evidence": 0, "uncertain": 1, "supported": 2}
 MODEL_QUESTION = {
-    "why_flagged": "Why did TrialLens give this criterion its classification? Explain the evidence behind it and the context around it.",
+    "why_flagged": "Why did ProtocolOS give this criterion its classification? Explain the evidence behind it and the context around it.",
     "contradicting": "What evidence goes against the current recommendation for this criterion?",
     "support_retaining": "What evidence supports keeping this restriction as written?",
     "what_would_change": "What additional evidence would change this classification? Use the missing-evidence items.",

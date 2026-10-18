@@ -1,4 +1,4 @@
-# Deploying TrialLens (Railway, one container)
+# Deploying ProtocolOS (Railway, one container)
 
 One Docker service: FastAPI + the static dashboard in `web/` + poppler, one worker, the public-demo guard on.
 Files: `Dockerfile`, `.dockerignore`, `railway.toml`, `.env.example`, `trialforge/demo_guard.py`, `scripts/`.
@@ -14,13 +14,15 @@ development Mac) and nothing has been deployed.
   The prewarm fetches documents with at most 4 concurrent requests and always exits 0, so a build without
   network (or with HTTP 403 from ClinicalTrials.gov) still succeeds.
 - Start: `python -m scripts.prewarm --if-missing ...` fills whatever the build could not fetch, then
-  `exec python -m trialforge.demo_guard`, which installs the guard when `TRIALLENS_PUBLIC=1` and serves
+  `exec python -m trialforge.demo_guard`, which installs the guard when `PROTOCOLOS_PUBLIC=1` and serves
   `trialforge.api:app` with uvicorn on `$PORT` (default 8765), one worker. The guard is therefore on even before
   the `routes_graph` hook in `api.py` exists; with the hook it is installed once (idempotent).
 - Health check: `/api/review/NCT03409614` (timeout 600 s in `railway.toml`). The server listens only after the
   startup prewarm, so a passing health check means the EL3 review is cached.
 
-## 2. Public-demo guard (`TRIALLENS_PUBLIC=1`)
+Environment names: ProtocolOS reads `PROTOCOLOS_<NAME>` first, then the legacy `TRIALLENS_<NAME>` (`trialforge/settings.py`).
+
+## 2. Public-demo guard (`PROTOCOLOS_PUBLIC=1`)
 
 | Request | Answer |
 |---|---|
@@ -33,7 +35,7 @@ development Mac) and nothing has been deployed.
 | `/api/investigate` | `mode` forced to `deterministic` |
 | a review that is not cached yet | computed one at a time |
 
-The model rules lift only with `TRIALLENS_ALLOW_MODEL=1`; set it only together with a budgeted router key.
+The model rules lift only with `PROTOCOLOS_ALLOW_MODEL=1`; set it only together with a budgeted router key.
 
 ## 3. Variables (names only; values never committed)
 
@@ -41,8 +43,8 @@ Set on the Railway service (user confirms). `PORT` is injected by Railway.
 
 | Name | Value on the public deploy |
 |---|---|
-| `TRIALLENS_PUBLIC` | `1` (also set in the Dockerfile) |
-| `TRIALLENS_ALLOW_MODEL` | unset |
+| `PROTOCOLOS_PUBLIC` | `1` (also set in the Dockerfile) |
+| `PROTOCOLOS_ALLOW_MODEL` | unset |
 | `CHALK_ROUTER_API_KEY` | only if the key has a budget; otherwise unset (no model on the public app) |
 | `CHALK_ROUTER_ENV_ID` | `trll59fe560c` (set explicitly: the code default `clkdcdaf84e` belongs to another team) |
 | `CHALK_ROUTER_MODEL` | set explicitly when a router key is set (the code default is `openai/gpt-6.1-sol`) |

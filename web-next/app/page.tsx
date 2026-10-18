@@ -93,7 +93,7 @@ export default function App() {
   return (
     <main className="mx-auto flex min-h-screen max-w-7xl flex-col px-8 py-6">
       <header className="flex items-center gap-6 border-b border-line pb-4">
-        <span className="text-xl font-semibold text-ink">TrialLens</span>
+        <span className="text-xl font-semibold text-ink">ProtocolOS</span>
         <label className="flex items-center gap-2 text-sm text-muted">
           Trial
           <select

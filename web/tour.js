@@ -1,4 +1,4 @@
-/* TrialLens guided demo. Drives the real UI rendered by app.js and graph.js; every number in a caption is
+/* ProtocolOS guided demo. Drives the real UI rendered by app.js and graph.js; every number in a caption is
    read from a live API response or from the DOM the app rendered from one. Plain script, wrapped in an IIFE:
    it reuses the app.js globals ($, esc, fmtCrit, state, api, post, loadReview, loadExample) and declares none. */
 (function () {
@@ -94,7 +94,7 @@
   // Each step drives the real UI and returns { target, html } where html is the caption.
   const STEPS = [
     {
-      title: "What TrialLens checks",
+      title: "What ProtocolOS checks",
       async run() {
         const rv = await ensureReview();
         const counts = {};
@@ -107,10 +107,10 @@
           target: qs("#summary .summary") || qs("#summary"),
           html: `<p class="tour-plain">Before a clinical trial starts, its protocol lists <b>entry rules</b> (eligibility criteria), for example
             a minimum blood hemoglobin level. Rules that are stricter than needed can shut out patients who could have joined.
-            TrialLens checks each rule against the evidence and flags the ones the team should look at again.</p>
+            ProtocolOS checks each rule against the evidence and flags the ones the team should look at again.</p>
             <p>Here: ${name} is loaded from its public protocol PDF: <b>${rv.reviews.length} eligibility criteria</b> reviewed against
             ${plural(rv.comparators.length, "comparable trial")}.</p><div class="tour-pills">${pills}</div>
-            <p class="tour-note">Each criterion balances safety, enrichment and generalizability. TrialLens prepares the evidence; the protocol team decides.</p>`,
+            <p class="tour-note">Each criterion balances safety, enrichment and generalizability. ProtocolOS prepares the rationale; the protocol team decides.</p>`,
         };
       },
     },

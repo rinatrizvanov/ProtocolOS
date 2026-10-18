@@ -1,9 +1,9 @@
-# TrialPathfinder and PyTrial: what they take in, what they produce, what TrialLens can reuse
+# TrialPathfinder and PyTrial: what they take in, what they produce, what ProtocolOS can reuse
 
 Read-only study, 2026-10-17, after a Regeneron mentor pointed us to both projects. No third-party code was installed or
 run. Both are references, not dependencies: TrialPathfinder needs longitudinal patient-level data (it was built on
-Flatiron EHR data) that TrialLens does not have, and PyTrial embeds criteria as free text without structuring them.
-Neither drafts eligibility criteria with traceable rationale, which is what TrialLens's planned "create criteria from an
+Flatiron EHR data) that ProtocolOS does not have, and PyTrial embeds criteria as free text without structuring them.
+Neither drafts eligibility criteria with traceable rationale, which is what ProtocolOS's planned "create criteria from an
 idea" mode adds.
 
 ## TrialPathfinder (Stanford/Genentech, Liu et al., Nature 2021)
@@ -16,7 +16,7 @@ Trial Pathfinder is an MIT-licensed Python library and method from Stanford and 
 - Data references use `Table['column']`. Operators: `== != < <= > >=`, `AND`, `OR`, `MIN`, `MAX`, `ABS`. Time is written `@DAYS(n)`, `@MONTHS(n)` or `@YEARS(n)` (README).
 - Rows run in order. The earlier rows narrow the tables (line of therapy, lab name, date window, nearest record) and the last row selects patients. An exclusion is the negation of the match (`cohort_select.py`, `if ie == 'ex': select_all = ~select_all`). `selection()` ANDs the chosen rules (`cohort_select.py` lines 480-492).
 - Thresholds can be absolute or relative to the upper limit of normal: `lab['value'] <= 1.5 * lab['maxnorm']`.
-- Real example, `paper/criteria/Merck_Keynote189.csv` (KEYNOTE-189, the same trial as TrialLens's cached NCT02578680):
+- Real example, `paper/criteria/Merck_Keynote189.csv` (KEYNOTE-189, the same trial as ProtocolOS's cached NCT02578680):
 ``
 Hemoglobin
 #inclusion
@@ -50,7 +50,7 @@ lab['value'] >= 9
 - "Data-driven criteria" keep only the rules with Shapley < 0 and drop the rest. README: `names_rules_relax = names_rules[shapley_values<0.]`. Paper: "subset of criteria used by the original trial that have a Shapley value smaller than 0".
 - The authors compare three cohorts: original criteria, data-driven criteria and fully relaxed (`name_rules=[]`) (README; PMC9007176).
 
-### Key findings relevant to TrialLens
+### Key findings relevant to ProtocolOS
 All numbers below are from PMC9007176.
 - In aNSCLC, average eligible patients went from 1,553 (HR 0.82) under the original criteria to 3,209 (+107%, HR 0.77) under data-driven criteria. Fully relaxed criteria gave 5,167 (HR 0.83). The data-driven sets dropped about 9 rules per trial on average.
 - The paper relaxes "several common laboratory-based eligibilities—levels of bilirubin, platelets, haemoglobin and ALP". Cut-offs were varied "across the range used in actual trials", and relaxing them "does not significantly increase the hazard ratio of the overall survival in the Flatiron database" (Extended Data Fig. 7).
@@ -60,21 +60,21 @@ All numbers below are from PMC9007176.
 - Newly eligible patients "tend to include more women and more patients older than 75 years". The HAI release also says "minority". I found no race or ethnicity finding in the PMC text.
 - The authors note heterogeneity: "Even trials with similar mechanisms that target the same disease often use different eligibility criteria" (Extended Data Fig. 2). Zou, in the HAI release: "Sometimes the criteria were just copied and pasted from previous studies."
 
-### What TrialLens can reuse now without patient data
-1. **Criterion schema.** TrialLens's `Criterion` (`trialforge/extract.py:53-68`) already has `section`, `operator`, `value_norm`, `unit_norm` (with `×ULN`, `extract.py:270`) and `conditions`. Two fields from the TP grammar are worth adding: an assessment window (days relative to first dose) and an explicit missing-data policy.
+### What ProtocolOS can reuse now without patient data
+1. **Criterion schema.** ProtocolOS's `Criterion` (`trialforge/extract.py:53-68`) already has `section`, `operator`, `value_norm`, `unit_norm` (with `×ULN`, `extract.py:270`) and `conditions`. Two fields from the TP grammar are worth adding: an assessment window (days relative to first dose) and an explicit missing-data policy.
 2. **Drafting mode ("Create criteria from an idea").** A drafted criterion should be a structured record in this schema, rendered to text only after `verifier.verify()` passes (`verifier.py:70`: units, plausibility from `PLAUSIBLE` at `verifier.py:28`, direction via `_looser` at `verifier.py:64-67`, overclaim check at `verifier.py:48`). A model fills fields; it never writes free-text criteria that skip the verifier.
-3. **Export only.** Each criterion can be rendered deterministically into TP rule text (`#inclusion` / `lab['value'] >= 9`), so a sponsor with EHR access can run TP themselves. TrialLens should never parse or execute TP rules, because the parser uses `exec()`.
-4. **KEYNOTE-189 cross-check.** Turn the `Merck_Keynote189.csv` values (Hgb >= 9, ANC >= 1.5, platelets >= 100, bilirubin <= 1.5x ULN, AST/ALT <= 2.5x ULN) into a hand-copied, MIT-attributed fixture. Compare it with TrialLens's extraction of NCT02578680. Treat it as a second opinion, not gold: TP drops the liver-metastasis branch and has at least one copy error (OAK "Staging").
+3. **Export only.** Each criterion can be rendered deterministically into TP rule text (`#inclusion` / `lab['value'] >= 9`), so a sponsor with EHR access can run TP themselves. ProtocolOS should never parse or execute TP rules, because the parser uses `exec()`.
+4. **KEYNOTE-189 cross-check.** Turn the `Merck_Keynote189.csv` values (Hgb >= 9, ANC >= 1.5, platelets >= 100, bilirubin <= 1.5x ULN, AST/ALT <= 2.5x ULN) into a hand-copied, MIT-attributed fixture. Compare it with ProtocolOS's extraction of NCT02578680. Treat it as a second opinion, not gold: TP drops the liver-metastasis branch and has at least one copy error (OAK "Staging").
 5. **Rationale citation (fits the "Evidence" to "Rationale" rename).** For hemoglobin, platelets and bilirubin in aNSCLC targets only, add an unscored "literature context" item. Suggested wording: "In an EHR emulation of 10 aNSCLC trials, broadening bilirubin, platelet, haemoglobin and ALP cut-offs within the range used in trials did not significantly change the overall-survival hazard ratio (Liu et al., Nature 2021). This is an association in a different population; is this trial's threshold justified by its regimen?" This keeps the guardrails: no claim that a value is safe, and no enrollment claim for this trial.
 6. **Relaxation as a review question.** Map TP's three tiers (original / data-driven / fully relaxed) to "current threshold / range used by comparable trials (`comparators.py`) / no threshold". The paper's own method varied cut-offs "across the range used in actual trials", which supports showing the comparator range as the question, not a recommended value.
-7. **Wording to borrow and to avoid.** Borrow the authors' "one factor among several that can assist clinical trial specialists" (PMC9007176). Avoid the HAI line "without introducing additional risk to the patients": it breaks the TrialLens guardrails (docs/TEAMMATE_ONBOARDING.md).
+7. **Wording to borrow and to avoid.** Borrow the authors' "one factor among several that can assist clinical trial specialists" (PMC9007176). Avoid the HAI line "without introducing additional risk to the patients": it breaks the ProtocolOS guardrails (docs/TEAMMATE_ONBOARDING.md).
 
 ### What it cannot do here
 - **No data to run it.**
   - TP needs patient-level longitudinal records: drug, line start date, outcome (death) date, last-visit date, dated labs with ULN (`maxnorm`), ECOG history, diagnosis codes and biomarkers (README "Data Requirements"; table names in `paper/criteria/*.csv`).
   - The paper used licensed Flatiron and FH-FMI CGDB data, "available on request from the data providers" (nature.com).
   - Trial selection itself required "more than 250 patients in Flatiron" per arm (`paper/trial_selection/README.md`).
-  - TrialLens has only protocols, registry records, FDA guidance and NHANES, with no treatment lines or survival outcomes. So there are no HRs, no Shapley values and no data-driven criteria.
+  - ProtocolOS has only protocols, registry records, FDA guidance and NHANES, with no treatment lines or survival outcomes. So there are no HRs, no Shapley values and no data-driven criteria.
 - **No integration tonight.** As instructed, I did not install TP or run any of its code. Running it on `tutorial/data/` would produce synthetic numbers that must never reach the demo.
 - **No transfer of numbers.**
   - Paper figures are averages over 10 aNSCLC trials in one US EHR population; they must not be stated as findings about NCT03409614 or NCT03088540.
@@ -91,7 +91,7 @@ All numbers below are from PMC9007176.
 - https://www.nature.com/articles/s41586-021-03430-5 (abstract preview, figure legends; paywalled)
 - https://pmc.ncbi.nlm.nih.gov/articles/PMC9007176/ (author manuscript; results, methods and quotes above)
 - https://hai.stanford.edu/news/ai-expands-reach-clinical-trials-broadening-access-more-women-minority-and-older-patients
-- TrialLens files:
+- ProtocolOS files:
   - `trialforge/extract.py`
   - `trialforge/verifier.py`
   - `trialforge/review.py`
@@ -145,7 +145,7 @@ All numbers below are from PMC9007176.
   - It does no verification against source documents.
 - **I found no public code for how TrialMind drafts criteria.**
 
-### Ideas for TrialLens "Create criteria from an idea"
+### Ideas for ProtocolOS "Create criteria from an idea"
 1. **Idea form.** Fields: condition, setting tags (first-line, metastatic, non-squamous, perioperative), regimen drugs, phase, and a cutoff date (today).
    - Parse drugs with `druglib.find_drugs` and map them to classes and toxicity properties with `druglib.classes` / `LAB_RELEVANCE` (`trialforge/druglib.py:72-97`).
    - The curated table has 31 drugs. Show drugs it does not recognize as "unrecognized", the way `extract_regimen` does (`extract.py:541-550`).
@@ -153,7 +153,7 @@ All numbers below are from PMC9007176.
    - It reuses the v2 search parameters from `comparators.discover` (`comparators.py:88-94`), plus `setting_tags`, `_lung_histology` and the class-Jaccard ranking.
    - `discover()` itself cannot be used, because it calls `fetch_study(target nct_id)` (`comparators.py:97`) and an idea has no NCT ID.
    - `discover()` puts only immunotherapy drug names into `query.intr` (`comparators.py:86`), so a chemotherapy-only idea falls back to the literal drug list.
-3. **Extract precedents.** Run `extract.analyze_trial` on each comparator. This gives `Criterion` records with page and quote (`extract.py:53-72`) for the six labs, ECOG and washouts, the only categories TrialLens structures.
+3. **Extract precedents.** Run `extract.analyze_trial` on each comparator. This gives `Criterion` records with page and quote (`extract.py:53-72`) for the six labs, ECOG and washouts, the only categories ProtocolOS structures.
 4. **Propose each criterion with its rationale.** For each analyte:
    - Show the full precedent distribution, for example "Hb ≥9 g/dL: 3 trials; ≥10: 1". Each entry carries NCT ID, page, quote, start date and `coverage()` status (`comparators.py:121-139`).
    - Offer a default value only from regimen-matched (`coverage: full`) precedents.
@@ -166,9 +166,9 @@ All numbers below are from PMC9007176.
    - (c) Label every draft "Suggestion, the team decides". A real `draft` action inside `verifier.py` would be a change request to the collaborator, who owns that file.
 6. **What to borrow from PyTrial (concepts, not code):**
    - The split of trial fields into attribute fields and context fields, as a design for an optional re-ranker.
-   - A frequency-ranked vocabulary of criterion sentences across comparators (the `Vocab` idea). TrialLens could show non-numeric precedents such as brain metastases or prior therapy as quoted text, labelled "text precedent, not numerically verified".
+   - A frequency-ranked vocabulary of criterion sentences across comparators (the `Vocab` idea). ProtocolOS could show non-numeric precedents such as brain metastases or prior therapy as quoted text, labelled "text precedent, not numerically verified".
 7. **What not to borrow:**
-   - The newline parser: TrialLens' `group_items` (`extract.py:187`) already joins wrapped bullets.
+   - The newline parser: ProtocolOS' `group_items` (`extract.py:187`) already joins wrapped bullets.
    - The classic CT.gov client.
    - HINT/SPOT outcome scores. They would imply success or enrollment claims that the guardrails forbid.
 
@@ -176,9 +176,9 @@ All numbers below are from PMC9007176.
 - **PyTrial is BSD-2-Clause** (`LICENSE`). Code can be reused with the copyright notice kept, which is compatible with an MIT repo.
 - **The cost is high and the benefit low:**
   - The stack is heavy: PyTorch must be installed first, plus transformers, rdkit, `sdmetrics==0.6.0`, ctgan, gensim, xgboost, transtab, promptehr and trial2vec (`requirements.txt`, README).
-  - It is "tested on python==3.7" (README); TrialLens uses Python 3.13.
+  - It is "tested on python==3.7" (README); ProtocolOS uses Python 3.13.
   - Trial2Vec, COMPOSE and FRAMM default to `device='cuda:0'`.
-  - Its CT.gov client calls the classic `/api/query/study_fields` and `/api/info/` endpoints (`trial_utils.py:21-24`). Both returned HTTP 404 when I checked with curl on 2026-10-17; TrialLens uses API v2 (`sources.py:26`).
+  - Its CT.gov client calls the classic `/api/query/study_fields` and `/api/info/` endpoints (`trial_utils.py:21-24`). Both returned HTTP 404 when I checked with curl on 2026-10-17; ProtocolOS uses API v2 (`sources.py:26`).
   - Its pretrained artifacts on Google Cloud Storage still return HTTP 200. I did not download them.
 - **TrialPanorama has no licence.** GitHub reports `license: null` and there is no root LICENSE file, so it grants no reuse rights by default. I did not check the Hugging Face dataset's licence.
 - **Recommendation:** add no dependency. Build `draft.py` on the existing comparator, extractor, guidance and verifier code. My rough estimate for the backend is a few hundred lines; I have not scoped it in detail.
@@ -188,4 +188,4 @@ All numbers below are from PMC9007176.
 - Paper: https://arxiv.org/abs/2306.04018
 - TrialPanorama: https://github.com/Keiji-AI/TrialPanorama at `20e97cb`
 - Keiji homepage: https://keiji.ai/ (fetched 2026-10-17 through a summarizer; the quoted phrase was not checked against the raw HTML)
-- TrialLens files (read-only): `trialforge/comparators.py`, `extract.py`, `verifier.py`, `sources.py`, `guidance.py`, `review.py`, `druglib.py`
+- ProtocolOS files (read-only): `trialforge/comparators.py`, `extract.py`, `verifier.py`, `sources.py`, `guidance.py`, `review.py`, `druglib.py`

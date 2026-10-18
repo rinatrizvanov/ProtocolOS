@@ -6,10 +6,11 @@ top; handlers import `get_review` lazily.
 from __future__ import annotations
 
 import importlib.util
-import os
 
 from fastapi import HTTPException
 from pydantic import BaseModel
+
+from .settings import flag
 
 
 class InvestigateReq(BaseModel):
@@ -41,12 +42,12 @@ def investigate_route(req: InvestigateReq):
 
 def install(app) -> None:
     """Add GET /api/graph/{nct} and POST /api/investigate (idempotent); guard the app when public."""
-    if getattr(app.state, "triallens_graph_routes", False):
+    if getattr(app.state, "protocolos_graph_routes", False):
         return
-    app.state.triallens_graph_routes = True
+    app.state.protocolos_graph_routes = True
     app.add_api_route("/api/graph/{nct}", graph_route, methods=["GET"])
     app.add_api_route("/api/investigate", investigate_route, methods=["POST"])
-    if os.environ.get("TRIALLENS_PUBLIC") == "1":
+    if flag("PUBLIC"):
         from . import demo_guard
 
         demo_guard.install(app)

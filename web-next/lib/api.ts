@@ -1,4 +1,4 @@
-// Typed client for the TrialLens FastAPI engine. Requests go to /api/*, which next.config rewrites to TRIALLENS_API_URL.
+// Typed client for the ProtocolOS FastAPI engine. Requests go to /api/*, which next.config rewrites to PROTOCOLOS_API_URL.
 
 // Defaults for the guided tour (EL3, hemoglobin).
 export const NCT = "NCT03409614";

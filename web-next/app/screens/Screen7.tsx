@@ -90,7 +90,7 @@ export default function Screen7({ nct, criterionId, detailed = false }: Selectio
   ) : undefined;
 
   return (
-    <Frame headline="The team decides." caption="TrialLens prepares the evidence; people decide." details={details}>
+    <Frame headline="The team decides." caption="ProtocolOS prepares the rationale; the team decides." details={details}>
       <div className="flex w-full max-w-3xl flex-col gap-10">
         <div className="flex flex-wrap gap-4">
           {CHOICES.map((choice) => (
@@ -112,7 +112,7 @@ export default function Screen7({ nct, criterionId, detailed = false }: Selectio
         {item?.decision ? (
           <form onSubmit={submitFeedback} className="flex flex-col gap-2">
             <label htmlFor="feedback" className="text-sm text-ink">
-              Comment for TrialLens
+              Comment for ProtocolOS
             </label>
             <textarea
               id="feedback"
@@ -120,7 +120,7 @@ export default function Screen7({ nct, criterionId, detailed = false }: Selectio
               rows={3}
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              placeholder="Why this decision? What did TrialLens miss?"
+              placeholder="Why this decision? What did ProtocolOS miss?"
               className="rounded-md border border-line bg-paper px-3 py-2 text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
             />
             <button

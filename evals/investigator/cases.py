@@ -41,7 +41,7 @@ def offline_tools():
     """No Chalk call and no audit lines in data/ while evaluating: the registry tool reports
     'unavailable' (a valid result) and audit lines go to a temporary directory."""
     saved_tool, saved_dir = inv.TOOLS["chalk_registry_profile"], inv.AUDIT_DIR
-    with tempfile.TemporaryDirectory(prefix="triallens-inv-eval-") as tmp:
+    with tempfile.TemporaryDirectory(prefix="protocolos-inv-eval-") as tmp:
         inv.TOOLS["chalk_registry_profile"] = lambda nct: {"status": "unavailable", "detail": "offline evaluation: Chalk not called"}
         inv.AUDIT_DIR = Path(tmp)
         try:

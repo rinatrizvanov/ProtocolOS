@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Smoke-check a TrialLens deployment: expected vs actual HTTP status for each check.
+# Smoke-check a ProtocolOS deployment: expected vs actual HTTP status for each check.
 #   scripts/smoke_deploy.sh https://<demo-url>        (or DEMO_URL=... scripts/smoke_deploy.sh)
 # Graph and investigate routes report NOT INSTALLED (not a failure) while the app has no such route.
 # Requests that would recompute a review or call a model run only after the guard is shown to be active.
@@ -34,7 +34,7 @@ check() {
   LAST="$verdict"
 }
 
-echo "TrialLens smoke check against $BASE"
+echo "ProtocolOS smoke check against $BASE"
 check "dashboard /" 200 GET "/"
 check "static app.js" 200 GET "/static/app.js"
 check "GET /api/status" 200 GET "/api/status"

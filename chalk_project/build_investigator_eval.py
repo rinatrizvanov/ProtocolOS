@@ -1,8 +1,8 @@
-"""Build the Chalk Evaluation bundle `triallens-investigator` (local only; runs nothing remote).
+"""Build the Chalk Evaluation bundle `protocolos-investigator` (local only; runs nothing remote).
 
 Same pattern as build_eval_bundle.py. Writes two generated, uncommitted files:
   chalk_project/investigator_dataset.jsonl     one row per base answer, mutant and control
-  chalk_project/triallens_investigator_eval.py the template with trialforge/verifier.py and the pure
+  chalk_project/protocolos_investigator_eval.py the template with trialforge/verifier.py and the pure
                                                check_answer section of trialforge/investigate.py inlined
 
 Rows carry the answer, the criterion's graph, a trimmed review context and the quote lookups that
@@ -23,7 +23,7 @@ from trialforge import investigate as inv
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 DATASET = HERE / "investigator_dataset.jsonl"
-BUNDLE = HERE / "triallens_investigator_eval.py"
+BUNDLE = HERE / "protocolos_investigator_eval.py"
 
 
 def review_ctx(review: dict, cid: str) -> dict:

@@ -269,7 +269,7 @@ def test_install_is_idempotent_and_calls_demo_guard_when_public(monkeypatch):
     fake.install = lambda app: calls.append(app)
     monkeypatch.setitem(sys.modules, "trialforge.demo_guard", fake)
     monkeypatch.setattr(trialforge, "demo_guard", fake, raising=False)
-    monkeypatch.setenv("TRIALLENS_PUBLIC", "1")
+    monkeypatch.setenv("PROTOCOLOS_PUBLIC", "1")
     app = FastAPI()
     install(app)
     install(app)

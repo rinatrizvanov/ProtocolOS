@@ -669,7 +669,8 @@ def test_investigate_route(real, monkeypatch):
 
     from trialforge.routes_graph import install
 
-    monkeypatch.delenv("TRIALLENS_PUBLIC", raising=False)
+    for name in ("PROTOCOLOS_PUBLIC", "TRIALLENS_PUBLIC"):
+        monkeypatch.delenv(name, raising=False)
     app = FastAPI()
     install(app)
     client = TestClient(app)

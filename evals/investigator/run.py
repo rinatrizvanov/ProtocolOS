@@ -67,7 +67,7 @@ def evaluate(criteria: list[str] | None = None, out_path: Path | str = RESULTS) 
     statuses = Counter(s["status"] for r in base for s in r["answer"]["statements"])
     review = bases[0]["review"] if bases else {}
     out = {
-        "suite": "triallens-investigator (local)",
+        "suite": "protocolos-investigator (local)",
         "nct_id": NCT, "as_of": AS_OF,
         "review_fingerprint": inv.review_fingerprint(review) if review else None,
         "criteria": sorted({r["criterion_id"] for r in base}), "questions": list(inv.QUESTIONS),

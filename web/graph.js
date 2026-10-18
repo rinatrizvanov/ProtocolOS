@@ -27,7 +27,7 @@
     "Assessment", "Classification", "ReviewerDecision", "Recommendation", "MissingEvidence"];
   const EPISTEMIC = {
     source_fact: "verbatim source text",
-    rule_inferred: "TrialLens rule (inferred)",
+    rule_inferred: "ProtocolOS rule (inferred)",
     curated_pharmacology: "curated pharmacology table",
     model_generated: "model generated",
     human: "reviewer decision",
@@ -167,7 +167,7 @@
   function legendHtml() {
     return `<div class="g-legend">
       <span><svg width="26" height="12" aria-hidden="true"><rect x="1" y="1" width="24" height="10" rx="2" class="lg-solid"/></svg> verbatim source text</span>
-      <span><svg width="26" height="12" aria-hidden="true"><rect x="1" y="1" width="24" height="10" rx="2" class="lg-dashed"/></svg> TrialLens rule or curated table</span>
+      <span><svg width="26" height="12" aria-hidden="true"><rect x="1" y="1" width="24" height="10" rx="2" class="lg-dashed"/></svg> ProtocolOS rule or curated table</span>
       <span><svg width="26" height="12" aria-hidden="true"><rect x="1" y="1" width="24" height="10" rx="2" class="lg-dotted"/></svg> model generated</span>
       <span><svg width="26" height="12" aria-hidden="true"><rect x="1" y="1" width="24" height="10" rx="2" class="lg-solid"/><rect x="3.5" y="3.5" width="19" height="5" rx="1" class="lg-solid"/></svg> reviewer decision</span>
       <span><i class="lg-line supports"></i> supports</span><span><i class="lg-line challenges"></i> challenges</span><span><i class="lg-line context"></i> context (0 points)</span>
@@ -636,7 +636,7 @@
         break;
       }
       case "Classification":
-        body = `<div><span class="cls ${clsKeyOf(d.classification || n.label)}">${esc(d.classification || n.label)}</span></div><div class="src">A prompt for expert review. The team decides; TrialLens prepares the evidence.</div>
+        body = `<div><span class="cls ${clsKeyOf(d.classification || n.label)}">${esc(d.classification || n.label)}</span></div><div class="src">A prompt for expert review. The team decides; ProtocolOS prepares the rationale.</div>
           <div class="gp-row"><button type="button" class="small ghost" data-open-packet>Record a decision in the review packet</button></div>`;
         break;
       case "Recommendation":

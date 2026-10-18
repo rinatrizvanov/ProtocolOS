@@ -97,7 +97,7 @@ function explain(node: GraphNode, graph: Graph): Explained {
     if (match && rule?.data.group === "regimen_support")
       return {
         title: `This trial's drugs can cause ${match[2]}`,
-        why: `${match[1]}, per TrialLens's curated drug table. So the trial needs some limit: +${points}. It does not show that ${targetValue} is the right one.`,
+        why: `${match[1]}, per ProtocolOS's curated drug table. So the trial needs some limit: +${points}. It does not show that ${targetValue} is the right one.`,
       };
     return { title: node.label, why: text(node.data.summary) };
   }

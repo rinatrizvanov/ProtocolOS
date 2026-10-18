@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "TrialLens demo",
+  title: "ProtocolOS",
   description: "Evidence-grounded review of oncology eligibility criteria.",
 };
 

@@ -32,7 +32,7 @@ export default function Screen1({ nct }: { nct: string }) {
   return (
     <Frame
       headline="Who gets into a trial?"
-      caption="TrialLens checks each rule against evidence; amber means the team should look again."
+      caption="ProtocolOS checks each rule against evidence; amber means the team should look again."
       details={
         <>
           <ul>

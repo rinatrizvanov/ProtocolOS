@@ -4,7 +4,7 @@
 
 **Scope:** additive. Do not rewrite the application, replace the deterministic verifier, or rebuild ingestion.
 
-**Goal:** most clinical-trial "AI reviewers" are retrieval plus a paragraph of prose. TrialLens already has typed, sourced evidence per criterion. This feature makes that structure *visible and interrogable*:
+**Goal:** most clinical-trial "AI reviewers" are retrieval plus a paragraph of prose. ProtocolOS already has typed, sourced evidence per criterion. This feature makes that structure *visible and interrogable*:
 - which claim rests on which passage
 - what contradicts it
 - what was inferred rather than read
@@ -25,11 +25,11 @@ Read [TEAMMATE_ONBOARDING.md](TEAMMATE_ONBOARDING.md) first. It documents the `r
 3. **Facts are separated from inferences.** Every node carries `epistemic`, one of:
    - `source_fact`: verbatim text from a document
    - `curated`: drug-class table
-   - `rule_inferred`: TrialLens rules (classification, purpose tags)
+   - `rule_inferred`: ProtocolOS rules (classification, purpose tags)
    - `model_generated`
    - `human`: reviewer decision
 4. **Contradictions are preserved.** Stance `challenges` becomes a challenge edge. `context` becomes a context edge, never folded into support.
-5. **No causal edges between trials.** There is no `INFLUENCED`, `CAUSED`, `DERIVED_DESIGN_FROM` or similar. Peer trials connect to a criterion only through the comparison that TrialLens made. Co-occurrence is not causality.
+5. **No causal edges between trials.** There is no `INFLUENCED`, `CAUSED`, `DERIVED_DESIGN_FROM` or similar. Peer trials connect to a criterion only through the comparison that ProtocolOS made. Co-occurrence is not causality.
 6. **Scope is explicit.** Regimen toxicity evidence has `strength: "existence only"`, so its edge carries `scope: "existence_of_threshold"`, never `scope: "threshold_value"`. This stops the graph from implying that a toxicity rationale proves a specific cutoff.
 7. **No duplicates or orphans.** Node IDs are content hashes, so the same passage (for example protocol p.51, which is cited for both hemoglobin and ANC) is one node with two edges. A validator rejects orphan nodes and dangling edges.
 
@@ -196,7 +196,7 @@ You can also use the Chalk MCP `whoami` / `list_functions`.
 |---|---|---|
 | Feature resolvers (`Trial`) | The `registry_profile` tool provides registry-level facts as graph nodes, e.g. "registry does not mention ANC" with `source: Chalk query <id>` | Deployed, works |
 | Model Gateway | Question interpretation and answer synthesis in **model mode**, via the existing `llm._json_call` (it already routes to the Chalk router when `CHALK_ROUTER_API_KEY` is set) | **Never called.** Feature-gate on `llm.provider() == "chalk_router"`; the deterministic mode must work without it |
-| Chalk Evaluations | New evaluation **`triallens-investigator`** (do not touch `trialforge-verifier`). Dataset: ~12 (criterion, question) pairs on EL3 plus planted variants. Scorers: citations valid, counterevidence mentioned, no causal or approval language, NCT IDs all known. Compare **model answer before vs after the deterministic checks** | Not built. Follow `chalk_project/build_eval_bundle.py`: a self-contained file plus a frozen-context dataset; keep generated files gitignored |
+| Chalk Evaluations | New evaluation **`protocolos-investigator`** (do not touch `trialforge-verifier`). Dataset: ~12 (criterion, question) pairs on EL3 plus planted variants. Scorers: citations valid, counterevidence mentioned, no causal or approval language, NCT IDs all known. Compare **model answer before vs after the deterministic checks** | Not built. Follow `chalk_project/build_eval_bundle.py`: a self-contained file plus a frozen-context dataset; keep generated files gitignored |
 | Chalk Compute | Optional: run the answer checker as a Chalk function, as `tf_verify` does. Only worth it for the evaluation | Not needed for the MVP |
 | Traces / reproducibility | Store Chalk query IDs and evaluation run IDs in the audit trail and on graph nodes | — |
 
@@ -291,7 +291,7 @@ get_review(nct) ──► build_graph() ──► /api/graph ──► graph.js 
 
 ### Cut list (cut from the top if time runs short)
 
-1. Chalk `triallens-investigator` evaluation.
+1. Chalk `protocolos-investigator` evaluation.
 2. Model mode (keep deterministic).
 3. `what_would_change`.
 4. Overlay persistence (show `graph_delta` without saving).

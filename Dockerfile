@@ -1,4 +1,4 @@
-# TrialLens: one container (FastAPI + static web/ + poppler), public-demo guard on.
+# ProtocolOS: one container (FastAPI + static web/ + poppler), public-demo guard on.
 FROM python:3.13-slim
 
 RUN apt-get update \
@@ -18,6 +18,6 @@ COPY . .
 # below then fills whatever is missing before the server listens.
 RUN python -m scripts.prewarm NCT03409614 NCT02578680 NCT03088540 NCT02819518
 
-ENV TRIALLENS_PUBLIC=1
+ENV PROTOCOLOS_PUBLIC=1
 EXPOSE 8765
 CMD ["sh", "-c", "python -m scripts.prewarm --if-missing NCT03409614 NCT02578680 NCT03088540 NCT02819518; exec python -m trialforge.demo_guard"]

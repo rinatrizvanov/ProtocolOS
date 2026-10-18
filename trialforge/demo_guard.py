@@ -1,6 +1,6 @@
-"""Public-demo guard: input validation and cost limits for a deployed TrialLens.
+"""Public-demo guard: input validation and cost limits for a deployed ProtocolOS.
 
-Active only when `install(app)` is called; `routes_graph.install(app)` calls it when TRIALLENS_PUBLIC=1.
+Active only when `install(app)` is called; `routes_graph.install(app)` calls it when PROTOCOLOS_PUBLIC=1 (legacy TRIALLENS_PUBLIC=1).
 One pure ASGI middleware, so request bodies can be checked and rewritten before FastAPI parses them:
 
 - 400: an NCT in the path or in the JSON body (`nct`) that is not NCT + 8 digits; `as_of` not `auto`, `none`
@@ -10,7 +10,7 @@ One pure ASGI middleware, so request bodies can be checked and rewritten before 
 - 403: `refresh` set to a truthy value (recomputes a review on demand).
 - 503 "disabled on the public demo": `/api/parse` and `/api/critique` (paid model calls), and the request
   body of `/api/verify` gets `with_llm_baseline=false`, `/api/investigate` gets `mode="deterministic"`,
-  unless TRIALLENS_ALLOW_MODEL=1 (set it only with a budgeted router key).
+  unless PROTOCOLOS_ALLOW_MODEL=1 (set it only with a budgeted router key).
 - Reviews that are not cached yet are computed one at a time (`sources._cached_pdf` writes are not atomic).
 """
 from __future__ import annotations
@@ -21,6 +21,8 @@ import os
 import re
 
 from starlette.concurrency import run_in_threadpool
+
+from trialforge.settings import flag
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
@@ -36,7 +38,7 @@ FALSY = {"", "0", "false", "no", "off"}
 
 
 def allow_model() -> bool:
-    return os.environ.get("TRIALLENS_ALLOW_MODEL") == "1"
+    return flag("ALLOW_MODEL")
 
 
 def valid_nct(v) -> bool:
@@ -198,12 +200,12 @@ def install(app) -> None:
 
 
 if __name__ == "__main__":
-    # Container entry point: the guard is on with TRIALLENS_PUBLIC=1 even before the routes_graph hook exists.
+    # Container entry point: the guard is on with PROTOCOLOS_PUBLIC=1 even before the routes_graph hook exists.
     import uvicorn
 
     from trialforge import api as _app_module
 
-    if os.environ.get("TRIALLENS_PUBLIC") == "1":
+    if flag("PUBLIC"):
         install(_app_module.app)
-    print(f"TrialLens: demo guard {'on' if getattr(_app_module.app.state, 'demo_guard_installed', False) else 'OFF'}", flush=True)
+    print(f"ProtocolOS: demo guard {'on' if getattr(_app_module.app.state, 'demo_guard_installed', False) else 'OFF'}", flush=True)
     uvicorn.run(_app_module.app, host=os.environ.get("HOST", "0.0.0.0"), port=int(os.environ.get("PORT", "8765")), workers=1)
