@@ -77,7 +77,8 @@ export default function Screen2() {
   const plotted = rows.filter(isPlotted);
   const withCriterion = rows.filter((r) => r.criterion !== null);
   const looser = withCriterion.filter((r) => r.direction === "comparator looser").length;
-  const word = target.operator.includes(">") ? "lower" : "higher";
+  // Operators arrive as Unicode (≥, >); a looser comparator for a floor is a lower limit.
+  const word = /[>≥]/.test(target.operator) ? "lower" : "higher";
   const values = [targetValue, ...plotted.map((r) => r.criterion.value_norm)];
   const pad = Math.max(0.5, (Math.max(...values) - Math.min(...values)) * 0.2);
   const lo = Math.min(...values) - pad;
