@@ -20,3 +20,6 @@ data/investigations/
 
 # not ours to redistribute
 Regeneron starter-kit/
+
+# the Next.js app deploys separately (Vercel); the fallback export is built into web-next/out by hand
+web-next/

@@ -1,13 +1,17 @@
-"""Pre-warm the document and review caches for the demo trials.
+"""Pre-warm the document, review and draft caches for the demo trials.
 
     python -m scripts.prewarm NCT03409614 NCT02578680 NCT03088540 NCT02819518
     python -m scripts.prewarm --if-missing ...   # container start: skip trials whose review is cached
+    python -m scripts.prewarm --drafts ...       # also build the authoring-mode draft presets
 
 1. Fetch each target's registry record and protocol PDF, the FDA guidances and the NHANES files in a
    thread pool of 4 (at most 4 concurrent requests to ClinicalTrials.gov; 403/429 retried with backoff).
 2. Build reviews one at a time through `api.get_review` (same cache files the app reads); the first
    trial also gets `as_of="none"`.
 3. If `trialforge.graph` exists, build each review's graph and print `validate_graph` results.
+4. With `--drafts`, after the reviews: build each `trialforge.draft.PRESETS` entry through `get_or_draft`
+   (cache first; presets are exempt from the public cold cap) and print seconds per preset. Skipped with a
+   message when `trialforge.draft` is not installed.
 
 Prints classification counts and wall time per trial. Always exits 0 (a build without network falls back
 to the startup prewarm); failures are printed as FAILED lines.
@@ -15,6 +19,7 @@ to the startup prewarm); failures are printed as FAILED lines.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import sys
 import time
 from collections import Counter
@@ -109,25 +114,58 @@ def build_reviews(ncts: list[str], if_missing: bool) -> list[str]:
     return failed
 
 
+def build_drafts() -> list[str]:
+    if importlib.util.find_spec("trialforge.draft") is None:
+        print("prewarm: drafts skipped (trialforge.draft not installed)")
+        return []
+    from trialforge import draft  # imported after build_reviews: it reads the EL3 review cache at import
+
+    print("prewarm: draft presets one at a time", flush=True)
+    failed = []
+    for pid, p in draft.PRESETS.items():
+        t0 = time.time()
+        try:
+            d = _retry(draft.get_or_draft, p["idea"], tuple(p.get("exclude", ())), True)
+        except Exception as e:  # noqa: BLE001
+            failed.append(f"draft/{pid}")
+            print(f"  FAILED draft {pid}: {type(e).__name__}: {e}", flush=True)
+            continue
+        if d["status"] == "retrieval_failed":  # get_or_draft does not cache it
+            failed.append(f"draft/{pid}")
+            print(f"  FAILED draft {pid}: status retrieval_failed, not cached {time.time() - t0:.1f} s", flush=True)
+            continue
+        print(f"  draft {pid} {d['draft_id']}: status {d['status']} | {len(d['criteria'])} criteria | "
+              f"cached {'yes' if d['summary'].get('cached') else 'no'} | {time.time() - t0:.1f} s", flush=True)
+    return failed
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("ncts", nargs="*", default=DEMO_NCTS)
     ap.add_argument("--if-missing", action="store_true", help="skip trials whose review cache exists")
+    ap.add_argument("--drafts", action="store_true", help="also build the authoring-mode draft presets")
     a = ap.parse_args(argv)
     ncts = [n.strip().upper() for n in a.ncts]
     t0 = time.time()
+    todo = ncts
     if a.if_missing:
         from trialforge import api
 
         todo = [n for i, n in enumerate(ncts) if not all((api.REVIEW_CACHE / f"{n}_{s}.json").exists() for s in (["auto", "none"] if i == 0 else ["auto"]))]
-        if not todo:
+        if not todo and not a.drafts:
             print(f"prewarm: all {len(ncts)} reviews cached; nothing to do")
             return 0
-    print(f"prewarm: documents for {ncts} ({WORKERS} workers)", flush=True)
-    f1 = fetch_documents(ncts)
-    print(f"prewarm: documents done in {time.time() - t0:.1f} s; reviews one at a time", flush=True)
-    f2 = build_reviews(ncts, a.if_missing)
-    print(f"prewarm: total {time.time() - t0:.1f} s; failed: {f1 + f2 or 'none'}")
+    failed = []
+    if todo:
+        print(f"prewarm: documents for {ncts} ({WORKERS} workers)", flush=True)
+        failed += fetch_documents(ncts)
+        print(f"prewarm: documents done in {time.time() - t0:.1f} s; reviews one at a time", flush=True)
+        failed += build_reviews(ncts, a.if_missing)
+    else:
+        print(f"prewarm: all {len(ncts)} reviews cached")
+    if a.drafts:
+        failed += build_drafts()
+    print(f"prewarm: total {time.time() - t0:.1f} s; failed: {failed or 'none'}")
     return 0
 
 

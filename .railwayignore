@@ -1,0 +1,36 @@
+# `railway up --no-gitignore` ships the gitignored data/ caches (reviews, drafts, documents); this file is then
+# the only filter, so it must keep every secret out. Never list data/reviews/ or data/drafts/ here.
+
+# secrets and local environments (only .env.example may be uploaded)
+.env
+.env.*
+!.env.example
+.venv/
+*.pem
+.chalk.yml
+.git/
+
+# the Next.js app deploys separately (Vercel)
+web-next/
+
+# per-deployment state
+data/decisions/
+data/investigations/
+
+# generated Chalk eval bundles (gitignored; they embed protocol text)
+chalk_project/eval_dataset.jsonl
+chalk_project/investigator_dataset.jsonl
+chalk_project/trialforge_chalk_eval.py
+chalk_project/protocolos_investigator_eval.py
+
+# tooling and local state
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+.vscode/
+.zed/
+.helix/
+
+# not ours to redistribute
+Regeneron starter-kit/
