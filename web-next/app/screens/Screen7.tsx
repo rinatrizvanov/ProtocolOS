@@ -1,10 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { getPacket, saveDecision, type DecisionKey, type Packet, type Selection } from "../../lib/api";
+import { DECISION_REASONS, encodeReason, parseReason, type ReasonKey } from "@/lib/contracts";
 import { Failed, Frame } from "../components/Frame";
 
 type PacketItem = Packet["items"][number];
+
+const NOTE_MAX = 900;
 
 const CHOICES: { key: DecisionKey; label: string; primary: boolean }[] = [
   { key: "needs_medical_review", label: "Needs medical review", primary: true },
@@ -12,13 +15,31 @@ const CHOICES: { key: DecisionKey; label: string; primary: boolean }[] = [
   { key: "defer", label: "Need more evidence", primary: false },
 ];
 
+const focusRing = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
+
 function SavedLine({ item }: { item: PacketItem | undefined }) {
   if (!item?.decision) return <p className="text-lg text-muted">No decision recorded yet.</p>;
-  const { label, reviewer, recorded_at } = item.decision;
+  const { label, reviewer, recorded_at, reason } = item.decision;
+  const parsed = parseReason(reason);
+  const reasonLabel = parsed.key ? DECISION_REASONS.find((r) => r.key === parsed.key)?.label : null;
   return (
-    <p data-testid="saved-decision" className="text-lg text-ink">
-      {item.requirement.label} {item.requirement.threshold}: <span className="font-semibold">{label}</span>, {reviewer}, {recorded_at}
-    </p>
+    <div data-testid="saved-decision" className="flex flex-col gap-1">
+      <p className="text-lg text-ink">
+        {item.requirement.label} {item.requirement.threshold}: <span className="font-semibold">{label}</span>, {reviewer},{" "}
+        <span className="tabular-nums">{recorded_at}</span>
+      </p>
+      <p className="text-ink">
+        {reasonLabel ? (
+          <>
+            Reason: <span className="font-medium">{reasonLabel}</span>
+          </>
+        ) : parsed.note ? null : (
+          <span className="text-muted">No reason given</span>
+        )}
+        {parsed.note ? <span className="text-muted">{reasonLabel ? " / " : ""}Note: {parsed.note}</span> : null}
+      </p>
+      <p className="text-sm text-muted">Saved in the review packet.</p>
+    </div>
   );
 }
 
@@ -27,9 +48,9 @@ export default function Screen7({ nct, criterionId, detailed = false }: Selectio
   const [packet, setPacket] = useState<Packet | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<DecisionKey | null>(null);
-
-  const [comment, setComment] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [reason, setReason] = useState<ReasonKey | null>(null);
+  const [note, setNote] = useState("");
+  const [noteError, setNoteError] = useState(false);
 
   const refresh = useCallback(
     () =>
@@ -44,12 +65,19 @@ export default function Screen7({ nct, criterionId, detailed = false }: Selectio
     void refresh();
   }, [refresh]);
 
+  const item = packet?.items.find((entry) => entry.criterion_id === criterionId);
+  const noteRequired = reason === "other";
+
   const decide = async (key: DecisionKey) => {
+    if (noteRequired && !note.trim()) {
+      setNoteError(true);
+      return;
+    }
     setSaving(key);
     setError(null);
-    setSubmitted(false);
     try {
-      await saveDecision(nct, criterionId, key, "Recorded from the demo", "Demo reviewer");
+      const text = reason ? encodeReason(reason, note) : note.trim();
+      await saveDecision(nct, criterionId, key, text, "Demo reviewer");
       await refresh();
     } catch (err: unknown) {
       console.error(err);
@@ -59,28 +87,6 @@ export default function Screen7({ nct, criterionId, detailed = false }: Selectio
     }
   };
 
-  const item = packet?.items.find((entry) => entry.criterion_id === criterionId);
-
-  // The comment rides on the decision already recorded: it is re-saved as that decision's reason.
-  const submitFeedback = async (e: FormEvent) => {
-    e.preventDefault();
-    const current = item?.decision;
-    const text = comment.trim();
-    if (!current || !text) return;
-    setSaving(current.decision);
-    setError(null);
-    try {
-      await saveDecision(nct, criterionId, current.decision, text, "Demo reviewer");
-      await refresh();
-      setComment("");
-      setSubmitted(true);
-    } catch (err: unknown) {
-      console.error(err);
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setSaving(null);
-    }
-  };
   const details = packet ? (
     <p className="tabular-nums">
       {Object.entries(packet.decision_summary)
@@ -91,66 +97,88 @@ export default function Screen7({ nct, criterionId, detailed = false }: Selectio
 
   return (
     <Frame headline="The team decides." caption="ProtocolOS prepares the rationale; the team decides." details={details}>
-      <div className="flex w-full max-w-3xl flex-col gap-10">
-        <div className="flex flex-wrap gap-4">
-          {CHOICES.map((choice) => (
-            <button
-              key={choice.key}
-              type="button"
-              data-testid={`decide-${choice.key}`}
-              disabled={saving !== null}
-              onClick={() => void decide(choice.key)}
-              className={`rounded-md border px-6 py-4 text-lg transition-colors duration-150 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:opacity-60 ${
-                choice.primary ? "border-ink bg-ink text-paper" : "border-line bg-paper text-ink hover:border-ink"
-              }`}
-            >
-              {saving === choice.key ? "Saving…" : choice.label}
-            </button>
-          ))}
+      <div className="flex w-full max-w-3xl flex-col gap-8">
+        <fieldset className="flex flex-col gap-3">
+          <legend className="mb-2 text-sm font-medium text-ink">Reason for the decision</legend>
+          <div className="flex flex-wrap gap-2">
+            {DECISION_REASONS.map((r) => {
+              const on = reason === r.key;
+              return (
+                <button
+                  key={r.key}
+                  type="button"
+                  data-testid={`reason-${r.key}`}
+                  aria-pressed={on}
+                  onClick={() => {
+                    setReason(on ? null : r.key);
+                    setNoteError(false);
+                  }}
+                  className={`rounded-full border px-4 py-2 text-sm transition-colors duration-150 ${focusRing} ${
+                    on ? "border-ink bg-ink text-paper" : "border-line bg-paper text-ink hover:border-ink"
+                  }`}
+                >
+                  {r.label}
+                </button>
+              );
+            })}
+          </div>
+          <label htmlFor="decision-note" className="mt-2 text-sm text-ink">
+            Note (saved in the review packet)
+            {noteRequired ? <span className="text-muted"> - required for Other</span> : <span className="text-muted"> - optional</span>}
+          </label>
+          <textarea
+            id="decision-note"
+            data-testid="decision-note"
+            rows={2}
+            maxLength={NOTE_MAX}
+            required={noteRequired}
+            aria-invalid={noteError || undefined}
+            aria-describedby="decision-note-help"
+            value={note}
+            onChange={(e) => {
+              setNote(e.target.value.slice(0, NOTE_MAX));
+              if (e.target.value.trim()) setNoteError(false);
+            }}
+            className={`rounded-md border bg-paper px-3 py-2 text-ink ${focusRing} ${noteError ? "border-verdict" : "border-line"}`}
+          />
+          <p id="decision-note-help" className={`text-sm ${noteError ? "text-verdict" : "text-muted"}`}>
+            {noteError ? "Add a note to explain Other. " : null}
+            <span className="tabular-nums">
+              {note.length}/{NOTE_MAX}
+            </span>
+          </p>
+        </fieldset>
+        <div className="flex flex-col gap-3">
+          <p className="text-sm font-medium text-ink">Decision</p>
+          <div className="flex flex-wrap gap-4">
+            {CHOICES.map((choice) => (
+              <button
+                key={choice.key}
+                type="button"
+                data-testid={`decide-${choice.key}`}
+                disabled={saving !== null}
+                onClick={() => void decide(choice.key)}
+                className={`rounded-md border px-6 py-4 text-lg transition-colors duration-150 ${focusRing} disabled:opacity-60 ${
+                  choice.primary ? "border-ink bg-ink text-paper" : "border-line bg-paper text-ink hover:border-ink"
+                }`}
+              >
+                {saving === choice.key ? "Saving…" : choice.label}
+              </button>
+            ))}
+          </div>
         </div>
-        {error ? <Failed message={error} /> : packet ? <SavedLine item={item} /> : <p className="text-lg text-muted">Loading packet</p>}
-        {item?.decision ? (
-          <form onSubmit={submitFeedback} className="flex flex-col gap-2">
-            <label htmlFor="feedback" className="text-sm text-ink">
-              Comment for ProtocolOS
-            </label>
-            <textarea
-              id="feedback"
-              data-testid="feedback-input"
-              rows={3}
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Why this decision? What did ProtocolOS miss?"
-              className="rounded-md border border-line bg-paper px-3 py-2 text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
-            />
-            <button
-              type="submit"
-              data-testid="feedback-submit"
-              disabled={!comment.trim() || saving !== null}
-              className="self-start rounded-md border border-ink px-5 py-2 text-ink transition-colors duration-150 hover:bg-line disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-            >
-              Submit
-            </button>
-          </form>
-        ) : null}
+        <div aria-live="polite">
+          {error ? <Failed message={error} /> : packet ? <SavedLine item={item} /> : <p className="text-lg text-muted">Loading packet</p>}
+        </div>
         {detailed ? (
           <a
             href={`/api/packet/${encodeURIComponent(nct)}?format=md`}
             data-testid="export-packet"
-            className="self-start rounded-md border border-ink px-5 py-2 text-ink transition-colors duration-150 hover:bg-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+            className={`self-start rounded-md border border-ink px-5 py-2 text-ink transition-colors duration-150 hover:bg-line ${focusRing}`}
           >
             Export review packet
           </a>
         ) : null}
-        <div aria-live="polite">
-          {submitted && item?.decision ? (
-            <div data-testid="feedback-submitted" className="flex flex-col gap-1">
-              <p className="font-medium text-support">Saved with the decision</p>
-              <p className="text-ink">&ldquo;{item.decision.reason}&rdquo; ({item.decision.recorded_at})</p>
-              <p className="text-sm text-muted">Stored in the review packet.</p>
-            </div>
-          ) : null}
-        </div>
       </div>
     </Frame>
   );
