@@ -2,15 +2,17 @@
 # Clean-clone check for ProtocolOS: clone, fresh venv (pip, no uv), cache documents, pytest, web-next npm ci + build.
 #   scripts/clean_clone.sh [source repo or URL] [branch]
 # Defaults: the GitHub repository, branch main (pass "$(pwd)" to check this checkout instead). Logs go to
-# /tmp/triallens-logs/v2/clean/.
+# /tmp/triallens-logs/v2/clean/. The clone (about 1 GB with venv and node_modules) is deleted at the end unless
+# KEEP=1. PYTHON picks the interpreter (default: python3.13, else python3).
 # Exits non-zero on the first failing step.
 set -euo pipefail
 SRC="${1:-https://github.com/rinatrizvanov/ProtocolOS.git}"
 BRANCH="${2:-main}"
-PY="${PYTHON:-/usr/local/bin/python3.13}"
+PY="${PYTHON:-$(command -v python3.13 || command -v python3)}"
 LOGS=/tmp/triallens-logs/v2/clean
 mkdir -p "$LOGS"
 WORK="$(mktemp -d /tmp/protocolos-clean.XXXXXX)"
+[ "${KEEP:-0}" = "1" ] || trap 'rm -rf "$WORK"' EXIT
 echo "clean clone of $SRC ($BRANCH) into $WORK; logs in $LOGS"
 
 step() { echo "== $1"; }
@@ -37,4 +39,4 @@ step "web-next npm ci + build"
 ( cd web-next && npm ci && npm run build ) > "$LOGS/web-next-build.txt" 2>&1 || { tail -n 30 "$LOGS/web-next-build.txt"; exit 1; }
 tail -n 5 "$LOGS/web-next-build.txt"
 
-echo "clean clone: all steps passed ($WORK/repo)"
+echo "clean clone: all steps passed ($WORK/repo$([ "${KEEP:-0}" = "1" ] || echo ", deleted"))"
