@@ -72,6 +72,7 @@ export interface GraphNode {
   type: string;
   label: string;
   epistemic?: string;
+  source?: { nct: string; page: number; quote: string; url: string };
   data: { retrospective?: boolean; issued?: string; citation?: string; [key: string]: unknown };
 }
 

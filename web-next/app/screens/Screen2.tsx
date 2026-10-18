@@ -23,11 +23,25 @@ function highlight(text: string, needle: string): ReactNode {
   );
 }
 
-function ProtocolDrawer({ row, onClose }: { row: Plotted; onClose: () => void }) {
+export function ProtocolDrawer({
+  nct,
+  page: pageNumber,
+  quote,
+  fallback,
+  title,
+  onClose,
+}: {
+  nct: string;
+  page: number;
+  quote: string;
+  fallback?: string;
+  title: string;
+  onClose: () => void;
+}) {
   const [page, setPage] = useState<{ status: "loading" } | { status: "error"; message: string } | { status: "ready"; data: ProtocolPage }>({ status: "loading" });
   useEffect(() => {
     let live = true;
-    getProtocolPage(row.nct_id, row.criterion.source.page).then(
+    getProtocolPage(nct, pageNumber).then(
       (data) => live && setPage({ status: "ready", data }),
       (err: unknown) => live && setPage({ status: "error", message: err instanceof Error ? err.message : String(err) }),
     );
@@ -37,14 +51,14 @@ function ProtocolDrawer({ row, onClose }: { row: Plotted; onClose: () => void })
       live = false;
       window.removeEventListener("keydown", onKey);
     };
-  }, [row, onClose]);
-  const needle = page.status === "ready" && page.data.text.includes(row.criterion.source.text) ? row.criterion.source.text : String(row.criterion.value_norm);
+  }, [nct, pageNumber, onClose]);
+  const needle = page.status === "ready" && page.data.text.includes(quote) ? quote : (fallback ?? quote);
 
   return (
     <aside role="dialog" aria-modal="true" aria-label="Protocol page" data-testid="protocol-drawer" className="fixed inset-y-0 right-0 z-20 flex w-full max-w-xl flex-col gap-3 border-l border-line bg-paper p-6 shadow-lg">
       <div className="flex items-center justify-between">
         <p className="text-xl font-semibold text-ink">
-          {row.acronym ?? row.nct_id}, page <span className="tabular-nums">{row.criterion.source.page}</span>
+          {title}, page <span className="tabular-nums">{pageNumber}</span>
         </p>
         <button type="button" onClick={onClose} className="rounded border border-line px-3 py-1 text-ink focus-visible:outline focus-visible:outline-2">
           Close
@@ -138,7 +152,16 @@ export default function Screen2({ nct, criterionId }: Selection) {
         })}
         <p className="absolute bottom-2 right-8 text-sm text-muted">{target.unit_norm ?? "g/dL"}</p>
       </div>
-      {open && <ProtocolDrawer row={open} onClose={closeDrawer} />}
+      {open && (
+        <ProtocolDrawer
+          nct={open.nct_id}
+          page={open.criterion.source.page}
+          quote={open.criterion.source.text}
+          fallback={String(open.criterion.value_norm)}
+          title={open.acronym ?? open.nct_id}
+          onClose={closeDrawer}
+        />
+      )}
     </Frame>
   );
 }

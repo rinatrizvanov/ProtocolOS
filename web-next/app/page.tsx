@@ -7,6 +7,7 @@ import { useApi } from "@/lib/useApi";
 import { Failed, Pending } from "./components/Frame";
 import Screen2 from "./screens/Screen2";
 import Screen3 from "./screens/Screen3";
+import Evidence from "./screens/Evidence";
 import Screen4 from "./screens/Screen4";
 import Screen5 from "./screens/Screen5";
 import Screen7 from "./screens/Screen7";
@@ -15,6 +16,7 @@ import Screen7 from "./screens/Screen7";
 const TABS = [
   { id: "compare", title: "Compare", render: (s: Selection) => <Screen2 {...s} /> },
   { id: "why", title: "Why", render: (s: Selection) => <Screen3 {...s} /> },
+  { id: "evidence", title: "Evidence", render: (s: Selection) => <Evidence {...s} /> },
   { id: "ask", title: "Ask", render: (s: Selection) => <Screen4 {...s} /> },
   { id: "challenge", title: "Challenge", render: (s: Selection) => <Screen5 nct={s.nct} />, onlyFor: NCT },
   { id: "decide", title: "Decide", render: (s: Selection) => <Screen7 {...s} /> },
