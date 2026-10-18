@@ -31,9 +31,9 @@ REPO = Path(__file__).resolve().parents[1]
 TABS = ("rationale", "compare", "ask", "verify", "decide")
 BANNED = re.compile(r"feedback loop|learns from|safe to|will increase enrol", re.I)
 EVIDENCE = re.compile(r"\bevidence\b", re.I)
-# Fixed plan terms: the classification "Insufficient evidence" and the structured decision reason "Prior evidence"
-# (DECISION_REASONS in web-next/lib/contracts.ts).
-ALLOWED_EVIDENCE = re.compile(r"insufficient evidence|prior evidence", re.I)
+# "Insufficient evidence" is the fixed classification. The Decide tab shows the stored reason "Prior evidence"
+# (DECISION_REASONS in web-next/lib/contracts.ts) as "Prior trial data", so it needs no exception here.
+ALLOWED_EVIDENCE = re.compile(r"insufficient evidence", re.I)
 
 results: list[tuple[str, str, str]] = []
 
