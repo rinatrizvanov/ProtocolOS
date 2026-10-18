@@ -14,17 +14,17 @@
   const EVIDENCE_TYPES = ["Passage", "CuratedFact", "ComparatorThreshold", "GuidancePassage"];
   // left -> right; Criterion sits with the protocol text it comes from
   const COLUMNS = [
-    { key: "protocol", title: "Protocol & regimen", types: ["Criterion", "CuratedFact", "Passage"], w: 175 },
-    { key: "comparators", title: "Comparable trials", types: ["ComparatorThreshold"], w: 165 },
-    { key: "fda", title: "FDA guidance", types: ["GuidancePassage"], w: 190 },
-    { key: "rules", title: "Score rules", types: ["ScoreRule"], w: 165 },
-    { key: "assessment", title: "Assessment", types: ["Assessment", "Recommendation", "MissingEvidence"], w: 180 },
-    { key: "classification", title: "Classification", types: ["Classification", "ReviewerDecision"], w: 140 },
+    { key: "protocol", title: "Protocol & regimen", types: ["Criterion", "CuratedFact", "Passage"], w: 196 },
+    { key: "comparators", title: "Comparable trials", types: ["ComparatorThreshold"], w: 188 },
+    { key: "fda", title: "FDA guidance", types: ["GuidancePassage", "GuidanceGroup"], w: 196 },
+    { key: "rules", title: "Score rules", types: ["ScoreRule"], w: 176 },
+    { key: "assessment", title: "Assessment & classification", types: ["Assessment", "Classification", "ReviewerDecision", "Recommendation", "MissingEvidence"], w: 206 },
   ];
-  // gaps after each column; the points labels sit in the gap before the assessment
-  const GAPS = [26, 26, 44, 112, 30];
-  const TYPE_ORDER = ["Criterion", "CuratedFact", "Passage", "ComparatorThreshold", "GuidancePassage", "ScoreRule",
-    "Assessment", "Recommendation", "MissingEvidence", "Classification", "ReviewerDecision"];
+  // gaps after each column; the score badges sit in the wide gap before the assessment
+  const GAPS = [30, 30, 40, 150];
+  const GROUP_ID = "__fda_general";
+  const TYPE_ORDER = ["Criterion", "CuratedFact", "Passage", "ComparatorThreshold", "GuidanceGroup", "GuidancePassage", "ScoreRule",
+    "Assessment", "Classification", "ReviewerDecision", "Recommendation", "MissingEvidence"];
   const EPISTEMIC = {
     source_fact: "verbatim source text",
     rule_inferred: "TrialLens rule (inferred)",
@@ -42,7 +42,8 @@
     specific_fda: "A criterion-specific FDA recommendation applies (+1 instead of +2 when the protocol already states a PK-based alternative).",
   };
 
-  const g = { key: null, nct: null, cid: null, data: null, sel: null, req: 0, seenSelected: null, view: "graph", inv: null, err: null, waitTimer: null };
+  const PANEL_HINT = `<div class="gp-empty"><div class="gp-empty-t">Select a node</div><div class="src">Its verbatim source, page link and connections appear here. Hover any node for its full text.</div></div>`;
+  const g = { key: null, nct: null, cid: null, data: null, sel: null, req: 0, seenSelected: null, view: "graph", inv: null, err: null, waitTimer: null, fdaOpen: false };
 
   // ---------------------------------------------------------------- helpers
   const byId = () => new Map((g.data?.nodes || []).map((n) => [n.id, n]));
@@ -55,6 +56,23 @@
   const reviewReady = () => !reviewLoading() && !!state.review && state.review.target?.study?.nct_id === state.nct;
   const mismatch = () => (g.data?.warnings || []).includes(`attribution_mismatch:${g.cid}`);
   const clsKeyOf = (c) => (String(c).startsWith("Review") ? "review" : String(c).startsWith("Evidence") ? "retain" : "insufficient");
+
+  // GuidancePassage nodes that add 0 points: every edge touching them is EVIDENCE_FOR without points, and the
+  // passage is not a criterion-specific recommendation. They are folded into one group node by default.
+  function generalFda() {
+    const nodes = g.data?.nodes || [], edges = g.data?.edges || [];
+    const out = nodes.filter((n) => n.type === "GuidancePassage" && n.data?.strength !== "specific" && (() => {
+      const es = edges.filter((e) => e.from === n.id || e.to === n.id);
+      return es.length > 0 && es.every((e) => e.type === "EVIDENCE_FOR" && !e.points);
+    })());
+    return out.length >= 2 ? out : [];
+  }
+  const issuedList = (ns) => [...new Set(ns.map((n) => n.data?.issued).filter(Boolean))].sort().reverse();
+  function groupText(ns) {
+    const retro = ns.length && ns.every((n) => n.data?.retrospective);
+    return `${ns.length} general passages · 0 points${retro ? " · retrospective" : ""}`;
+  }
+  const pageOf = (s) => s?.page || (String(s?.url || "").match(/#page=(\d+)/) || [])[1] || null;
 
   function wrap(text, per, lines) {
     const words = String(text ?? "").replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
@@ -76,9 +94,9 @@
       case "CuratedFact": return d.existence_only ? "Curated · existence only" : "Curated pharmacology";
       case "Passage": return `Protocol p.${n.source?.page ?? "?"}${d.value_specific ? " · value-specific" : ""}`;
       case "ComparatorThreshold": return `${human(d.direction || "comparator").replace(/^comparator /, "")} · ${d.coverage?.status || "?"} coverage`;
-      case "GuidancePassage": return `FDA ${d.strength || "general"}${d.retrospective ? " · retrospective" : ""}`;
+      case "GuidancePassage": return `FDA${d.strength === "specific" ? " specific" : ""}${d.retrospective ? " · retrospective" : ` · ${d.issued || ""}`}`;
       case "ScoreRule": return "Score rule";
-      case "Assessment": return `support ${d.scores?.support ?? "?"} · challenge ${d.scores?.challenge ?? "?"}`;
+      case "Assessment": return "Assessment · rule scores";
       case "Recommendation": return "Suggested review question";
       case "MissingEvidence": return "Missing evidence";
       case "Classification": return "Rule classification";
@@ -91,8 +109,9 @@
     const d = n.data || {};
     if (n.type === "Passage" || n.type === "GuidancePassage") return n.source?.quote || n.label;
     if (n.type === "CuratedFact") return d.summary || n.label;
-    if (n.type === "ScoreRule") return [human(d.group), pointsText(d.points, d.axis, d.group)];
+    if (n.type === "ScoreRule") return [human(d.group), mismatch() ? "points hidden" : `+${d.points ?? 0} ${d.axis || ""}`];
     if (n.type === "MissingEvidence") return d.text || n.label;
+    if (n.type === "Assessment") return [`support ${d.scores?.support ?? "?"} · challenge ${d.scores?.challenge ?? "?"}`];
     if (n.type === "Recommendation") return d.text || n.label;
     return n.label;
   }
@@ -125,9 +144,10 @@
         <div class="src g-intro">Which evidence drives this assessment, and where each piece comes from. Click a node for its source. Differences from comparable trials are review questions, not mistakes; the team decides.</div>
       </div>
       <div class="g-msg hidden" role="status"></div>
+      <section class="g-score card hidden" aria-label="Score breakdown"></section>
       <div class="g-body">
         <div class="g-canvas card"><div class="g-svgwrap"></div><div class="g-listwrap"></div>${legendHtml()}</div>
-        <aside id="graph-panel" class="card" aria-live="polite"><div class="src">Click a node to see its verbatim source, page link and connections.</div></aside>
+        <aside id="graph-panel" class="card" aria-live="polite">${PANEL_HINT}</aside>
       </div>
       <section class="g-inv card">
         <div class="g-inv-head"><h3>Ask about this assessment</h3>
@@ -162,18 +182,19 @@
     const b = r?.budget;
     const checks = r?.checks || [];
     const n = (res) => checks.filter((c) => c.result === res).length;
+    const tile = (v, l) => `<div class="sec-tile"><b>${esc(v)}</b><span>${esc(l)}</span></div>`;
     const budget = b
-      ? `tools ${b.used ?? 0}/${b.max_tool_calls ?? 4}, model calls ${b.used_model ?? 0}/${b.max_model_calls ?? 2}, ${num(r.elapsed_s ?? 0)} s`
-      : "budget: 4 tools, 2 model calls, 60 s per question";
+      ? tile(`${b.used ?? 0}/${b.max_tool_calls ?? 4}`, "tool calls") + tile(`${b.used_model ?? 0}/${b.max_model_calls ?? 2}`, "model calls") + tile(`${(+(r.elapsed_s ?? 0)).toFixed(1)} s`, "of 60 s")
+      : tile("4", "tool calls max") + tile("2", "model calls max") + tile("60 s", "per question");
     return `<h4>Agent safeguards</h4>
-      <div class="sec-budget">${esc(budget)}</div>
+      <div class="sec-budget">${budget}</div>
       <ul class="sec-list">
         <li>Fixed questions only; no free text reaches a model.</li>
         <li>Read-only whitelisted tools${r?.tools_used?.length ? `: ${esc(r.tools_used.join(", "))}` : ""}.</li>
         <li>Protocol, registry and FDA text: documents are data, never instructions.</li>
         <li>A model can only downgrade a flag; the classification is never changed by an answer.</li>
         <li class="sec-verifier">${r ? `verifier: ${n("pass")} checks passed${n("warn") ? `, ${n("warn")} warning${n("warn") === 1 ? "" : "s"}` : ""}${n("fail") ? `, ${n("fail")} failed` : ""}` : "verifier: runs on every answer"}</li>
-        <li>Model: <span data-model-status>${esc(modelStatus(r))}</span></li>
+        <li>Model: <span class="sec-model" data-model-status="${esc(modelStatus(r))}">${esc(modelStatus(r))}</span></li>
         ${r?.audit_id ? `<li>Audit record <code>${esc(r.audit_id)}</code> (one JSON line per investigation)</li>` : ""}
       </ul>`;
   }
@@ -249,7 +270,8 @@
     g.data = null; g.sel = null; g.inv = null;
     root.querySelector(".g-svgwrap").innerHTML = "";
     root.querySelector(".g-listwrap").innerHTML = "";
-    $("#graph-panel").innerHTML = `<div class="src">Click a node to see its verbatim source, page link and connections.</div>`;
+    $("#graph-panel").innerHTML = PANEL_HINT;
+    root.querySelector(".g-score").innerHTML = ""; root.querySelector(".g-score").classList.add("hidden");
     $("#inv-answer").dataset.state = "idle";
     $("#inv-answer").innerHTML = `<div class="src">Choose a question about this criterion.</div>`;
     $("#inv-security").innerHTML = securityHtml(null);
@@ -284,7 +306,54 @@
     if (noProtocol) setState("no-protocol", `No protocol PDF passage is available for this criterion: it was read from registry text, so there are no protocol page links. Comparator and FDA evidence are still shown.${notes.length ? "<br>" + notes.join("<br>") : ""}`, "warn");
     else if (!hasEvidence) setState("empty", `No evidence nodes were recorded for this criterion, so no points are attributed. The classification and missing-evidence items are still shown; a criterion with no comparable precedent is "Insufficient evidence", never "retain".${notes.length ? "<br>" + notes.join("<br>") : ""}`, "warn");
     else setState("ready", notes.join("<br>"), "warn");
+    renderScore();
     renderView();
+  }
+
+  function renderScore() {
+    const el = root.querySelector(".g-score");
+    const nodes = g.data.nodes || [], edges = g.data.edges || [];
+    const by = byId();
+    const assess = nodes.find((n) => n.type === "Assessment");
+    if (!assess) { el.classList.add("hidden"); return; }
+    const sc = assess.data?.scores || {};
+    const cls = nodes.find((n) => n.type === "Classification");
+    const rules = edges.filter((e) => e.type === "RULE_SCORES" && e.to === assess.id);
+    const pill = cls ? `<span class="cls ${clsKeyOf(cls.label)}">${esc(cls.label)}</span>` : "";
+    const head = `<div class="gs-head"><h3>Score breakdown</h3>${pill}<span class="gs-total">support <b>${esc(sc.support ?? "?")}</b> · challenge <b>${esc(sc.challenge ?? "?")}</b></span></div>`;
+    if (mismatch()) {
+      el.innerHTML = `${head}<div class="gs-mismatch">attribution_mismatch:${esc(g.cid)}: the per-rule points derived from the evidence do not add up to the stored scores, so no points are attributed to individual evidence here.</div>`;
+      el.classList.remove("hidden");
+      return;
+    }
+    const rows = rules.map((e) => {
+      const rule = by.get(e.from) || {};
+      const d = rule.data || {};
+      const members = (d.members || []).map((m) => by.get(m)).filter(Boolean);
+      let detail = "";
+      const cmp = members.filter((m) => m.type === "ComparatorThreshold");
+      if (cmp.length) {
+        const cov = [...new Set(cmp.map((m) => m.data?.coverage?.status).filter(Boolean))];
+        detail = `${cmp.length} comparable trial${cmp.length === 1 ? "" : "s"} (${cmp.map((m) => esc(m.data?.acronym || m.data?.nct_id || m.label)).join(", ")}) · ${esc(cov.join("/") || "?")} regimen coverage${d.group === "looser_comparators" ? " · counted once as a group (group max)" : ""}`;
+      } else if (members.some((m) => m.type === "CuratedFact")) {
+        detail = `${members.length} curated pharmacology fact${members.length === 1 ? "" : "s"}${e.scope === "existence_of_threshold" ? " · existence of a threshold only, never its value" : ""}`;
+      } else detail = `${members.length} evidence item${members.length === 1 ? "" : "s"}`;
+      const [main] = badgeParts(e);
+      return `<li class="gs-row ${esc(d.axis || e.axis || "")}"><button type="button" class="gs-pts" data-goto="${esc(e.from)}">${esc(main)}</button><span class="gs-name">${esc(human(d.group || e.group))}</span><span class="gs-detail">${detail}</span></li>`;
+    });
+    const fda = generalFda();
+    if (fda.length) rows.push(`<li class="gs-row context"><button type="button" class="gs-pts" data-toggle-fda>0</button><span class="gs-name">general FDA passages</span><span class="gs-detail">${fda.length} passages, issued ${esc(issuedList(fda).join(", "))}${fda.every((n) => n.data?.retrospective) ? " · retrospective (issued after this trial started)" : ""} · shown for review</span></li>`);
+    const ruleIds = new Set(rules.map((e) => e.from));
+    const fdaIds = new Set(fda.map((n) => n.id));
+    const ctx = edges.filter((e) => e.to === assess.id && e.type === "EVIDENCE_FOR" && !e.points && !fdaIds.has(e.from) && !ruleIds.has(e.from));
+    if (ctx.length) rows.push(`<li class="gs-row context"><span class="gs-pts">0</span><span class="gs-name">other context</span><span class="gs-detail">${ctx.length} item${ctx.length === 1 ? "" : "s"} (${ctx.map((e) => esc(short(by.get(e.from)?.label || e.from, 40))).join("; ")})</span></li>`);
+    const sum = (ax) => rules.filter((e) => e.axis === ax).reduce((t, e) => t + (+e.points || 0), 0);
+    const ok = sum("support") === +sc.support && sum("challenge") === +sc.challenge;
+    el.innerHTML = `${head}<ul class="gs-rows">${rows.join("") || `<li class="src">No score rule fired for this criterion.</li>`}</ul>
+      <div class="gs-foot">Total from the rules: support ${sum("support")} · challenge ${sum("challenge")} ${ok ? "<span class='gs-ok'>matches the stored assessment</span>" : "<span class='gs-bad'>does not match the stored assessment</span>"}. Points come only from score rules; the team decides.</div>`;
+    el.classList.remove("hidden");
+    el.querySelectorAll("[data-goto]").forEach((b) => b.addEventListener("click", () => { if (g.view !== "graph") { g.view = "graph"; renderView(); } selectNode(b.dataset.goto); }));
+    el.querySelector("[data-toggle-fda]")?.addEventListener("click", () => { g.fdaOpen = !g.fdaOpen; renderView(); });
   }
 
   function renderView() {
@@ -305,85 +374,156 @@
     if (g.sel) selectNode(g.sel, false);
   }
 
-  function layout() {
-    const nodes = [...(g.data.nodes || [])];
+  function layout(collapse = true) {
+    const folded = collapse && !g.fdaOpen ? generalFda() : [];
+    const foldedIds = new Set(folded.map((n) => n.id));
+    const nodes = (g.data.nodes || []).filter((n) => !foldedIds.has(n.id));
+    const general = generalFda();
+    if (collapse && general.length) nodes.push({ id: GROUP_ID, type: "GuidanceGroup", label: "FDA guidance", members: general, open: g.fdaOpen });
     const order = (n) => { const i = TYPE_ORDER.indexOf(n.type); return i < 0 ? 99 : i; };
     nodes.sort((a, b) => order(a) - order(b) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     const cols = COLUMNS.map((c) => ({ ...c, nodes: [] }));
-    const other = { key: "other", title: "Other", types: [], w: 180, nodes: [] };
+    const other = { key: "other", title: "Other", types: [], w: 190, nodes: [] };
     nodes.forEach((n) => (cols.find((c) => c.types.includes(n.type)) || other).nodes.push(n));
     if (other.nodes.length) cols.push(other);
-    const H = (n) => (n.type === "GuidancePassage" ? 44 : 58);
-    const GAP = 10, TOP = 34;
-    const colGap = (c) => (c.key === "rules" ? 30 : GAP); // room for the group label above each rule
-    let x = 10, lastGap = 0;
+    const H = (n) => n.type === "GuidanceGroup" ? (n.open ? 46 : 84) : n.type === "GuidancePassage" ? 52 : n.type === "Classification" ? 44 : 68;
+    const GAP = 14, TOP = 40;
+    const colGap = (c) => (c.key === "rules" ? 36 : GAP); // room for the group label above each rule
+    let x = 8, lastGap = 0;
     const pos = new Map();
-    const heights = cols.map((c) => c.nodes.reduce((s, n) => s + H(n) + colGap(c), 0));
-    const maxH = Math.max(120, ...heights);
+    const heights = cols.map((c) => c.nodes.reduce((s, n) => s + H(n) + colGap(c), 0) - (c.nodes.length ? colGap(c) : 0));
+    // evidence columns are centred on one line; the Assessment node sits on that line and the
+    // classification, recommendation and missing-evidence nodes hang below it
+    const isA = (c) => c.key === "assessment";
+    const evH = Math.max(140, ...cols.filter((c) => !isA(c)).map((c, i) => heights[cols.indexOf(c)]));
+    const aCol = cols.find(isA);
+    const aFirst = aCol?.nodes[0];
+    const aTop = aFirst ? Math.max(0, evH / 2 - H(aFirst) / 2) : 0;
+    const maxH = Math.max(evH, aCol ? aTop + heights[cols.indexOf(aCol)] : 0);
     cols.forEach((c, i) => {
       c.x = x;
       if (!c.nodes.length) return; // empty columns take no space
-      let y = TOP + (maxH - heights[i]) / 2;
-      c.nodes.forEach((n) => { pos.set(n.id, { x, y, w: c.w, h: H(n), col: c.key }); y += H(n) + colGap(c); });
+      let y = TOP + (isA(c) ? aTop : c.key === "fda" && g.fdaOpen ? 0 : (evH - heights[i]) / 2);
+      c.nodes.forEach((n) => { pos.set(n.id, { x, y, w: c.w, h: H(n), col: c.key, node: n }); y += H(n) + colGap(c); });
       lastGap = GAPS[i] ?? 40;
       x += c.w + lastGap;
     });
-    return { cols, pos, width: x - lastGap + 20, height: TOP + maxH + 10 };
+    return { cols, pos, foldedIds, width: x - lastGap + 16, height: TOP + maxH + 14 };
+  }
+
+  function badgeParts(e) {
+    if (mismatch()) return ["points hidden", ""];
+    const sub = e.scope === "existence_of_threshold" ? "existence only" : e.group === "looser_comparators" ? "group max" : "";
+    return [`+${e.points ?? 0} ${e.axis || ""}`.trim(), sub];
   }
 
   function svgHtml() {
     const L = layout();
     const nodes = byId();
-    const edges = (g.data.edges || []).filter((e) => L.pos.has(e.from) && L.pos.has(e.to));
-    const heads = L.cols.map((c) => c.nodes.length ? `<text class="g-colhead" x="${c.x}" y="16">${esc(c.title)}</text>` : "").join("");
+    // edges from folded FDA passages are drawn once, from the group node
+    let groupEdge = null;
+    const edges = [];
+    (g.data.edges || []).forEach((e) => {
+      if (L.foldedIds.has(e.from)) { if (!groupEdge && L.pos.has(e.to)) { groupEdge = { id: "__fda_general_edge", type: "EVIDENCE_FOR", from: GROUP_ID, to: e.to, stance: "context", points: 0, synthetic: true }; edges.push(groupEdge); } return; }
+      if (L.pos.has(e.from) && L.pos.has(e.to)) edges.push(e);
+    });
+    // spread the ports where several edges enter or leave the same side of a node
+    const ports = new Map();
+    const portKey = (id, side) => id + "|" + side;
+    edges.forEach((e) => {
+      const a = L.pos.get(e.from), b = L.pos.get(e.to);
+      if (a.col === b.col) return;
+      const fwd = a.x < b.x;
+      [[portKey(e.to, fwd ? "L" : "R"), a.y + a.h / 2], [portKey(e.from, fwd ? "R" : "L"), b.y + b.h / 2]].forEach(([k, oy]) => {
+        if (!ports.has(k)) ports.set(k, []);
+        ports.get(k).push({ e, oy });
+      });
+    });
+    const portY = (id, side, e) => {
+      const p = L.pos.get(id), list = (ports.get(portKey(id, side)) || []).slice().sort((u, v) => u.oy - v.oy);
+      const i = list.findIndex((t) => t.e === e);
+      if (list.length < 2 || i < 0) return p.y + p.h / 2;
+      const pad = Math.min(14, p.h / 4);
+      return p.y + pad + ((p.h - 2 * pad) * i) / (list.length - 1);
+    };
+    const heads = L.cols.map((c) => c.nodes.length ? `<text class="g-colhead" x="${c.x + 2}" y="18">${esc(c.title)}</text>` : "").join("");
     const groupLabelled = new Set();
+    const badges = [];
     const edgeSvg = edges.map((e) => {
       const a = L.pos.get(e.from), b = L.pos.get(e.to);
       let x1, y1, x2, y2, d;
-      if (a.col === b.col) { // link inside a column (assessment -> missing evidence): loop out on the left
-        x1 = a.x; y1 = a.y + a.h / 2; x2 = b.x; y2 = b.y + b.h / 2;
-        const bulge = Math.min(26, 10 + Math.abs(y2 - y1) / 12);
-        d = `M${x1},${y1} C${x1 - bulge},${y1} ${x2 - bulge},${y2} ${x2},${y2}`;
+      if (a.col === b.col) { // link inside a column (assessment -> classification, missing evidence): loop out on the right
+        x1 = a.x + a.w; y1 = a.y + a.h / 2; x2 = b.x + b.w; y2 = b.y + b.h / 2;
+        const bulge = Math.min(30, 12 + Math.abs(y2 - y1) / 10);
+        d = `M${x1},${y1} C${x1 + bulge},${y1} ${x2 + bulge},${y2} ${x2},${y2}`;
       } else {
         const fwd = a.x < b.x;
-        x1 = fwd ? a.x + a.w : a.x; y1 = a.y + a.h / 2; x2 = fwd ? b.x : b.x + b.w; y2 = b.y + b.h / 2;
+        x1 = fwd ? a.x + a.w : a.x; y1 = portY(e.from, fwd ? "R" : "L", e); x2 = fwd ? b.x : b.x + b.w; y2 = portY(e.to, fwd ? "L" : "R", e);
         const dx = Math.max(40, Math.abs(x2 - x1) / 2) * (fwd ? 1 : -1);
         d = `M${x1},${y1} C${x1 + dx},${y1} ${x2 - dx},${y2} ${x2},${y2}`;
       }
-      const lbl = edgeLabel(e);
+      if (e.type === "RULE_SCORES") {
+        const [main, sub] = badgeParts(e);
+        const w = Math.max(main.length, sub.length) * 7.2 + 18, h = sub ? 36 : 22;
+        const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2;
+        badges.push(`<g class="g-badge ${esc(e.axis || "")}" data-badge-for="${esc(e.id)}"><rect x="${cx - w / 2}" y="${cy - h / 2}" width="${w}" height="${h}" rx="${h / 2 > 11 ? 9 : 11}"/>
+          <text class="b-main" x="${cx}" y="${cy + (sub ? -3 : 4.5)}">${esc(main)}</text>${sub ? `<text class="b-sub" x="${cx}" y="${cy + 12}">${esc(sub)}</text>` : ""}</g>`);
+      }
       let txt = "";
-      if (lbl && e.type === "RULE_SCORES") {
-        const [main, paren] = lbl.split(/ (?=\()/);
-        txt = `<text class="g-elabel pts ${esc(e.axis || "")}" x="${x1 + 6}" y="${y1 - (paren ? 17 : 5)}">${esc(main)}${paren ? ` <tspan x="${x1 + 6}" dy="12">${esc(paren)}</tspan>` : ""}</text>`;
-      }
-      else if (lbl && e.type === "EVIDENCE_IN_RULE" && !groupLabelled.has(e.to + "|" + lbl)) {
+      const lbl = edgeLabel(e);
+      if (lbl && e.type === "EVIDENCE_IN_RULE" && !groupLabelled.has(e.to + "|" + lbl)) {
         groupLabelled.add(e.to + "|" + lbl); // members converge on the rule node: label the group once
-        txt = `<text class="g-elabel grp${e.scope ? " scope" : ""}" x="${b.x + 2}" y="${b.y - 5}">${esc(lbl)}</text>`;
+        txt = `<text class="g-elabel grp${e.scope ? " scope" : ""}" x="${b.x + 2}" y="${b.y - 7}">${esc(lbl)}${e.scope ? "" : ""}</text>`;
       }
-      const cls = ["gedge", `t-${e.type}`, `s-${e.stance || "none"}`, e.points ? "has-pts" : "", e.scope ? "scoped" : ""].join(" ");
-      const title = `${nodes.get(e.from)?.label || e.from} → ${nodes.get(e.to)?.label || e.to}: ${human(e.type)}${e.stance ? " · " + e.stance : ""}${e.group ? " · " + human(e.group) : ""}${e.scope ? " · " + human(e.scope) : ""}${e.type === "RULE_SCORES" && !mismatch() ? " · " + (e.points ?? 0) + " points" : ""}`;
-      return `<g class="${cls}" data-edge-id="${esc(e.id)}" data-from="${esc(e.from)}" data-to="${esc(e.to)}"><title>${esc(title)}</title><path d="${d}"/>${txt}</g>`;
+      const cls = ["gedge", `t-${e.type}`, `s-${e.stance || "none"}`, e.points ? "has-pts" : "", e.scope ? "scoped" : "", e.synthetic ? "synthetic" : ""].join(" ");
+      const fromLabel = e.from === GROUP_ID ? `FDA guidance (${generalFda().length} general passages)` : nodes.get(e.from)?.label || e.from;
+      const title = `${fromLabel} → ${nodes.get(e.to)?.label || e.to}: ${human(e.type)}${e.stance ? " · " + e.stance : ""}${e.group ? " · " + human(e.group) : ""}${e.scope ? " · " + human(e.scope) : ""}${e.type === "RULE_SCORES" && !mismatch() ? " · " + (e.points ?? 0) + " points" : " · 0 points"}`;
+      const idAttr = e.synthetic ? `data-synthetic-edge="${esc(e.id)}"` : `data-edge-id="${esc(e.id)}"`;
+      return `<g class="${cls}" ${idAttr} data-from="${esc(e.from)}" data-to="${esc(e.to)}"><title>${esc(title)}</title><path d="${d}"/>${txt}</g>`;
     }).join("");
     const nodeSvg = [...L.pos.entries()].map(([id, p]) => {
-      const n = nodes.get(id);
+      const n = p.node;
+      if (n.type === "GuidanceGroup") {
+        const ms = n.members;
+        const iss = issuedList(ms);
+        const tip = `${groupText(ms)}. General FDA principles, issued ${iss.join(", ")}, after this trial started. Shown for review; they add 0 points. Click to ${n.open ? "fold them into one node" : "show each passage"}.`;
+        return `<g class="ggroup${n.open ? " open" : ""}" data-group-id="${GROUP_ID}" data-near-id="${GROUP_ID}" tabindex="0" role="button" aria-expanded="${n.open}" aria-label="${esc(tip)}">
+          <title>${esc(tip)}</title>
+          ${n.open ? "" : `<rect class="stack2" x="${p.x + 6}" y="${p.y + 6}" width="${p.w}" height="${p.h}" rx="8"/><rect class="stack1" x="${p.x + 3}" y="${p.y + 3}" width="${p.w}" height="${p.h}" rx="8"/>`}
+          <rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="8"/>
+          <text class="cap" x="${p.x + 10}" y="${p.y + 17}">FDA guidance · general</text>
+          ${n.open ? `<text class="lbl" x="${p.x + 10}" y="${p.y + 35}">${ms.length} general passages · fold ▴</text>`
+            : `<text class="lbl" x="${p.x + 10}" y="${p.y + 37}">${ms.length} general passages</text>
+               <text class="lbl strong" x="${p.x + 10}" y="${p.y + 55}">0 points${ms.every((m) => m.data?.retrospective) ? " · retrospective" : ""}</text>
+               <text class="hint" x="${p.x + 10}" y="${p.y + 73}">Show each passage ▾</text>`}
+        </g>`;
+      }
       const t = nodeText(n);
-      const lines = Array.isArray(t) ? t : wrap(t, Math.floor((p.w - 14) / 6.4), n.type === "GuidancePassage" ? 1 : 2);
+      const per = Math.floor((p.w - 18) / 7.1);
+      const lines = Array.isArray(t) ? t.map((l) => short(l, per)) : wrap(t, per, n.type === "GuidancePassage" || n.type === "Classification" ? 1 : 2);
       const extra = n.type === "Classification" ? ` k-${clsKeyOf(n.label)}` : "";
-      const double = n.epistemic === "human" ? `<rect class="inner" x="${p.x + 3}" y="${p.y + 3}" width="${p.w - 6}" height="${p.h - 6}" rx="4"/>` : "";
+      const double = n.epistemic === "human" ? `<rect class="inner" x="${p.x + 3}" y="${p.y + 3}" width="${p.w - 6}" height="${p.h - 6}" rx="5"/>` : "";
+      const full = [].concat(t).join(": ");
+      const tip = `${caption(n)}\n${n.label || id}${full && full !== n.label ? "\n\n" + full : ""}`;
+      if (n.type === "Classification") {
+        return `<g class="gnode t-Classification${extra}" data-node-id="${esc(id)}" data-node-type="Classification" tabindex="0" role="button" aria-label="${esc("Classification: " + n.label)}">
+          <title>${esc(tip)}</title><rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="${p.h / 2}"/>
+          <text class="pill" x="${p.x + p.w / 2}" y="${p.y + p.h / 2 + 5}">${esc(n.label)}</text></g>`;
+      }
       return `<g class="gnode t-${esc(n.type)} e-${esc(n.epistemic || "unknown")}${extra}" data-node-id="${esc(id)}" data-node-type="${esc(n.type)}" tabindex="0" role="button" aria-label="${esc(n.type + ": " + (n.label || id))}">
-        <title>${esc(n.label || id)}</title>
-        <rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="6"/>${double}
-        <text class="cap" x="${p.x + 8}" y="${p.y + 14}">${esc(short(caption(n), Math.floor((p.w - 14) / 6.3)))}</text>
-        ${lines.map((l, i) => `<text class="lbl" x="${p.x + 8}" y="${p.y + 29 + i * 14}">${esc(l)}</text>`).join("")}
+        <title>${esc(tip)}</title>
+        <rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" rx="8"/>${double}
+        <text class="cap" x="${p.x + 10}" y="${p.y + 18}">${esc(short(caption(n), Math.floor((p.w - 18) / 6.6)))}</text>
+        ${lines.map((l, i) => `<text class="lbl${n.type === "Assessment" || n.type === "ScoreRule" && i === 1 ? " strong" : ""}" x="${p.x + 10}" y="${p.y + 37 + i * 17}">${esc(l)}</text>`).join("")}
       </g>`;
     }).join("");
-    return `<svg class="g-svg" viewBox="0 0 ${L.width} ${L.height}" width="${L.width}" height="${L.height}" style="max-width:${L.width}px;min-width:${Math.min(900, L.width)}px" role="img" aria-label="Evidence graph for ${esc(g.cid)}">${heads}<g class="g-edges">${edgeSvg}</g><g class="g-nodes">${nodeSvg}</g></svg>`;
+    return `<svg class="g-svg" viewBox="0 0 ${L.width} ${L.height}" preserveAspectRatio="xMinYMin meet" style="max-width:${Math.round(L.width * 1.15)}px" role="img" aria-label="Evidence graph for ${esc(g.cid)}">${heads}<g class="g-edges">${edgeSvg}</g><g class="g-nodes">${nodeSvg}</g><g class="g-badges">${badges.join("")}</g></svg>`;
   }
 
   function listHtml() {
     const nodes = byId();
     const edges = g.data.edges || [];
-    const cols = layout().cols.filter((c) => c.nodes.length);
+    const cols = layout(false).cols.filter((c) => c.nodes.length);
     return `<div class="g-list">
       ${cols.map((c) => `<div class="g-list-col"><h4>${esc(c.title)}</h4><ul>${c.nodes.map((n) => `<li><button type="button" class="g-li" data-list-node="${esc(n.id)}"><span class="cap">${esc(caption(n))}</span> ${esc(short([].concat(nodeText(n)).join(": "), 140))}</button></li>`).join("")}</ul></div>`).join("")}
       <details class="g-list-edges"><summary>${edges.length} edges</summary><table><thead><tr><th>From</th><th>To</th><th>Type</th><th>Stance</th><th>Points</th><th>Group / scope</th></tr></thead><tbody>
@@ -397,6 +537,21 @@
       el.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); selectNode(el.dataset.nodeId); } });
     });
     root.querySelectorAll("[data-list-node]").forEach((el) => el.addEventListener("click", () => selectNode(el.dataset.listNode)));
+    root.querySelectorAll("g.ggroup").forEach((el) => {
+      const toggle = () => { g.fdaOpen = !g.fdaOpen; if (g.sel && !byId().has(g.sel)) g.sel = null; renderView(); };
+      el.addEventListener("click", (ev) => { ev.stopPropagation(); toggle(); });
+      el.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); toggle(); } });
+    });
+    const svg = root.querySelector(".g-svg");
+    svg?.addEventListener("click", (ev) => { if (!ev.target.closest("g.gnode, g.ggroup")) clearSel(); });
+  }
+
+  function clearSel() {
+    g.sel = null;
+    const svg = root.querySelector(".g-svg");
+    if (svg) { svg.classList.remove("has-sel"); svg.querySelectorAll(".sel, .near, .hl").forEach((el) => el.classList.remove("sel", "near", "hl")); }
+    root.querySelectorAll("[data-list-node].sel").forEach((el) => el.classList.remove("sel"));
+    $("#graph-panel").innerHTML = PANEL_HINT;
   }
 
   // ---------------------------------------------------------------- panel
@@ -415,18 +570,23 @@
         if (on) { near.add(el.dataset.from); near.add(el.dataset.to); }
       });
       svg.querySelectorAll("g.gnode").forEach((el) => el.classList.toggle("near", near.has(el.dataset.nodeId)));
+      svg.querySelectorAll("g.ggroup").forEach((el) => el.classList.toggle("near", near.has(el.dataset.groupId)));
+      svg.querySelectorAll("g.g-badge").forEach((el) => {
+        const e = svg.querySelector(`g.gedge[data-edge-id="${CSS.escape(el.dataset.badgeFor)}"]`);
+        el.classList.toggle("dim", !!e && !e.classList.contains("hl"));
+      });
     }
     root.querySelectorAll("[data-list-node]").forEach((el) => el.classList.toggle("sel", el.dataset.listNode === id));
     const panel = $("#graph-panel");
     panel.innerHTML = panelHtml(n);
     panel.querySelectorAll("[data-goto]").forEach((el) => el.addEventListener("click", () => selectNode(el.dataset.goto)));
     panel.querySelector("[data-open-packet]")?.addEventListener("click", () => document.querySelector('.tab[data-tab="packet"]')?.click());
-    if (scroll && window.innerWidth < 1100) panel.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    if (scroll && window.innerWidth <= 1360) panel.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }
 
   function srcLinkHtml(nct, page, quote, text) {
     if (!nct || !page) return "";
-    return `<a class="src-link" data-nct="${esc(nct)}" data-page="${esc(page)}" data-quote="${esc(quote || "")}">${esc(text || `${nct} p.${page}`)}</a>`;
+    return `<a class="src-link gp-btn" href="#" role="button" data-nct="${esc(nct)}" data-page="${esc(page)}" data-quote="${esc(quote || "")}" title="${esc(text || "")}">Open source page<span class="gp-btn-sub">${esc(nct)} · p.${esc(page)}</span></a>`;
   }
 
   function panelHtml(n) {
@@ -435,8 +595,8 @@
     const nodes = byId();
     const edges = g.data.edges || [];
     let body = "";
-    const quote = s.quote ? `<q class="gp-quote">${esc(s.quote)}</q>` : "";
-    const pdf = s.url && s.page ? ` · <a class="src-link" href="${esc(s.url.split("#")[0])}#page=${esc(s.page)}" target="_blank" rel="noopener">official PDF</a>` : "";
+    const quote = s.quote ? `<blockquote class="gp-quote"><span class="gp-qtext">${esc(String(s.quote).replace(/\s+/g, " ").trim())}</span><footer>${esc(s.nct ? `${s.nct} protocol` : n.type === "GuidancePassage" ? "FDA guidance" : "source")}${pageOf(s) ? ` · page ${esc(pageOf(s))}` : ""} · verbatim</footer></blockquote>` : "";
+    const pdf = s.url && s.page ? `<a class="gp-link" href="${esc(s.url.split("#")[0])}#page=${esc(s.page)}" target="_blank" rel="noopener">Official PDF, p.${esc(s.page)}</a>` : "";
     switch (n.type) {
       case "Criterion":
         body = `${quote}<div class="gp-row">${srcLinkHtml(s.nct, s.page, s.quote, `Open ${s.nct} protocol p.${s.page}`) || `<span class="src">registry text (no protocol page)</span>`}${pdf}</div>
@@ -448,8 +608,8 @@
         break;
       case "ComparatorThreshold": {
         const sim = d.similarity || {};
-        body = `<div><b>${esc(d.acronym || d.nct_id)}</b> <span class="src">${esc(d.nct_id)}</span> used <b>${esc(d.operator || "")}${esc(num(d.value_norm))} ${esc(d.unit_norm || "")}</b> · ${esc(human(d.direction))}</div>
-          ${quote}<div class="gp-row">${srcLinkHtml(s.nct, s.page, s.quote, `Open ${s.nct} protocol p.${s.page}`)}${pdf} · <a class="src-link" href="https://clinicaltrials.gov/study/${esc(d.nct_id)}" target="_blank" rel="noopener">registry record</a></div>
+        body = `<div><b>${esc(d.acronym || d.nct_id)}</b>${d.acronym && d.acronym !== d.nct_id ? ` <span class="src">${esc(d.nct_id)}</span>` : ""} used <b>${esc(d.operator || "")}${esc(num(d.value_norm))} ${esc(d.unit_norm || "")}</b> · ${esc(human(d.direction))}</div>
+          ${quote}<div class="gp-row">${srcLinkHtml(s.nct, s.page, s.quote, `Open ${s.nct} protocol p.${s.page}`)}${pdf}<a class="gp-link" href="https://clinicaltrials.gov/study/${esc(d.nct_id)}" target="_blank" rel="noopener">Registry record</a></div>
           <div class="gp-kv"><span>Regimen coverage</span><span>${esc(d.coverage?.status || "?")}${(d.coverage?.missing_classes || []).length ? ` (lacks ${esc(d.coverage.missing_classes.join(", "))})` : ""}</span>
             ${sim.protocol_class_jaccard != null ? `<span>Drug-class overlap</span><span>${esc(num(sim.protocol_class_jaccard))} (protocol classes), ${esc(num(sim.registry_jaccard))} (registry)</span>` : ""}
             ${(sim.shared_classes || []).length ? `<span>Shared classes</span><span>${esc(sim.shared_classes.join(", "))}</span>` : ""}</div>
@@ -457,7 +617,7 @@
         break;
       }
       case "GuidancePassage":
-        body = `${quote}<div class="gp-row">${s.url ? `<a class="src-link" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(d.citation || "FDA guidance")}</a>` : esc(d.citation || "")}</div>
+        body = `${quote}<div class="gp-row">${s.url ? `<a class="gp-btn" href="${esc(s.url)}" target="_blank" rel="noopener">Open PDF at page${pageOf(s) ? " " + esc(pageOf(s)) : ""}<span class="gp-btn-sub">${esc(short(d.citation || "FDA guidance", 64))} · new tab</span></a>` : esc(d.citation || "")}</div>
           <div class="gp-kv"><span>Issued</span><span>${esc(d.issued || "?")}${d.retrospective ? " · retrospective" : ""}</span><span>Strength</span><span>${esc(d.strength || "general")}${d.strength === "specific" ? "" : " (general principle; adds 0 points)"}</span></div>
           ${d.timing_note ? `<div class="src">${esc(d.timing_note)}</div>` : ""}`;
         break;
@@ -533,6 +693,19 @@
     const checks = r.checks || [];
     const chip = (id) => `<button type="button" class="linkish ev-chip" data-goto="${esc(id)}" title="${esc(id)}">${esc(short(nodes.get(id)?.label || id, 48))}</button>`;
     const badge = (c) => `<span class="inv-check" data-result="${esc(c.result)}" title="${esc(c.detail || "")}">${esc(human(c.check))}: ${esc(c.result)}</span>`;
+    // one visible chip per (check, result) with a count; the duplicates stay in the DOM (hidden) so counts of .inv-check hold
+    const badges = (list) => {
+      const seen = new Map();
+      list.forEach((c) => { const k = c.check + "|" + c.result; seen.set(k, (seen.get(k) || 0) + 1); });
+      const shown = new Set();
+      return list.map((c) => {
+        const k = c.check + "|" + c.result;
+        if (shown.has(k)) return `<span class="inv-check" data-result="${esc(c.result)}" hidden></span>`;
+        shown.add(k);
+        const nn = seen.get(k);
+        return `<span class="inv-check" data-result="${esc(c.result)}" title="${esc(c.detail || "")}"><i class="ic-dot"></i>${esc(human(c.check))}${nn > 1 ? ` ×${nn}` : ""}${c.result === "pass" ? "" : `: ${esc(c.result)}`}</span>`;
+      }).join("");
+    };
     const ql = (QUESTIONS.find(([q]) => q === r.question) || [r.question, r.question])[1];
     const modelLine = r.model?.status?.startsWith?.("unavailable") ? `<div class="warnbox">The model was unavailable (${esc(r.model.status.replace(/^unavailable:?\s*/, ""))}); this is the deterministic answer.</div>` : "";
     if (!st.length) {
@@ -550,8 +723,8 @@
           <span class="inv-text">${esc(s.text)}</span>
           ${s.status === "unsupported" ? `<div class="src">Failed: ${esc((s.failed_checks || []).join("; ") || "verifier check")}. Shown for transparency; excluded from the summary.</div>` : ""}
           <div class="inv-ev">${(s.evidence_ids || []).map(chip).join(" ")}</div>
-          <div class="inv-checks">${checks.filter((c) => c.statement_id === s.id).map(badge).join(" ")}</div></li>`).join("")}</ol>
-        ${general.length ? `<div class="inv-checks">${general.map(badge).join(" ")}</div>` : ""}
+          <div class="inv-checks">${badges(checks.filter((c) => c.statement_id === s.id))}</div></li>`).join("")}</ol>
+        ${general.length ? `<div class="inv-general"><span class="src">Answer-level checks</span><div class="inv-checks">${badges(general)}</div></div>` : ""}
         ${counterHtml(r, chip)}
         ${(r.tool_calls || []).length ? `<details class="src"><summary>${r.tool_calls.length} tool call(s)</summary><ul>${r.tool_calls.map((t) => `<li><code>${esc(t.tool)}</code> ${esc(JSON.stringify(t.args || {}))} · ${esc(t.ms)} ms · ${esc(t.result_summary || "")}</li>`).join("")}</ul></details>` : ""}`;
     }

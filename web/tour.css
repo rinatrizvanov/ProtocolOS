@@ -1,0 +1,135 @@
+/* Guided demo (tour.js). Everything that restyles the base app is scoped to body.demo. */
+:root {
+  --tour-amber: #b45309;
+  --tour-amber-bg: #fff4e3;
+  --tour-green: #1d6b4f;
+  --tour-green-bg: #e6f4ee;
+  --tour-grey: #5a5f7a;
+  --tour-grey-bg: #eeeff6;
+  --tour-ink: #17202b;
+  --tour-muted: #5b6676;
+  --tour-accent: #1f4e79;
+}
+
+/* ---------------------------------------------------------------- launcher and first-run hint */
+.tour-launch {
+  margin-left: 12px; padding: 8px 16px; border-radius: 999px; border: 1px solid var(--tour-accent);
+  background: #fff; color: var(--tour-accent); font: 600 13px/1 system-ui, -apple-system, "Segoe UI", sans-serif;
+  cursor: pointer; white-space: nowrap; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.12);
+}
+.tour-launch::before { content: ""; display: inline-block; width: 0; height: 0; margin-right: 8px; border-style: solid; border-width: 5px 0 5px 8px; border-color: transparent transparent transparent currentColor; vertical-align: 0; }
+.tour-launch:hover { background: #eef4fb; }
+body.tour-on .tour-launch { background: var(--tour-accent); color: #fff; }
+.tour-launch:focus-visible, .tour-btn:focus-visible, .tour-x:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
+
+.tour-hint {
+  position: fixed; right: 20px; bottom: 20px; z-index: 9500; display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px 10px 16px; background: #fff; color: var(--tour-ink); border-radius: 12px;
+  border: 1px solid #e2e6ec; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.16); font: 14px/1.4 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+/* never cover the source viewer or its close button */
+body:has(.modal:not(.hidden)) .tour-hint { display: none; }
+
+/* ---------------------------------------------------------------- spotlight */
+.tour-shade { position: fixed; inset: 0; z-index: 8990; pointer-events: none; }
+.tour-shade > div { position: fixed; background: rgba(15, 23, 42, 0.46); }
+.tour-hole {
+  position: fixed; z-index: 9000; pointer-events: none; border-radius: 10px;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.95), 0 0 0 7px rgba(245, 158, 11, 0.22);
+  animation: tour-fade 0.25s ease;
+}
+.tour-hole.none { opacity: 0; }
+
+/* ---------------------------------------------------------------- step card */
+.tour-card {
+  position: fixed; right: 24px; bottom: 24px; z-index: 10000; width: 420px; max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 48px); overflow: auto; background: #fff; color: var(--tour-ink);
+  border-radius: 16px; border: 1px solid #e2e6ec; padding: 18px 20px 16px;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28), 0 2px 6px rgba(15, 23, 42, 0.08);
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+.tour-card.left { right: auto; left: 24px; }
+.tour-card.top { top: 24px; bottom: auto; }
+.tour-card.center { right: auto; bottom: auto; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 480px; }
+.tour-head { display: flex; justify-content: space-between; align-items: center; }
+.tour-step { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--tour-muted); }
+.tour-x { border: 0; background: transparent; font-size: 22px; line-height: 1; color: var(--tour-muted); cursor: pointer; padding: 2px 6px; border-radius: 6px; }
+.tour-x:hover { background: #f1f3f6; color: var(--tour-ink); }
+.tour-title { margin: 4px 0 8px; font-size: 20px; line-height: 1.25; font-weight: 700; color: var(--tour-ink); }
+.tour-body p { margin: 0 0 10px; }
+.tour-body .tour-note { color: var(--tour-muted); font-size: 14px; }
+.tour-list { margin: 4px 0 10px; padding: 0; list-style: none; }
+.tour-list li { display: block; position: relative; padding-left: 20px; margin: 0 0 8px; }
+.tour-list li .tour-dot { position: absolute; left: 0; top: 7px; }
+.tour-list.plain li { display: list-item; list-style: disc; margin-left: 18px; padding-left: 2px; }
+.tour-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+.tour-dot.challenge { background: #f59e0b; }
+.tour-dot.support { background: #16a34a; }
+.tour-dot.context { background: #9ca3af; }
+
+.tour-pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px; }
+.tour-pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.tour-pill.review { background: var(--tour-amber-bg); color: var(--tour-amber); border: 1px solid #f3c27a; }
+.tour-pill.retain { background: var(--tour-green-bg); color: var(--tour-green); border: 1px solid #a7d8c2; }
+.tour-pill.insufficient { background: var(--tour-grey-bg); color: var(--tour-grey); border: 1px solid #cfd2e0; }
+.tour-scores { display: flex; gap: 8px; margin: 0 0 10px; }
+.tour-score { padding: 4px 12px; border-radius: 8px; font-weight: 700; font-size: 14px; }
+.tour-score.support { background: var(--tour-green-bg); color: var(--tour-green); }
+.tour-score.challenge { background: var(--tour-amber-bg); color: var(--tour-amber); }
+.tour-verdict { display: inline-block; padding: 1px 10px; border-radius: 999px; font-weight: 700; background: #eef2f7; }
+.tour-verdict.rej { background: #fdecec; color: #b42318; }
+
+.tour-probe { display: flex; gap: 12px; align-items: center; padding: 8px 0; border-top: 1px solid #eef0f4; }
+.tour-probe:last-of-type { border-bottom: 1px solid #eef0f4; margin-bottom: 10px; }
+.tour-code { flex: none; min-width: 48px; text-align: center; padding: 4px 8px; border-radius: 8px; font: 700 15px ui-monospace, SFMono-Regular, Menlo, monospace; }
+.tour-code.ok { background: #e6f4ee; color: #1d6b4f; }
+.tour-code.bad { background: #fdecec; color: #b42318; }
+.tour-req { font: 12.5px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--tour-muted); }
+
+.tour-wait { display: flex; align-items: center; gap: 10px; color: var(--tour-muted); padding: 6px 0 10px; }
+.tour-spin { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #dbe3ee; border-top-color: var(--tour-accent); animation: tour-spin 0.8s linear infinite; }
+@keyframes tour-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes tour-spin { to { transform: rotate(360deg); } }
+.tour-err { background: #fdecec; color: #7a1c14; border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; font-size: 14px; }
+.tour-err .tour-btn { margin-top: 8px; }
+
+.tour-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
+.tour-dots { display: flex; gap: 6px; }
+.tour-dotnav { width: 9px; height: 9px; padding: 0; border-radius: 50%; border: 0; background: #d5dbe4; cursor: pointer; }
+.tour-dotnav.done { background: #9fb5cf; }
+.tour-dotnav.on { background: var(--tour-accent); width: 22px; border-radius: 6px; }
+.tour-btns { display: flex; gap: 6px; }
+.tour-btn {
+  padding: 7px 14px; border-radius: 8px; border: 1px solid #cfd6e0; background: #fff; color: var(--tour-ink);
+  font: 600 14px/1.2 system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer;
+}
+.tour-btn:hover:not([disabled]) { background: #f3f5f8; }
+.tour-btn[disabled] { opacity: 0.45; cursor: default; }
+.tour-btn.primary { background: var(--tour-accent); border-color: var(--tour-accent); color: #fff; }
+.tour-btn.primary:hover { background: #183f63; }
+.tour-btn.ghost { border-color: transparent; color: var(--tour-muted); }
+
+/* the source viewer must sit above the dim layer while it is spotlighted */
+body.tour-on #modal { z-index: 9001; }
+
+/* ---------------------------------------------------------------- demo-mode polish of the base app */
+body.demo { font-size: 15px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+body.demo .card { border-radius: 12px; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05), 0 6px 18px rgba(15, 23, 42, 0.06); border-color: #e6e9ef; }
+body.demo .card h2 { font-size: 20px; letter-spacing: -0.01em; }
+body.demo .card h3 { font-size: 15px; }
+body.demo .explain, body.demo .action { font-size: 15px; line-height: 1.6; }
+body.demo .src { font-size: 13px; }
+body.demo .crit { padding-top: 10px; padding-bottom: 10px; }
+body.demo .crit .lbl { font-size: 14.5px; }
+body.demo .tab { font-size: 14.5px; }
+body.demo .summary .stat { border-radius: 12px; }
+body.demo .check { font-size: 13.5px; }
+body.demo .modal-body { border-radius: 14px; }
+
+@media (max-width: 1366px) { .tour-card { width: 376px; } .tour-card.left { left: 16px; } }
+@media (max-width: 720px) {
+  .tour-card { right: 16px; left: 16px; bottom: 16px; width: auto; }
+  .tour-hint { left: 16px; right: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .tour-hole { animation: none; } .tour-spin { animation-duration: 2s; } }
