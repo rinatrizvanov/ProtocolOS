@@ -11,6 +11,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import time
 from pathlib import Path
 
 import pytest
@@ -363,11 +364,107 @@ def test_bad_inputs(env):
     assert e.value.status_code == 400
 
 
-def test_model_mode_is_not_configured(env):
+def test_model_mode_is_not_configured(env, monkeypatch):
+    from trialforge import llm
+
+    monkeypatch.setattr(llm, "available", lambda: False)
     det = stable(inv.investigate(NCT, CID, "why_flagged"))
     mod = stable(inv.investigate(NCT, CID, "why_flagged", mode="model"))
     assert mod["model"] == {"status": "not configured", "provider": None} and mod["mode"] == "deterministic"
     assert {k: v for k, v in mod.items() if k != "model"} == {k: v for k, v in det.items() if k != "model"}
+
+
+# ----------------------------------------------------------------------------- model mode (router mocked)
+
+@pytest.fixture
+def model_on(monkeypatch):
+    from trialforge import llm
+
+    monkeypatch.setattr(llm, "available", lambda: True)
+    monkeypatch.setattr(llm, "model_label", lambda: "mock model via Chalk Model Gateway")
+    return llm
+
+
+def _reply(statements, seen=None):
+    def json_call(system, user, schema, effort="medium"):
+        if seen is not None:
+            seen.update(system=system, user=json.loads(user), schema=schema)
+        return {"statements": statements}
+    return json_call
+
+
+def _grounded_statements(graph, counter):
+    looser = ids_of(graph, "ScoreRule", lambda n: n["data"]["group"] == "looser_comparators")
+    members = [e["from"] for e in graph["edges"] if e["type"] == "EVIDENCE_IN_RULE" and e["to"] == looser[0]]
+    return [
+        {"text": "Three comparable trials used a more permissive hemoglobin threshold than this trial.",
+         "polarity": "challenges", "role": "answer", "evidence_ids": looser + members},
+        {"text": "The arms include myelosuppressive agents in the curated table, which supports having a threshold, not its specific value.",
+         "polarity": "supports", "role": "counterevidence", "evidence_ids": list(counter)},
+    ]
+
+
+def test_model_unsafe_statement_and_fake_id_are_rejected(env, model_on, monkeypatch):
+    g = env["graph"]
+    det = inv.investigate(NCT, CID, "why_flagged")
+    rule = ids_of(g, "ScoreRule", lambda n: n["data"]["group"] == "looser_comparators")[0]
+    seen: dict = {}
+    monkeypatch.setattr(model_on, "_json_call", _reply([
+        {"text": "Comparable trials used a lower value, so 9 g/dL is safe.", "polarity": "challenges", "role": "answer", "evidence_ids": [rule]},
+        {"text": "Another trial reported a lower threshold.", "polarity": "challenges", "role": "answer", "evidence_ids": ["passage:deadbeef0000"]},
+    ] + _grounded_statements(g, det["counterevidence"])[1:], seen))
+    resp = inv.investigate(NCT, CID, "why_flagged", mode="model")
+    sts = {s["id"]: s for s in resp["answer"]["statements"]}
+    assert sts["m1"]["status"] == "unsupported" and "overclaim" in sts["m1"]["failed_checks"]
+    assert sts["m2"]["status"] == "unsupported" and "evidence_exists" in sts["m2"]["failed_checks"]
+    assert sts["m3"]["status"] in ("supported", "uncertain"), sts["m3"]["failed_checks"]
+    assert "is safe" not in resp["answer"]["summary"] and "Another trial" not in resp["answer"]["summary"]
+    assert resp["classification"] == det["classification"] == "Review recommended"
+    assert resp["mode"] == "model" and resp["model"]["status"] == "ok" and resp["model"]["unsupported"] == 2
+    assert resp["budget"]["used_model"] == 2
+    assert inv.LABEL_RANK[resp["answer"]["overall"]] <= inv.LABEL_RANK[det["answer"]["overall"]]
+    # the model saw this criterion's graph nodes only, with document text passed as data
+    assert {n["id"] for n in seen["user"]["nodes"]} == {n["id"] for n in g["nodes"]}
+    assert "untrusted" in seen["system"] and seen["user"]["counterevidence_ids"] == det["counterevidence"]
+
+
+def test_model_answer_cannot_raise_the_label(env, model_on, monkeypatch):
+    real_compose = inv._compose
+    monkeypatch.setattr(inv, "_compose", lambda q, c: real_compose(q, c)[:2] + (set(),))  # templates answer nothing
+    det = inv.investigate(NCT, CID, "why_flagged")
+    assert det["answer"]["overall"] == "insufficient_evidence"
+    monkeypatch.setattr(model_on, "_json_call", _reply(_grounded_statements(env["graph"], det["counterevidence"])))
+    resp = inv.investigate(NCT, CID, "why_flagged", mode="model")
+    sts = resp["answer"]["statements"]
+    assert not _no_unsupported(resp) and any(s["status"] == "supported" and s["role"] == "answer" for s in sts)
+    assert resp["answer"]["overall"] == "insufficient_evidence" == resp["model"]["deterministic_overall"]
+    assert not fails(resp["checks"]), fails(resp["checks"])
+
+
+def _same_answer(a, b):
+    return [(s["text"], s["status"]) for s in a["answer"]["statements"]] == [(s["text"], s["status"]) for s in b["answer"]["statements"]]
+
+
+def test_model_timeout_falls_back_to_deterministic(env, model_on, monkeypatch):
+    det = inv.investigate(NCT, CID, "why_flagged")
+    monkeypatch.setattr(inv, "MAX_SECONDS", 1.5)
+    monkeypatch.setattr(model_on, "_json_call", lambda *a, **k: time.sleep(3) or {"statements": []})
+    resp = inv.investigate(NCT, CID, "why_flagged", mode="model")
+    assert resp["mode"] == "deterministic" and resp["model"]["status"].startswith("unavailable: timed out")
+    assert _same_answer(resp, det) and resp["budget"]["used_model"] == 2
+    assert any(c["check"] == "model" and c["result"] == "warn" for c in resp["checks"])
+
+
+def test_model_error_falls_back_to_deterministic(env, model_on, monkeypatch):
+    det = inv.investigate(NCT, CID, "why_flagged")
+
+    def broken(*a, **k):
+        raise RuntimeError("Chalk router HTTP 500: provider is not configured")
+
+    monkeypatch.setattr(model_on, "_json_call", broken)
+    resp = inv.investigate(NCT, CID, "why_flagged", mode="model")
+    assert resp["mode"] == "deterministic" and resp["model"]["status"].startswith("unavailable: RuntimeError: Chalk router HTTP 500")
+    assert _same_answer(resp, det)
 
 
 # ----------------------------------------------------------------------------- audit (AC5)
