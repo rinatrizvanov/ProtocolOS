@@ -21,7 +21,8 @@ from . import druglib
 SCHEMA_VERSION = 1
 BLIND_SPOT = ("Rationale in non-public sources (preclinical toxicology, internal development data, regulator "
               "correspondence) cannot be seen by ProtocolOS.")
-METHOD = ("Deterministic rules over the cached review: categories from the inferred purposes and evidence items; "
+METHOD = ("Deterministic rules over the cached review: categories from the inferred purposes and the review's protocol, "
+          "regimen, comparator and FDA items; "
           "arm attribution from registry arm labels and intervention names; missing criteria from the comparators' "
           "extracted criteria. Categories are inferred unless the protocol text supports the threshold.")
 ARM_METHOD = ("Rule over registry arm labels and intervention names: an arm lists an agent when a named agent matches "
@@ -231,6 +232,8 @@ def arm_attribution(review: dict, criterion_id: str) -> dict:
             body = (f"Every arm's label or intervention names mention chemotherapy ({_labels(arms)}), but the registry "
                     f"does not name which chemotherapy agents each arm uses. {subject} counted as listed in {span} "
                     f"through the arm text 'chemo'{alike}.")
+        elif one:
+            body = f"{subject} counted as listed in each of the {len(arms)} arms{alike}."
         else:
             body = f"At least one of them is listed in each of the {len(arms)} arms{alike}."
     elif driver == "investigational":

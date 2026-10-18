@@ -20,9 +20,12 @@ def rationale_route(nct: str, as_of: str = "auto"):
 
     if not demo_guard.valid_as_of(as_of):
         raise HTTPException(400, "as_of must be auto, none or YYYY-MM-DD")
-    if flag("PUBLIC") and demo_guard.valid_nct(nct.strip()) and demo_guard.is_cold(nct, as_of):
+    # ASCII digits only, in every mode: get_review's \d also matches non-ASCII digits.
+    if not demo_guard.valid_nct(nct.strip()):
+        raise HTTPException(400, "Expected an NCT identifier like NCT03409614")
+    if flag("PUBLIC") and demo_guard.is_cold(nct, as_of):
         raise HTTPException(403, COLD_DETAIL)
-    return rationale_report(get_review(nct, as_of))  # get_review answers 400 for a bad NCT
+    return rationale_report(get_review(nct, as_of))
 
 
 def install(app) -> None:

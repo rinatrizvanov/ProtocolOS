@@ -133,7 +133,7 @@ def test_chemo_text_matches_are_marked_apart_from_named_agents():
                                      "anc")
     assert part["driver"] == "all_arms" and [a["matched_by"] for a in part["arms"]] == ["named agent", "arm text 'chemo'"]
     assert "Each is listed" not in part["text"] and "It is listed" not in part["text"]
-    assert ("At least one of them is listed in each of the 2 arms, investigational and comparator alike. 'Chemotherapy' "
+    assert ("It is counted as listed in each of the 2 arms, investigational and comparator alike. 'Chemotherapy' "
             "matches only through the arm text 'chemo': the registry does not name which chemotherapy agents that arm "
             "uses.") in part["text"]
     comp = rationale.arm_attribution(_review([{"label": "Pembrolizumab", "type": "EXPERIMENTAL", "interventions": []},
@@ -221,6 +221,11 @@ def test_route_public_cold_403(client, monkeypatch, el3):
     assert r.status_code == 403 and r.json() == {"detail": "review not cached on the public demo"}
     assert client.get(f"/api/rationale/{EL3}").status_code == 200
     assert client.get("/api/rationale/NOTANNCT").status_code == 400
+    # Arabic-Indic digits pass get_review's \d but not the ASCII guard: 400 before any review is computed.
+    import trialforge.api as api
+
+    monkeypatch.setattr(api, "run_review", lambda *a, **k: pytest.fail("cold review computed"))
+    assert client.get("/api/rationale/NCT" + "\u0660" * 7 + "\u0661").status_code == 400
 
 
 def test_installed_on_the_api_app(el3):
