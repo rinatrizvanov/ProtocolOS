@@ -70,32 +70,33 @@ def test_fallback_mount_serves_export(tmp_path):
 
 
 @pytest.fixture
-def real_app(monkeypatch):
+def real_app():
+    """trialforge.api and a MonkeyPatch whose env changes are undone before the module is reloaded, so a failed
+    assertion cannot leak public mode into later tests."""
     import trialforge.api as api
 
-    yield api
+    with pytest.MonkeyPatch.context() as mp:
+        yield api, mp
     importlib.reload(api)
 
 
-def test_real_app_vanilla_root_and_build(real_app, monkeypatch):
+def test_real_app_vanilla_root_and_build(real_app):
+    api, mp = real_app
     for name in ("PROTOCOLOS_PUBLIC", "TRIALLENS_PUBLIC"):
-        monkeypatch.delenv(name, raising=False)
-    api = importlib.reload(real_app)
+        mp.delenv(name, raising=False)
+    api = importlib.reload(api)
     with TestClient(api.app) as c:
         r = c.get(f"/?nct={EL3}", follow_redirects=False)
         assert r.status_code == 200 and "text/html" in r.headers["content-type"]
         assert set(c.get("/api/build").json()) >= {"sha", "web_next", "built_at"}
 
 
-def test_real_app_still_guarded_when_public(real_app, monkeypatch):
-    from trialforge import demo_guard
-
-    monkeypatch.delenv("TRIALLENS_PUBLIC", raising=False)
-    monkeypatch.setenv("PROTOCOLOS_PUBLIC", "1")
-    api = importlib.reload(real_app)
-    demo_guard.install(api.app)
+def test_real_app_still_guarded_when_public(real_app):
+    api, mp = real_app
+    mp.delenv("TRIALLENS_PUBLIC", raising=False)
+    mp.setenv("PROTOCOLOS_PUBLIC", "1")
+    api = importlib.reload(api)  # the module hook loop installs the guard
     with TestClient(api.app) as c:
         assert c.get("/api/build").status_code == 200
         assert c.get(f"/api/review/{EL3}?refresh=1").status_code == 403
         assert c.get("/api/review/NCT123").status_code == 400
-    monkeypatch.delenv("PROTOCOLOS_PUBLIC")

@@ -1,19 +1,22 @@
-# Deploying ProtocolOS (Railway, one container)
+# Deploying ProtocolOS (Railway backend, Vercel frontend)
 
-One Docker service: FastAPI + the static dashboard in `web/` + poppler, one worker, the public-demo guard on.
-Files: `Dockerfile`, `.dockerignore`, `railway.toml`, `.env.example`, `trialforge/demo_guard.py`, `scripts/`.
+Backend: one Docker service on Railway: FastAPI + the static dashboard in `web/` + poppler, one worker, the
+public-demo guard on. Frontend: the Next.js app in `web-next/` on Vercel, which proxies `/api/*` to the backend.
+Files: `Dockerfile`, `.dockerignore`, `.railwayignore`, `railway.toml`, `.env.example`, `trialforge/demo_guard.py`,
+`trialforge/web_next.py`, `web-next/vercel.json`, `scripts/`.
 
-Every step that creates, deploys or changes something on Railway is **user confirms**: an agent stops and asks.
-Status when this was written (2026-10-17): the image has **not** been built (Docker is not installed on the
-development Mac) and nothing has been deployed.
+Every step that creates, deploys or changes something on Railway or Vercel is **user confirms**: an agent stops and
+asks. Status: Railway and Vercel have been live since 2026-10-18; section 9 has the URLs and the exact redeploy
+commands.
 
 ## 1. What the container does
 
 - Build: installs the dependencies from `pyproject.toml` (the `tomllib` one-liner from AGENTS.md section 8),
-  copies the repo, then runs `python -m scripts.prewarm NCT03409614 NCT02578680 NCT03088540 NCT02819518`.
-  The prewarm fetches documents with at most 4 concurrent requests and always exits 0, so a build without
+  copies the repo, then runs `python -m scripts.prewarm --drafts NCT03409614 NCT02578680 NCT03088540 NCT02819518`.
+  The prewarm fetches documents with at most 4 concurrent requests, builds the reviews and then, when
+  `trialforge.draft` is present, the authoring-mode draft presets. It always exits 0, so a build without
   network (or with HTTP 403 from ClinicalTrials.gov) still succeeds.
-- Start: `python -m scripts.prewarm --if-missing ...` fills whatever the build could not fetch, then
+- Start: `python -m scripts.prewarm --if-missing --drafts ...` fills whatever the build could not fetch, then
   `exec python -m trialforge.demo_guard`, which installs the guard when `PROTOCOLOS_PUBLIC=1` and serves
   `trialforge.api:app` with uvicorn on `$PORT` (default 8765), one worker. The guard is therefore on even before
   the `routes_graph` hook in `api.py` exists; with the hook it is installed once (idempotent).
@@ -57,7 +60,7 @@ Set on the Railway service (user confirms). `PORT` is injected by Railway.
 
 ```bash
 .venv/bin/python -m pytest -q tests/
-.venv/bin/python -m scripts.prewarm NCT03409614 NCT02578680 NCT03088540 NCT02819518
+.venv/bin/python -m scripts.prewarm --drafts NCT03409614 NCT02578680 NCT03088540 NCT02819518
 .venv/bin/python -m scripts.check_numbers            # offenders are change requests for the doc owner
 .venv/bin/uvicorn trialforge.api:app --port 8765 &
 BASE_URL=http://localhost:8765 /tmp/pw/bin/python scripts/e2e_demo.py
@@ -98,12 +101,17 @@ container, so a redeploy or restart loses them. Optional (plan item 13): attach 
 `/app/data/decisions` so recorded decisions survive restarts. Do not mount a volume at `/app/data`: it would
 hide the prewarmed caches baked into the image. The audit log then stays per-deployment; say so if asked.
 
-## 7. If the build cannot reach ClinicalTrials.gov
+## 7. Shipping the caches (the build does not depend on ClinicalTrials.gov)
 
-The startup prewarm retries at container start. If that also fails (the health check never passes), build from a
-local checkout whose `data/` caches are filled (`railway up` uploads the build context). Whether `railway up`
-honours `.gitignore` (which excludes `data/protocols/` and the other caches) is not verified; check the build
-log for `prewarm: documents done` with cached trials before relying on it. Sponsor PDFs stay out of git either way.
+`railway up` honours `.gitignore` by default, and `.gitignore` excludes the document caches (`data/protocols/`,
+`data/registry/`, `data/fda/`, `data/nhanes/`, `data/search_cache/`), the reviews (`data/reviews/`) and the drafts
+(`data/drafts/`). The live deploys therefore use `railway up --no-gitignore` from a checkout whose `data/` holds real
+directories (not symlinks, which a worktree may have) filled by the prewarm. The build-time prewarm then finds every
+review and draft preset cached, and the health check passes without network access. With `--no-gitignore`,
+`.railwayignore` is the only filter: it keeps `.env`, `.env.*`, `*.pem`, `.chalk.yml`, `.venv/`, `.git/`, `web-next/`,
+`data/decisions/`, `data/investigations/` and the generated Chalk eval bundles out of the upload. It must not exclude
+`data/reviews/` or `data/drafts/`. Sponsor PDFs stay out of git either way. If a checkout has no caches, plain
+`railway up` still works: the build and startup prewarms fetch from the network, with retries.
 
 ## 8. Rollback
 
@@ -115,31 +123,45 @@ log for `prewarm: documents done` with cached trials before relying on it. Spons
 
 ## 9. Live deploys and redeploy commands (2026-10-18)
 
-- Backend: Railway project `protocolos-api`, service `protocolos-api`, https://protocolos-api-production.up.railway.app
-  (variables `PROTOCOLOS_PUBLIC=1`, `PROTOCOLOS_BUILD_SHA`; no model keys).
+- Backend: Railway project `protocolos-api`, service `protocolos-api`, environment `production`,
+  https://protocolos-api-production.up.railway.app (variables `PROTOCOLOS_PUBLIC=1` and `PROTOCOLOS_BUILD_SHA`; no
+  model keys).
 - Frontend: Vercel project `protocolos-web`, root `web-next/`, https://protocolos-web.vercel.app (production variable
   `PROTOCOLOS_API_URL` = the Railway URL; `/api/*` goes through the `next.config.ts` rewrite).
 
-Redeploy integrated `main` (user confirms each deploy), from the main checkout:
+Redeploy integrated `main` (user confirms each deploy) from the root of the main checkout, with a clean tree on
+`main`. The link commands are non-interactive and are needed once per checkout.
 
 ```bash
-# Railway: link this checkout to the existing project/service once, then deploy
-railway link --project protocolos-api --service protocolos-api
-railway variables --set PROTOCOLOS_BUILD_SHA=$(git rev-parse HEAD)
-railway up --detach --no-gitignore      # .railwayignore keeps .env, .venv/, web-next/ and keys out
-railway logs                            # wait for the health check (/api/review/NCT03409614)
-scripts/smoke_deploy.sh https://protocolos-api-production.up.railway.app
-curl -s https://protocolos-api-production.up.railway.app/api/build    # sha must equal git rev-parse main
+API=https://protocolos-api-production.up.railway.app
+WEB=https://protocolos-web.vercel.app
 
-# Vercel: link web-next/ to the existing project once, then deploy to production
+# Railway
+railway link --project protocolos-api --service protocolos-api --environment production
+.venv/bin/python -m scripts.prewarm --drafts          # data/reviews/ and data/drafts/ warm (gitignored; shipped below)
+railway variable set PROTOCOLOS_BUILD_SHA=$(git rev-parse HEAD) --skip-deploys   # no deploy of the old upload
+railway up --ci --no-gitignore                         # streams the build log, then exits; .railwayignore keeps secrets out
+for i in $(seq 1 60); do curl -fsS $API/api/build | grep -q "$(git rev-parse HEAD)" && break; sleep 10; done
+curl -s $API/api/build                                 # sha must equal git rev-parse main
+railway deployment list                                # newest deployment SUCCESS (FAILED: see the build log)
+scripts/smoke_deploy.sh $API                           # run from this checkout: merged modules make their checks required
+
+# Vercel
 cd web-next
 npx -y vercel@latest link --yes --project protocolos-web
-printf '%s' https://protocolos-api-production.up.railway.app | npx -y vercel@latest env add PROTOCOLOS_API_URL production   # only if not set yet
+npx -y vercel@latest env ls production | grep -q PROTOCOLOS_API_URL \
+  || printf '%s' $API | npx -y vercel@latest env add PROTOCOLOS_API_URL production
 npx -y vercel@latest deploy --prod --yes
-curl -s https://protocolos-web.vercel.app/ | grep -c ProtocolOS
-curl -s -o /dev/null -w '%{http_code}\n' https://protocolos-web.vercel.app/api/review/NCT03409614
+curl -s $WEB/ | grep -c ProtocolOS                     # at least 1
+curl -s -o /dev/null -w '%{http_code}\n' $WEB/api/review/NCT03409614   # 200 through the rewrite
 ```
 
-`--no-gitignore` uploads the gitignored document caches in `data/` (real copies, not symlinks) so the image does not
-depend on ClinicalTrials.gov answering Railway; `.railwayignore` is what keeps secrets out, so keep it current.
-`web-next/.vercel/` holds the local project link and is gitignored.
+The wait loop polls for up to 10 minutes, the `railway.toml` health-check timeout. Until the new deployment passes its
+health check, Railway keeps serving the previous one, so `/api/build` still shows the old SHA. Setting the variable
+with `--skip-deploys` matters: without it, Railway redeploys the previous upload with the new SHA, and `/api/build`
+would then report `main` while old code serves. Do not use `railway logs` to wait: it streams without end and shows the
+most recent *successful* deployment, not the one being checked.
+
+`vercel link` writes `web-next/.vercel/` (the project link) and `web-next/.env.local` (a short-lived
+`VERCEL_OIDC_TOKEN`). Both are gitignored, and the Vercel CLI does not upload `.vercel` or `.env.local` (its default
+ignore list). The production variable is stored on the Vercel project, so a new checkout does not need to set it again.

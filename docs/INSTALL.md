@@ -5,13 +5,13 @@ ProtocolOS (formerly TrialLens) is a Python + FastAPI engine with two UIs: the v
 
 ## 1. Engine (pip, no uv needed)
 
-Python 3.13 and `poppler-utils` (`pdftotext`) are required.
+Python 3.13 and poppler (`pdftotext`) are required: `poppler-utils` on Debian/Ubuntu, `brew install poppler` on macOS.
 
 ```bash
 python3.13 -m venv .venv
-.venv/bin/pip install $(python3 -c "import tomllib;d=tomllib.load(open('pyproject.toml','rb'));print(' '.join(d['project']['dependencies']+d['dependency-groups']['dev']))")
+.venv/bin/pip install $(.venv/bin/python -c "import tomllib;d=tomllib.load(open('pyproject.toml','rb'));print(' '.join(d['project']['dependencies']+d['dependency-groups']['dev']))")
 .venv/bin/python -m trialforge.sources NCT03409614 NCT03088540 NCT02578680        # cache public documents
-.venv/bin/python -m scripts.prewarm NCT03409614 NCT02578680 NCT03088540 NCT02819518  # cache reviews
+.venv/bin/python -m scripts.prewarm --drafts NCT03409614 NCT02578680 NCT03088540 NCT02819518  # cache reviews and draft presets
 ```
 
 (uv users: `uv sync` does the same from `pyproject.toml`.)
@@ -36,7 +36,7 @@ API reference: FastAPI serves interactive docs at `http://localhost:8765/docs` a
 .venv/bin/python -m pytest -q tests/
 cd web-next && npm run build && npx tsc --noEmit && npm run lint
 scripts/smoke_deploy.sh http://localhost:8765          # or a deployed URL; must print "smoke: all checks passed"
-scripts/clean_clone.sh                                  # clone main, fresh venv, pytest, web-next build (logs in /tmp/triallens-logs/v2/clean/)
+scripts/clean_clone.sh                                  # clone GitHub main, fresh venv, pytest, web-next build (logs in /tmp/triallens-logs/v2/clean/)
 ```
 
 ## 4. Docker (one container: engine + vanilla dashboard + poppler)
@@ -54,8 +54,8 @@ image (`.dockerignore`); it is deployed separately.
 The backend runs on Railway (project `protocolos-api`), the Next.js app on Vercel (project `protocolos-web`), which
 proxies `/api/*` to the Railway URL. Exact deploy and redeploy commands: `docs/DEPLOY.md` section 9.
 
-- Railway: `railway up --detach` from the repo root, with `PROTOCOLOS_PUBLIC=1` and `PROTOCOLOS_BUILD_SHA` set on the
-  service.
+- Railway: `railway up --ci --no-gitignore` from the repo root (it ships the warm `data/` caches; `.railwayignore`
+  keeps secrets out), with `PROTOCOLOS_PUBLIC=1` and `PROTOCOLOS_BUILD_SHA` set on the service.
 - Vercel: from `web-next/`, set `PROTOCOLOS_API_URL` for production, then `npx -y vercel@latest deploy --prod --yes`.
 
 ## 6. Security notes

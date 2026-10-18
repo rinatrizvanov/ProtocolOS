@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Clean-clone check for ProtocolOS: clone, fresh venv (pip, no uv), cache documents, pytest, web-next npm ci + build.
 #   scripts/clean_clone.sh [source repo or URL] [branch]
-# Defaults: this checkout's repository, branch main. Logs go to /tmp/triallens-logs/v2/clean/.
+# Defaults: the GitHub repository, branch main (pass "$(pwd)" to check this checkout instead). Logs go to
+# /tmp/triallens-logs/v2/clean/.
 # Exits non-zero on the first failing step.
 set -euo pipefail
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SRC="${1:-$ROOT}"
+SRC="${1:-https://github.com/rinatrizvanov/ProtocolOS.git}"
 BRANCH="${2:-main}"
 PY="${PYTHON:-/usr/local/bin/python3.13}"
 LOGS=/tmp/triallens-logs/v2/clean
