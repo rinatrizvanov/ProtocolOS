@@ -78,6 +78,9 @@ export function ProtocolDrawer({
   );
 }
 
+// Label column and scale column; the header, every trial row and the footer share it so the scale lines up.
+const ROW = "grid grid-cols-[8.5rem_minmax(0,1fr)] gap-x-4 sm:grid-cols-[14rem_minmax(0,1fr)]";
+
 // `detailed` is the app's Compare tab (sponsor and regimen lines); the tour keeps the short labels.
 export default function Screen2({ nct, criterionId, detailed = false }: Selection & { detailed?: boolean }) {
   const state = useApi(() => getReview(nct));
@@ -94,13 +97,18 @@ export default function Screen2({ nct, criterionId, detailed = false }: Selectio
   const sponsors = new Map(state.data.comparators.map((c) => [c.study.nct_id, c.study.sponsor]));
   const looser = withCriterion.filter((r) => r.direction === "comparator looser").length;
   // Operators arrive as Unicode (≥, >); a looser comparator for a floor is a lower limit.
-  const word = /[>≥]/.test(target.operator) ? "lower" : "higher";
+  const floor = /[>≥]/.test(target.operator);
+  const word = floor ? "lower" : "higher";
   const values = [targetValue, ...plotted.map((r) => r.criterion.value_norm)];
   const pad = Math.max(0.5, (Math.max(...values) - Math.min(...values)) * 0.2);
   const lo = Math.min(...values) - pad;
   const hi = Math.max(...values) + pad;
   const pct = (v: number) => ((v - lo) / (hi - lo)) * 100;
   const caption = `${looser} of ${withCriterion.length} similar trials used a ${word} limit; differences are questions for the team.`;
+  const at = pct(targetValue);
+  // Text near an edge grows inward: translating by -at% keeps the block inside the track at any width.
+  const align = at < 34 ? "text-left" : at > 66 ? "text-right" : "text-center";
+  const unit = target.unit_norm ?? "";
 
   return (
     <Frame
@@ -116,50 +124,77 @@ export default function Screen2({ nct, criterionId, detailed = false }: Selectio
         </ul>
       }
     >
-      <div className={`relative w-full max-w-4xl px-8 pt-24 ${detailed ? "pb-72" : "pb-48"}`}>
-        <div className="h-0.5 w-full bg-line" />
-        <div
-          data-testid="target-marker"
-          data-value={targetValue}
-          className="absolute top-8 -translate-x-1/2 text-center"
-          style={{ left: `calc(2rem + (100% - 4rem) * ${pct(targetValue) / 100})` }}
-        >
-          <p className="text-sm text-muted">this trial</p>
-          <p className="text-3xl font-semibold tabular-nums text-ink">
-            {target.operator} {targetValue}
-          </p>
-          {/* Stops at the axis so comparator dots with the same value stay readable below it. */}
-          <div className="mx-auto h-4 w-1.5 bg-ink" />
+      {/* One row per similar trial on a shared scale; the vertical line is this trial's limit. Rows never overlap, so the plot fits any width. */}
+      <div className="flex w-full max-w-4xl flex-col">
+        <div className={ROW}>
+          <span className="self-end pb-1 text-xs font-medium uppercase tracking-wide text-muted">Similar trial</span>
+          <div className="relative h-16">
+            <div
+              data-testid="target-marker"
+              data-value={targetValue}
+              className={`absolute top-0 whitespace-nowrap ${align}`}
+              style={{ left: `${at}%`, transform: `translateX(-${at}%)` }}
+            >
+              <p className="text-xs text-muted">this trial</p>
+              <p className="text-2xl font-semibold leading-tight tabular-nums text-ink">
+                {target.operator} {targetValue} <span className="text-sm font-normal text-muted">{unit}</span>
+              </p>
+            </div>
+            <span className="absolute bottom-0 h-2 w-0.5 -translate-x-1/2 bg-ink" style={{ left: `${at}%` }} />
+          </div>
         </div>
-        {plotted.map((r, i) => {
-          // Trials that used the same value stack in their own rows so each dot stays clickable.
-          const lane = plotted.slice(0, i).filter((o) => o.criterion.value_norm === r.criterion.value_norm).length;
+        {plotted.length === 0 ? (
+          <p className="border-t border-line py-3 text-sm text-muted">No similar trial in the comparison states a numeric limit for this criterion.</p>
+        ) : null}
+        {plotted.map((r) => {
+          const v = pct(r.criterion.value_norm);
           return (
-          <button
-            key={r.nct_id}
-            type="button"
-            data-testid="comparator-dot"
-            data-nct={r.nct_id}
-            data-value={r.criterion.value_norm}
-            onClick={() => setOpen(r)}
-            className="absolute -translate-x-1/2 text-center focus-visible:outline focus-visible:outline-2"
-            style={{ left: `calc(2rem + (100% - 4rem) * ${pct(r.criterion.value_norm) / 100})`, top: `${6.6 + lane * (detailed ? 5.6 : 2.9)}rem` }}
-          >
-            <span className="mx-auto block h-4 w-4 rounded-full bg-look" />
-            <span className="block whitespace-nowrap text-sm text-ink">
-              {r.acronym ?? r.nct_id} <span className="tabular-nums text-muted">{r.criterion.value_norm}</span>
-            </span>
-            {detailed ? (
-              <span className="block whitespace-nowrap text-xs text-muted">
-                <span data-testid="comparator-sponsor" className="block">{sponsors.get(r.nct_id)}</span>
-                {r.coverage.status === "full" ? <span className="block">same chemo classes</span> : null}
-                {r.direction === "same" ? <span className="block">same limit (may be copied from older templates)</span> : null}
+            <button
+              key={r.nct_id}
+              type="button"
+              data-testid="comparator-dot"
+              data-nct={r.nct_id}
+              data-value={r.criterion.value_norm}
+              onClick={() => setOpen(r)}
+              title="Open the protocol page this limit comes from"
+              className={`${ROW} border-t border-line text-left transition-colors duration-150 hover:bg-line/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink`}
+            >
+              <span className="flex min-w-0 flex-col py-2">
+                <span className="text-sm text-ink">
+                  <span className="font-medium">{r.acronym ?? r.nct_id}</span>{" "}
+                  <span className="tabular-nums text-muted">{r.criterion.value_norm}</span>
+                </span>
+                {detailed ? (
+                  <span className="flex flex-col text-xs text-muted">
+                    <span data-testid="comparator-sponsor">{sponsors.get(r.nct_id)}</span>
+                    {r.coverage.status === "full" ? <span>same chemo classes</span> : null}
+                    {r.direction === "same" ? <span>same limit (may be copied from older templates)</span> : null}
+                  </span>
+                ) : null}
               </span>
-            ) : null}
-          </button>
+              <span aria-hidden className="relative self-stretch">
+                <span className="absolute inset-x-0 top-1/2 h-px bg-line" />
+                <span
+                  className="absolute top-1/2 h-1 -translate-y-1/2 rounded-full bg-look/40"
+                  style={{ left: `${Math.min(v, at)}%`, width: `${Math.abs(v - at)}%` }}
+                />
+                <span className="absolute inset-y-0 w-0.5 -translate-x-1/2 bg-ink" style={{ left: `${at}%` }} />
+                <span
+                  className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-look ring-2 ring-paper"
+                  style={{ left: `${v}%` }}
+                />
+              </span>
+            </button>
           );
         })}
-        <p className="absolute bottom-2 right-8 text-sm text-muted">{target.unit_norm ?? "g/dL"}</p>
+        <div className={`${ROW} border-t border-line pt-1`}>
+          <span />
+          <span className="flex justify-between gap-2 text-xs text-muted">
+            <span>{floor ? "less strict" : "stricter"}</span>
+            <span>{unit}</span>
+            <span>{floor ? "stricter" : "less strict"}</span>
+          </span>
+        </div>
       </div>
       {open && (
         <ProtocolDrawer

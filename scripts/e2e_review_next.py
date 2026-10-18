@@ -1,7 +1,10 @@
 """Browser check of the ProtocolOS web-next landing and /review (plan-v2 WS-B acceptance 2-6).
 
 Usage:
-    BASE_URL=http://127.0.0.1:3766 /tmp/pw/bin/python scripts/e2e_review_next.py [--strict]
+    BASE_URL=http://localhost:3766 /tmp/pw/bin/python scripts/e2e_review_next.py [--strict]
+
+Use localhost, not 127.0.0.1, against `next dev`: Next 16 blocks its dev resources for the 127.0.0.1 origin
+unless next.config.ts lists it in allowedDevOrigins, and the page never hydrates.
 
 Each step prints PASS, FAIL or SKIP. A step SKIPs when the piece it needs is not merged yet (for example
 /api/rationale answers 404, or the Decide tab has no structured reason buttons). A skip is never a pass:
@@ -16,18 +19,21 @@ import os
 import re
 import subprocess
 import sys
+import uuid
 from pathlib import Path
 
 from playwright.sync_api import Page, sync_playwright
 
-BASE_URL = os.environ.get("BASE_URL", "http://127.0.0.1:3766").rstrip("/")
+BASE_URL = os.environ.get("BASE_URL", "http://localhost:3766").rstrip("/")
 NCT = "NCT03409614"
 SHOTS = Path("/tmp/triallens-logs/v2/ui")
 REPO = Path(__file__).resolve().parents[1]
 TABS = ("rationale", "compare", "ask", "verify", "decide")
 BANNED = re.compile(r"feedback loop|learns from|safe to|will increase enrol", re.I)
 EVIDENCE = re.compile(r"\bevidence\b", re.I)
-ALLOWED_EVIDENCE = re.compile(r"insufficient evidence", re.I)
+# Fixed plan terms: the classification "Insufficient evidence" and the structured decision reason "Prior evidence"
+# (DECISION_REASONS in web-next/lib/contracts.ts).
+ALLOWED_EVIDENCE = re.compile(r"insufficient evidence|prior evidence", re.I)
 
 results: list[tuple[str, str, str]] = []
 
@@ -37,8 +43,8 @@ def report(step: str, status: str, detail: str = "") -> None:
     print(f"{status:4} {step}{': ' + detail if detail else ''}", flush=True)
 
 
-def review_url(criterion: str = "hemoglobin", tab: str | None = None) -> str:
-    url = f"{BASE_URL}/review?nct={NCT}&c={criterion}"
+def review_url(criterion: str = "hemoglobin", tab: str | None = None, nct: str = NCT) -> str:
+    url = f"{BASE_URL}/review?nct={nct}&c={criterion}"
     return f"{url}&tab={tab}" if tab else url
 
 
@@ -169,34 +175,49 @@ def main() -> int:
             except Exception as exc:  # noqa: BLE001 - reported as a failed step
                 report("tab-verify runs and shows an outcome", "FAIL", str(exc)[:200])
 
-        # Decide: a structured reason reaches the packet (needs WS-E's reason buttons).
+        # Decide: a structured reason and a fresh note reach the markdown packet (needs WS-E's reason buttons).
         page.goto(review_url(tab="decide"), wait_until="networkidle")
         page.wait_for_timeout(800)
         reason = page.get_by_test_id("reason-safety_concern")
+        step = "decide -> packet md has 'Reason: Safety concern. Note: <nonce>'"
         if reason.count() == 0:
-            report("decide -> packet has 'Reason: Safety concern'", "SKIP", "reason-safety_concern not merged")
+            report(step, "SKIP", "reason-safety_concern not merged")
         else:
+            # A unique note proves this run's decision reached the packet, not an earlier one.
+            nonce = f"e2e-{uuid.uuid4().hex[:8]}"
             reason.click()
-            page.locator("[data-testid^=decide-]").first.click()
+            page.get_by_test_id("decision-note").fill(nonce)
+            page.get_by_test_id("decide-needs_medical_review").click()
             try:
-                page.get_by_test_id("saved-decision").wait_for(timeout=15000)
-                packet = page.evaluate("async (n) => await (await fetch('/api/packet/' + n)).text()", NCT)
-                found = "Reason: Safety concern" in packet
-                report("decide -> packet has 'Reason: Safety concern'", "PASS" if found else "FAIL")
+                page.get_by_test_id("saved-decision").filter(has_text=nonce).wait_for(timeout=15000)
+                packet = page.evaluate(
+                    "async (n) => await (await fetch('/api/packet/' + n + '?format=md')).text()", NCT
+                )
+                expected = f"Reason: Safety concern. Note: {nonce}"
+                report(step, "PASS" if expected in packet else "FAIL", expected)
             except Exception as exc:  # noqa: BLE001
-                report("decide -> packet has 'Reason: Safety concern'", "FAIL", str(exc)[:200])
+                report(step, "FAIL", str(exc)[:200])
 
-        # 6. Phone width: no horizontal scroll at 390px; screenshots at both sizes.
+        # 6. Phone width: no horizontal scroll at 390px on the landing, every review tab and the Compare plot of
+        # every EL3 criterion (the plot is the widest view); screenshots at both sizes.
         phone = browser.new_context(viewport={"width": 390, "height": 844})
         mobile = phone.new_page()
+        pages = [("landing", f"{BASE_URL}/")] + [(f"review-{t}", review_url(tab=t)) for t in TABS]
+        mobile.goto(review_url(), wait_until="networkidle")
+        mobile.get_by_test_id("criterion-item").first.wait_for(timeout=15000)
+        criteria = mobile.eval_on_selector_all("[data-testid=criterion-item]", "els => els.map(e => e.dataset.criterion)")
+        pages += [(f"compare-{c}", review_url(c, tab="compare")) for c in criteria if c != "hemoglobin"]
         widths = {}
-        for name, url in (("landing", f"{BASE_URL}/"), ("review", review_url())):
+        for name, url in pages:
             mobile.goto(url, wait_until="networkidle")
-            mobile.wait_for_timeout(800)
+            mobile.get_by_role("tabpanel").or_(mobile.get_by_test_id("mode-review")).first.wait_for(timeout=15000)
+            mobile.wait_for_timeout(600)
             widths[name] = mobile.evaluate("document.documentElement.scrollWidth")
-            mobile.screenshot(path=str(SHOTS / f"{name}-390.png"), full_page=True)
-        report("no horizontal scroll at 390px", "PASS" if all(w <= 390 for w in widths.values()) else "FAIL",
-               json.dumps(widths))
+            if not name.startswith("compare-"):
+                mobile.screenshot(path=str(SHOTS / f"{name}-390.png"), full_page=True)
+        wide = {k: w for k, w in widths.items() if w > 390}
+        report(f"no horizontal scroll at 390px ({len(widths)} pages)", "PASS" if not wide else "FAIL",
+               json.dumps(wide) if wide else "")
         browser.close()
 
     failed = [r for r in results if r[1] == "FAIL"]
