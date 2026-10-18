@@ -96,7 +96,7 @@ function PrecedentsStep({ draft }: { draft: Draft }) {
             <span className="text-sm tabular-nums text-muted">{p.start_date ?? "date unknown"}</span>
             <span className="min-w-0">
               <span className="font-medium text-ink">{trialName(p)}</span>
-              <span className="text-muted"> · {p.nct_id}{p.sponsor ? ` · ${p.sponsor}` : ""}</span>
+              <span className="text-muted">{trialName(p) === p.nct_id ? "" : ` · ${p.nct_id}`}{p.sponsor ? ` · ${p.sponsor}` : ""}</span>
             </span>
             <span className="col-span-2 flex flex-wrap gap-1 sm:col-span-1">
               {p.shared_classes.map((c) => (
