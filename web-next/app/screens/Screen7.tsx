@@ -22,7 +22,8 @@ function SavedLine({ item }: { item: PacketItem | undefined }) {
   );
 }
 
-export default function Screen7({ nct, criterionId }: Selection) {
+// `detailed` is the app's Decide tab, which adds the packet export.
+export default function Screen7({ nct, criterionId, detailed = false }: Selection & { detailed?: boolean }) {
   const [packet, setPacket] = useState<Packet | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState<DecisionKey | null>(null);
@@ -132,12 +133,21 @@ export default function Screen7({ nct, criterionId }: Selection) {
             </button>
           </form>
         ) : null}
+        {detailed ? (
+          <a
+            href={`/api/packet/${encodeURIComponent(nct)}?format=md`}
+            data-testid="export-packet"
+            className="self-start rounded-md border border-ink px-5 py-2 text-ink transition-colors duration-150 hover:bg-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+          >
+            Export review packet
+          </a>
+        ) : null}
         <div aria-live="polite">
           {submitted && item?.decision ? (
             <div data-testid="feedback-submitted" className="flex flex-col gap-1">
-              <p className="font-medium text-support">Submitted to the feedback loop</p>
+              <p className="font-medium text-support">Saved with the decision</p>
               <p className="text-ink">&ldquo;{item.decision.reason}&rdquo; ({item.decision.recorded_at})</p>
-              <p className="text-sm text-muted">Saved with this decision in the review packet.</p>
+              <p className="text-sm text-muted">Stored in the review packet.</p>
             </div>
           ) : null}
         </div>

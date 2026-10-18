@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getGraph, type Graph, type Selection } from "@/lib/api";
+import { getGraph, getReview, type CriterionReview, type Graph, type Selection } from "@/lib/api";
 
 // Plain-language reading of each scoring rule group; anything else falls back to the edge's own label.
 const GROUP_TEXT: Record<string, string> = {
@@ -9,10 +9,10 @@ const GROUP_TEXT: Record<string, string> = {
   regimen_support: "The regimen needs some limit, not this one",
 };
 
-function axisText(graph: Graph, axis: "support" | "challenge"): string {
+function axisText(graph: Graph, axis: "support" | "challenge", overrides: Record<string, string> = {}): string {
   const edges = graph.edges.filter((e) => e.type === "RULE_SCORES" && e.axis === axis);
   if (edges.length === 0) return "No scoring rule applied";
-  return edges.map((e) => GROUP_TEXT[e.group ?? ""] ?? e.label ?? e.group ?? "").join("; ");
+  return edges.map((e) => overrides[e.group ?? ""] ?? GROUP_TEXT[e.group ?? ""] ?? e.label ?? e.group ?? "").join("; ");
 }
 import { useApi } from "@/lib/useApi";
 import { Failed, Frame, Pending } from "../components/Frame";
@@ -54,14 +54,27 @@ function Balance({ against, support }: { against: number; support: number }) {
   );
 }
 
-export default function Screen3({ nct, criterionId }: Selection) {
+// Names the regimen drugs from the review's regimen evidence, e.g. "carboplatin, ... (myelosuppression (anemia), ...)".
+function regimenSentence(row: CriterionReview | undefined): string | undefined {
+  const summary = row?.evidence.find((e) => e.kind === "regimen" && e.stance === "supports")?.summary ?? "";
+  const match = /^Arms include (.+?) \((.+), curated pharmacology table\)/.exec(summary);
+  if (!match) return undefined;
+  const effect = /\(([^()]+)\)\s*$/.exec(match[2])?.[1] ?? match[2];
+  return `This chemotherapy (${match[1]}) can cause ${effect}: it justifies a limit, not this value.`;
+}
+
+// `detailed` is the app's Why tab; the tour keeps the short version.
+export default function Screen3({ nct, criterionId, detailed = false }: Selection & { detailed?: boolean }) {
   const state = useApi(() => getGraph(nct, criterionId));
+  const review = useApi(() => getReview(nct));
   if (state.status === "loading") return <Pending label="Loading the evidence graph…" />;
   if (state.status === "error") return <Failed message={state.message} />;
   const graph = state.data;
   const against = sumAxis(graph, "challenge");
   const support = sumAxis(graph, "support");
   const passages = graph.nodes.filter((n) => n.type === "GuidancePassage");
+  const row = detailed && review.status === "ready" ? review.data.reviews.find((r) => r.criterion.id === criterionId) : undefined;
+  const regimen = regimenSentence(row);
 
   return (
     <Frame
@@ -92,12 +105,26 @@ export default function Screen3({ nct, criterionId }: Selection) {
           <div data-testid="pan-for" data-points={support} className="text-right">
             <p className="text-6xl font-semibold tabular-nums text-ink">+{support}</p>
             <p className="text-base text-ink">For the rule</p>
-            <p className="text-sm text-muted">{axisText(graph, "support")}</p>
+            <p className="text-sm text-muted">{axisText(graph, "support", regimen ? { regimen_support: regimen } : {})}</p>
           </div>
         </div>
         <div data-testid="parked" data-count={passages.length} className="w-full max-w-2xl rounded-lg bg-uncounted-soft p-4 text-muted">
           <span className="text-3xl tabular-nums">0</span> points: {passages.length} FDA passages, retrospective: issued after the trial started
         </div>
+        {row ? (
+          <div data-testid="missing-evidence" className="w-full max-w-2xl">
+            <p className="text-base font-medium text-ink">What&apos;s missing</p>
+            {row.missing_evidence.length ? (
+              <ul className="mt-1 list-disc pl-5 text-sm text-muted">
+                {row.missing_evidence.map((m) => (
+                  <li key={m}>{m}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="mt-1 text-sm text-muted">Nothing recorded as missing.</p>
+            )}
+          </div>
+        ) : null}
       </div>
     </Frame>
   );

@@ -78,7 +78,8 @@ export function ProtocolDrawer({
   );
 }
 
-export default function Screen2({ nct, criterionId }: Selection) {
+// `detailed` is the app's Compare tab (sponsor and regimen lines); the tour keeps the short labels.
+export default function Screen2({ nct, criterionId, detailed = false }: Selection & { detailed?: boolean }) {
   const state = useApi(() => getReview(nct));
   const [open, setOpen] = useState<Plotted | null>(null);
   const closeDrawer = useCallback(() => setOpen(null), []);
@@ -90,6 +91,7 @@ export default function Screen2({ nct, criterionId }: Selection) {
   const targetValue = target.value_norm;
   const plotted = rows.filter(isPlotted);
   const withCriterion = rows.filter((r) => r.criterion !== null);
+  const sponsors = new Map(state.data.comparators.map((c) => [c.study.nct_id, c.study.sponsor]));
   const looser = withCriterion.filter((r) => r.direction === "comparator looser").length;
   // Operators arrive as Unicode (≥, >); a looser comparator for a floor is a lower limit.
   const word = /[>≥]/.test(target.operator) ? "lower" : "higher";
@@ -114,7 +116,7 @@ export default function Screen2({ nct, criterionId }: Selection) {
         </ul>
       }
     >
-      <div className="relative w-full max-w-4xl px-8 pt-24 pb-52">
+      <div className={`relative w-full max-w-4xl px-8 pt-24 ${detailed ? "pb-96" : "pb-52"}`}>
         <div className="h-0.5 w-full bg-line" />
         <div
           data-testid="target-marker"
@@ -141,12 +143,19 @@ export default function Screen2({ nct, criterionId }: Selection) {
             data-value={r.criterion.value_norm}
             onClick={() => setOpen(r)}
             className="absolute -translate-x-1/2 text-center focus-visible:outline focus-visible:outline-2"
-            style={{ left: `calc(2rem + (100% - 4rem) * ${pct(r.criterion.value_norm) / 100})`, top: `${6.6 + lane * 2.9}rem` }}
+            style={{ left: `calc(2rem + (100% - 4rem) * ${pct(r.criterion.value_norm) / 100})`, top: `${6.6 + lane * (detailed ? 5.6 : 2.9)}rem` }}
           >
             <span className="mx-auto block h-4 w-4 rounded-full bg-look" />
             <span className="block whitespace-nowrap text-sm text-ink">
               {r.acronym ?? r.nct_id} <span className="tabular-nums text-muted">{r.criterion.value_norm}</span>
             </span>
+            {detailed ? (
+              <span className="block whitespace-nowrap text-xs text-muted">
+                <span data-testid="comparator-sponsor" className="block">{sponsors.get(r.nct_id)}</span>
+                {r.coverage.status === "full" ? <span className="block">same chemo classes</span> : null}
+                {r.direction === "same" ? <span className="block">same limit (may be copied from older templates)</span> : null}
+              </span>
+            ) : null}
           </button>
           );
         })}

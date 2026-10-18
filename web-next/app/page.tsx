@@ -13,11 +13,11 @@ import Screen7 from "./screens/Screen7";
 
 // The verifier's demo arguments are about EL3's ANC and hemoglobin rules, so Challenge exists only for that trial.
 const TABS = [
-  { id: "compare", title: "Compare", render: (s: Selection) => <Screen2 {...s} /> },
-  { id: "why", title: "Why", render: (s: Selection) => <Screen3 {...s} /> },
+  { id: "compare", title: "Compare", render: (s: Selection) => <Screen2 {...s} detailed /> },
+  { id: "why", title: "Why", render: (s: Selection) => <Screen3 {...s} detailed /> },
   { id: "ask", title: "Ask", render: (s: Selection) => <Screen4 {...s} /> },
   { id: "challenge", title: "Challenge", render: (s: Selection) => <ChallengeExamples {...s} />, onlyFor: NCT },
-  { id: "decide", title: "Decide", render: (s: Selection) => <Screen7 {...s} /> },
+  { id: "decide", title: "Decide", render: (s: Selection) => <Screen7 {...s} detailed /> },
 ];
 
 const TONE: Record<Classification, string> = {

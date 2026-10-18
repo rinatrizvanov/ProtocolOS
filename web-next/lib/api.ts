@@ -45,6 +45,8 @@ export interface CriterionReview {
   criterion: Criterion;
   classification: Classification;
   scores: { support: number; challenge: number };
+  evidence: { kind: string; stance: string; summary: string }[];
+  missing_evidence: string[];
 }
 
 export interface SourceRef {
@@ -63,6 +65,7 @@ export interface ComparatorRow {
 
 export interface Review {
   target: { study: Study };
+  comparators: { study: Study }[];
   reviews: CriterionReview[];
   comparison: Record<string, ComparatorRow[]>;
 }
