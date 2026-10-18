@@ -2,218 +2,283 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>TrialLens — Every exclusion deserves evidence</title>
+<title>ProtocolOS — Every exclusion deserves a rationale</title>
 <style>
   @page { size: 1280px 720px; margin: 0; }
   :root { --ink:#17202b; --muted:#5b6676; --accent:#1f4e79; --soft:#e8eff7; --amber:#a35b00; --amberbg:#fff4e3; --green:#1d6b4f; --greenbg:#e6f4ee; --red:#a32020; --line:#e2e6ec; }
   * { box-sizing: border-box; }
   body { margin: 0; background: #d9dde3; font: 20px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Arial, sans-serif; color: var(--ink); }
-  .slide { width: 1280px; height: 720px; background: #fff; margin: 24px auto; padding: 56px 72px; position: relative; overflow: hidden; page-break-after: always; break-after: page; }
+  .slide { width: 1280px; height: 720px; background: #fff; margin: 24px auto; padding: 52px 72px; position: relative; overflow: hidden; page-break-after: always; break-after: page; }
   @media print { body { background: #fff; } .slide { margin: 0; } }
   h1 { font-size: 54px; margin: 0 0 12px; letter-spacing: -.5px; }
-  h2 { font-size: 36px; margin: 0 0 22px; letter-spacing: -.3px; }
+  h2 { font-size: 34px; margin: 0 0 20px; letter-spacing: -.3px; }
   .kicker { font-size: 15px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; }
   .muted { color: var(--muted); }
-  .foot { position: absolute; bottom: 26px; left: 72px; right: 72px; font-size: 13px; color: #8a94a3; display: flex; justify-content: space-between; }
-  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; }
-  .cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; }
-  .box { border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px; }
+  .foot { position: absolute; bottom: 24px; left: 72px; right: 72px; font-size: 13px; color: #8a94a3; display: flex; justify-content: space-between; gap: 24px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .cols3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+  .box { border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; }
   .box h3 { margin: 0 0 8px; font-size: 20px; }
-  .big { font-size: 46px; font-weight: 800; color: var(--accent); line-height: 1.05; }
+  .big { font-size: 44px; font-weight: 800; color: var(--accent); line-height: 1.05; }
   .quote { border-left: 4px solid var(--accent); padding: 8px 16px; background: #f7f9fc; font-style: italic; }
-  ul { margin: 6px 0 0; padding-left: 24px; } li { margin: 6px 0; }
+  ul { margin: 6px 0 0; padding-left: 24px; } li { margin: 5px 0; }
   .shot { width: 100%; border: 1px solid var(--line); border-radius: 10px; box-shadow: 0 6px 20px rgba(20,30,50,.12); }
   .tag { display: inline-block; font-size: 14px; font-weight: 700; padding: 3px 9px; border-radius: 6px; }
   .review { color: var(--amber); background: var(--amberbg); } .retain { color: var(--green); background: var(--greenbg); } .insuf { color: #5a5f7a; background: #eeeff6; }
   table { border-collapse: collapse; width: 100%; font-size: 17px; }
   th { text-align: left; font-size: 13px; text-transform: uppercase; letter-spacing: .6px; color: #8a94a3; padding: 6px 8px; border-bottom: 1px solid var(--line); }
-  td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
-  .flow { display: flex; align-items: stretch; gap: 10px; margin-top: 18px; }
+  td { padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .flow { display: flex; align-items: stretch; gap: 10px; margin-top: 16px; }
   .flow div { flex: 1; background: var(--soft); border-radius: 10px; padding: 14px; font-size: 16px; }
   .flow div b { display: block; color: var(--accent); margin-bottom: 4px; font-size: 17px; }
   .arrow { flex: 0 0 18px !important; background: none !important; padding: 0 !important; display: grid; place-items: center; color: var(--accent); font-size: 24px; }
   .title { background: linear-gradient(135deg, #10304f 0%, #1f4e79 70%, #2c6aa0 100%); color: #fff; }
   .title .kicker { color: #a9c7e6; } .title .muted { color: #c9d8e8; }
+  .logo { width: 150px; height: auto; border-radius: 16px; background: #fff; padding: 6px; }
+  .mode { border-radius: 14px; padding: 20px 22px; border: 1px solid var(--line); }
+  .mode h3 { margin: 0 0 4px; font-size: 24px; }
+  .mode .who { font-size: 15px; color: var(--muted); margin-bottom: 8px; }
+  .modeA { background: #f3f7fc; border-color: #c9d9ec; } .modeB { background: #f4f9f6; border-color: #c6e1d4; }
+  .num { font-size: 34px; font-weight: 800; color: var(--accent); line-height: 1.1; }
+  .stat { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .stat p { margin: 6px 0 0; font-size: 15px; }
+  .diff td.chg { color: var(--amber); font-weight: 700; }
+  code { font-size: .9em; background: #f1f3f6; padding: 1px 5px; border-radius: 4px; }
+  .title code { background: rgba(255,255,255,.12); color: #fff; }
 </style>
 </head>
 <body>
 
-<!-- 1 -->
+<!-- 1 Title -->
 <section class="slide title">
-  <div class="kicker">HackHarvard 2026 · Regeneron: Reinvent Clinical Trials · Chalk</div>
-  <h1 style="font-size:72px;margin-top:120px">TrialLens</h1>
-  <div style="font-size:36px;font-weight:600">Every exclusion deserves evidence.</div>
-  <p class="muted" style="font-size:24px;max-width:900px;margin-top:26px">An evidence-grounded, challengeable reviewer for clinical-trial eligibility decisions: built on real protocols, verified sources and a measured evaluation.</p>
+  <div class="kicker">HackHarvard 2026 · Regeneron: Reinvent Clinical Trials &amp; Drug Development · Chalk</div>
+  <div style="display:flex;align-items:center;gap:30px;margin-top:70px">
+    <img class="logo" src="data:image/jpeg;base64,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4qbrVpc0/M+ro0IUIclMWiiioNAoo3+1FABRQlFABRRRQAUUUUAFFFFABRRRQAUUU+gBmz3ooeigAooooAKKKKACiiigAooooAKKKKACiiigAooooAKKKKACiiigA2e9Mp9FABRRRQAUUU+gBlFFFABRRRQAUUUUAFFFFABRRRQAUUUUAFGz3oooAKKKKACiijZ70AFH36KKACijZ70UAFGz3oooAKHoooAKKKKADf7UUbPeigAoeiigAoplPoAKKKKACiiigAoop9ADKKKKACiiigAooooAKKKKACiiigAo3+1FFABRRTKAH0UUUAFFFFABRR/HRQAUUUUAFFFFABRRRQAUUUUAFFFPoAZRRRQAJT6ZRv8AagB9MoooAZT6KKACiiigAooooAKKKKACiiigAooooAKKKKACiiigAooo3+1ABRRRQAUUUUAFFCUUAFFFFABRRRQAUUUUAFFFFABRRRv9qACiiigAooooAKHoooAZT6KKACn0UUAMeiiigAooooAEooooAHooooAKKKKACj+OiigAooooAP46d2/CiigBqU+iigBlPoooAZRRRQAyn0UUAMp9FFABRRRQAUUUUAFCUUUAPplFFAA9FFFAD6ZRRQAUUUUAO7fhTaKKAHN0ptFFAB/BRRRQAUUUUAFFFFAD6Z/HRRQA+mUUUAFD0UUAFFFFABTKKKAH0+iigBlFFFABT6KKACmUUUAf/9k=" alt="ProtocolOS logo">
+    <div>
+      <h1 style="font-size:72px;margin:0">ProtocolOS</h1>
+      <div style="font-size:34px;font-weight:600">Every exclusion deserves a rationale.</div>
+    </div>
+  </div>
+  <p class="muted" style="font-size:23px;max-width:960px;margin-top:30px">A rationale reviewer for oncology eligibility criteria: it checks why each lab, ECOG and washout limit is there, against earlier comparable trials and FDA final guidance, and a deterministic verifier checks every suggested change.</p>
+  <p class="muted" style="font-size:17px;margin-top:18px">protocolos-web.vercel.app · github.com/rinatrizvanov/ProtocolOS · formerly TrialLens</p>
   <div class="foot" style="color:#a9c7e6"><span>Research prototype · not clinical or regulatory advice</span><span>MIT licensed</span></div>
 </section>
 
-<!-- 2 -->
+<!-- 2 Problem -->
 <section class="slide">
   <div class="kicker">The bottleneck</div>
-  <h2>Eligibility criteria are written from precedent, and reviewed too late</h2>
+  <h2>Criteria are carried forward from precedent, without a documented rationale</h2>
   <div class="cols">
     <div>
       <ul>
-        <li>Protocol teams "rarely get evidence-based feedback on their draft until it's too late to change cheaply" <span class="muted">(Regeneron, Trial by Design Pt 2)</span>.</li>
-        <li><b>57%</b> of protocols have ≥1 substantial amendment; <b>45%</b> of those judged avoidable <span class="muted">(Getz et al. 2016)</span>.</li>
-        <li>FDA finalized <b>three oncology guidances in July 2026</b> on exactly the criteria most often templated: lab values, performance status, washout periods. For older trials we apply them <i>retrospectively</i>, as today's standard.</li>
+        <li>Lab, ECOG and washout limits are often copied from the last protocol. Nobody writes down <b>why</b> each one is there, so nobody can tell which ones still have a reason.</li>
+        <li><b>57%</b> of protocols have at least one substantial amendment; <b>45%</b> of those amendments were judged avoidable <span class="muted">(Getz et al. 2016)</span>.</li>
+        <li>Protocol teams rarely get evidence-based feedback on a draft until it is too late to change cheaply <span class="muted">(Regeneron, Trial by Design Pt 2)</span>.</li>
+        <li><b>FDA final guidance (July 2026)</b> covers exactly these criteria: lab values, performance status, washout periods. For older trials we apply it <i>retrospectively</i> and label it so.</li>
       </ul>
     </div>
     <div>
       <div class="quote">"Unnecessarily restrictive eligibility criteria may slow subject accrual, limit patients' access to clinical trials, and lead to trial results that do not fully represent treatment effects…"</div>
-      <div class="muted" style="font-size:15px;margin-top:6px">FDA, Cancer Clinical Trial Eligibility Criteria: Laboratory Values (July 2026), §I, lines 37–39</div>
+      <div class="muted" style="font-size:15px;margin-top:6px">FDA final guidance, Cancer Clinical Trial Eligibility Criteria: Laboratory Values (July 2026), §I</div>
+      <div class="box" style="margin-top:22px"><h3>But "loosen the criteria" misses the point</h3>
+        <span style="font-size:17px">Restrictions have reasons: patient safety with myelosuppressive chemotherapy, enrichment, interpretable adverse events. The question is whether each limit's rationale is documented and still holds.</span></div>
     </div>
   </div>
-  <div class="foot"><span>TrialLens</span><span>2</span></div>
+  <div class="foot"><span>ProtocolOS</span><span>2</span></div>
 </section>
 
-<!-- 3 -->
+<!-- 3 Two modes -->
 <section class="slide">
-  <div class="kicker">Why it's hard</div>
-  <h2>"Loosen the criteria" misses most of the problem</h2>
+  <div class="kicker">Two entry modes</div>
+  <h2>One engine, two points in the protocol's life</h2>
   <div class="cols">
-    <div class="box"><h3>Restrictions have reasons</h3>
-      <ul><li>Patient safety (e.g. myelosuppressive chemotherapy)</li><li>Predictive and prognostic enrichment</li><li>Reduced heterogeneity → statistical power</li><li>Interpretability of adverse events</li></ul>
-      <p class="muted" style="font-size:16px">FDA Enrichment Strategies (2019); Regeneron mentor insights §1.4–1.5</p></div>
-    <div class="box"><h3>The evidence is scattered</h3>
-      <p>EMPOWER-Lung 3 (Regeneron, NCT03409614): the registry text <b>never mentions</b> the neutrophil threshold. The lab criteria are on <b>page 67 of a 170-page PDF</b>. Comparable trials' thresholds sit in other sponsors' PDFs.</p>
-      <p class="muted" style="font-size:16px">Checked live by a Chalk feature resolver: <code>registry_mentions_anc = false</code></p></div>
+    <div class="mode modeA">
+      <h3>A · Finishing a trial</h3>
+      <div class="who">Review an existing protocol before it is finalized or amended</div>
+      <ul style="font-size:18px">
+        <li>Reads the posted protocol PDF: each criterion with its verbatim line and page</li>
+        <li><b>Rationale</b> badge per criterion, with the arm whose drugs drive it</li>
+        <li>Compare with earlier comparable trials; Ask; <b>Redraft</b> with live checks</li>
+        <li><b>Decide</b> with structured reasons; export a review packet</li>
+      </ul>
+    </div>
+    <div class="mode modeB">
+      <h3>B · Create criteria from an idea</h3>
+      <div class="who">Draft criteria for a new concept: condition, drugs, setting, phase</div>
+      <ul style="font-size:18px">
+        <li>Finds precedent trials that started before the design date</li>
+        <li>Drafts each criterion from a <b>verified</b> precedent value or FDA passage</li>
+        <li>No verified source: <span class="tag insuf">Insufficient evidence</span>, never a guess</li>
+        <li>Self-critique of every draft; before/after against a real protocol</li>
+      </ul>
+    </div>
   </div>
-  <div class="foot"><span>TrialLens</span><span>3</span></div>
-</section>
-
-<!-- 4 -->
-<section class="slide">
-  <div class="kicker">Who and where</div>
-  <h2>A reviewer for the protocol team, before the protocol is final</h2>
-  <p>Users: clinical scientists, protocol authors, medical reviewers, cross-functional protocol-review teams. TrialLens prepares the evidence; <b>the team decides</b>.</p>
   <div class="flow">
-    <div><b>Draft protocol</b>NCT ID or posted protocol PDF</div><div class="arrow">→</div>
-    <div><b>TrialLens review</b>criteria · regimen · comparators · FDA · verifier</div><div class="arrow">→</div>
-    <div><b>Review packet</b>evidence for and against, open questions, next action</div><div class="arrow">→</div>
-    <div><b>Protocol review meeting</b>accept / reject / needs medical review / defer</div><div class="arrow">→</div>
-    <div><b>Decision record</b>rationale documented in the protocol</div>
+    <div><b>Protocol or idea</b>NCT ID, posted PDF, or a concept</div><div class="arrow">→</div>
+    <div><b>Rationale</b>precedents · FDA final guidance · regimen</div><div class="arrow">→</div>
+    <div><b>Deterministic verifier</b>the authority on every value</div><div class="arrow">→</div>
+    <div><b>The team decides</b>reasons recorded in the packet</div>
   </div>
-  <p class="muted" style="margin-top:22px">Output is a defensible <i>question with evidence</i>, not an automated answer.</p>
-  <div class="foot"><span>TrialLens</span><span>4</span></div>
+  <div class="foot"><span>Users: protocol authors, clinical scientists, protocol-review teams. ProtocolOS prepares the rationale; the team decides.</span><span>3</span></div>
 </section>
 
-<!-- 5 -->
+<!-- 4 Mode A -->
 <section class="slide">
-  <div class="kicker">What it does</div>
-  <h2>From protocol PDF to criterion-level evidence</h2>
+  <div class="kicker">Mode A · Finishing a trial</div>
+  <h2>Each criterion gets a rationale, a comparison and a checked redraft</h2>
   <div class="cols3">
-    <div class="box"><h3>Read</h3>Extracts lab, ECOG and washout criteria with the <b>verbatim line and page</b>. Handles tables, Symbol-font glyphs, image-only pages.</div>
-    <div class="box"><h3>Compare</h3>Finds comparable trials (same disease, setting, histology, drug classes, <b>started earlier</b>), parses their PDFs, checks <b>regimen coverage</b>.</div>
-    <div class="box"><h3>Ground</h3>32 FDA passages (2026 eligibility guidances + 2019 enrichment), <b>verified verbatim</b> with section, page and line.</div>
-    <div class="box"><h3>Classify</h3><span class="tag review">Review recommended</span> <span class="tag retain">Evidence supports retaining</span> <span class="tag insuf">Insufficient evidence</span> plus an inferred purpose and missing evidence.</div>
-    <div class="box"><h3>Verify</h3>Factual checks + clinical-logic rules. Outcomes: Supported · Qualified · Rejected · <b>Needs medical review</b>.</div>
-    <div class="box"><h3>Decide</h3>Exportable review packet with decision fields (Markdown / PDF / JSON).</div>
+    <div class="box"><h3>Rationale badges</h3>
+      <span class="tag review">Review recommended</span> <span class="tag retain">Rationale supports keeping</span> <span class="tag insuf">Insufficient evidence</span>
+      <p style="font-size:16px;margin:10px 0 0">Likely purpose (safety, efficacy enrichment, regulatory precedent), <i>inferred</i> unless the protocol states it, and an <b>arm line</b>: which arm's drugs are linked to the toxicity.</p></div>
+    <div class="box"><h3>Compare and Ask</h3>
+      <p style="font-size:16px;margin:0">Side by side with comparable trials that <b>started earlier</b>, with regimen coverage and page links. Ask answers questions from the provenance graph; every statement is checked against it.</p></div>
+    <div class="box"><h3>Redraft workspace</h3>
+      <p style="font-size:16px;margin:0">Type another limit and the <b>deterministic checks run live</b>: precedent, FDA passage, regimen logic. Outcomes: Supported · Qualified · Rejected · <b>Needs medical review</b>.</p></div>
+    <div class="box"><h3>Verify</h3>
+      <p style="font-size:16px;margin:0">Challenge any flag. A plausible argument with a true premise can still be rejected when another arm contradicts it.</p></div>
+    <div class="box"><h3>Decide</h3>
+      <p style="font-size:16px;margin:0">Structured reasons: safety concern, regulatory requirement, efficacy enrichment, prior evidence, operational reason; free text only for exceptions.</p></div>
+    <div class="box"><h3>Review packet</h3>
+      <p style="font-size:16px;margin:0">Verbatim requirement and page, rationale for and against, open questions, next action and the team's decision. Markdown and JSON.</p></div>
   </div>
-  <div class="foot"><span>Deterministic, auditable engine; optional model may only downgrade and is always verified</span><span>5</span></div>
+  <div class="foot"><span>Every value links back to a protocol page or an FDA passage</span><span>4</span></div>
 </section>
 
-<!-- 6 -->
+<!-- 5 Mode A example -->
 <section class="slide">
-  <div class="kicker">Real example · EMPOWER-Lung 3</div>
+  <div class="kicker">Mode A on a real protocol · EMPOWER-Lung 3 (NCT03409614)</div>
   <h2 style="margin-bottom:12px">Hemoglobin ≥10 g/dL: a review question, not a mistake</h2>
   <div class="cols" style="grid-template-columns:1.35fr 1fr;gap:26px;align-items:start">
     <img class="shot" src="../img/comparators.png" style="width:100%">
     <div style="font-size:17px">
       <ul>
-        <li><b>Own rationale first:</b> arms include platinum doublets with pemetrexed or paclitaxel; protocol p.51 notes higher grade 3–4 anemia with pemetrexed</li>
-        <li>A plausible safety rationale exists, but the <i>precise threshold</i> is not established by the available evidence</li>
-        <li><b>Peers (started earlier):</b> CheckMate 9LA, CheckMate 227 and KEYNOTE-042 used <b>≥9 g/dL</b>; eNERGY used <b>&gt;10 g/dL</b></li>
-        <li>A looser peer threshold is precedent, not proof of safety → <span class="tag review">Review recommended</span></li>
-        <li>Not claimed: that 10 is wrong, that it changed across amendments, or that EMPOWER-Lung 1 shaped it</li>
+        <li><b>Own rationale first:</b> the arms include platinum doublets with pemetrexed or paclitaxel; the protocol notes higher grade 3–4 anemia with pemetrexed</li>
+        <li>A safety rationale for <i>a</i> threshold exists; the precise value is not established by the available evidence</li>
+        <li><b>Earlier peers:</b> CheckMate 9LA, CheckMate 227 and KEYNOTE-042 used <b>≥9 g/dL</b>; eNERGY used <b>&gt;10 g/dL</b> → <span class="tag review">Review recommended</span></li>
+        <li><b>Verify:</b> "cemiplimab is not myelosuppressive, so lower the ANC floor" is <b style="color:var(--red)">Rejected</b>: other arms contain carboplatin, cisplatin, paclitaxel, pemetrexed</li>
+        <li>Not claimed: that 10 is wrong, or that a lower limit is safe</li>
       </ul>
     </div>
   </div>
-  <div class="foot"><span>Posted protocol is Amendment 5, not necessarily the design-time version · all values link to protocol pages</span><span>6</span></div>
+  <div class="foot"><span>A more permissive comparator shows a threshold was used, not that it was safe · posted protocol is Amendment 5</span><span>5</span></div>
 </section>
 
-<!-- 7 -->
+<!-- 6 Mode B -->
 <section class="slide">
-  <div class="kicker">Challengeable</div>
-  <h2 style="margin-bottom:12px">The verifier rejects a plausible argument with a true premise</h2>
-  <div class="cols" style="grid-template-columns:1fr 1.15fr;gap:26px">
-    <div style="font-size:18px">
-      <p><b>Challenge (typed example):</b> "Cemiplimab is a PD-1 inhibitor and not myelosuppressive, so lower the ANC floor to 1.0."</p>
+  <div class="kicker">Mode B · Create criteria from an idea</div>
+  <h2 style="margin-bottom:10px">Verifier-gated drafts, then a before/after against EMPOWER-Lung 3 as written</h2>
+  <div class="cols" style="grid-template-columns:1fr 1.45fr;gap:26px">
+    <div style="font-size:17px">
+      <p style="margin:0 0 8px"><b>Idea:</b> first-line metastatic NSCLC; cemiplimab, ipilimumab, platinum doublet with pemetrexed or paclitaxel; phase 3; design date March 2018.</p>
       <ul>
-        <li>Premise checks pass (factual)</li>
-        <li><b>regimen_contradiction</b> fails (clinical-logic): other arms contain carboplatin, cisplatin, paclitaxel, pemetrexed → <b style="color:var(--red)">Rejected</b></li>
-        <li>A regimen-matched relaxation (Hgb 9.0) is not approved either: it becomes <b>Needs medical review</b></li>
+        <li>Precedents limited to trials that started <b>before</b> the design date</li>
+        <li>A value is drafted only when the verifier confirms it in a precedent PDF or an FDA passage; otherwise <span class="tag insuf">Insufficient evidence</span></li>
+        <li><b>Self-critique:</b> each draft is reviewed by the same engine that reviews finished protocols</li>
+        <li>Differences from the real protocol are review questions, not errors</li>
       </ul>
-      <p class="muted" style="font-size:15px">We label which checks are factual and which are hand-written rules. Neither is clinical validation.</p>
+      <p class="muted" style="font-size:15px">Guided demo: protocolos-web.vercel.app/tour/draft</p>
     </div>
-    <img class="shot" src="../img/challenge.png" style="height:470px;object-fit:cover;object-position:0 25%">
+    <table class="diff" style="font-size:16px">
+      <tr><th>Criterion</th><th>Drafted</th><th>Source</th><th>EL3 as written</th></tr>
+      <tr><td>Hemoglobin</td><td class="chg">≥9.0 g/dL</td><td>CheckMate 9LA</td><td>≥10.0 g/dL</td></tr>
+      <tr><td>Creatinine clearance</td><td class="chg">≥50 mL/min</td><td>CheckMate 9LA</td><td>&gt;30 mL/min</td></tr>
+      <tr><td>Investigational washout</td><td class="chg">≥28 days</td><td>KEYNOTE-042</td><td>≥30 days</td></tr>
+      <tr><td>Surgery washout</td><td class="chg">≥21 days</td><td>KEYNOTE-042</td><td>≥28 days</td></tr>
+      <tr><td>ANC</td><td>≥1.5 ×10⁹/L</td><td>CheckMate 9LA</td><td>≥1.5 ×10⁹/L</td></tr>
+      <tr><td>Platelets</td><td>≥100 ×10⁹/L</td><td>CheckMate 9LA</td><td>≥100 ×10⁹/L</td></tr>
+      <tr><td>Bilirubin · AST/ALT</td><td>≤1.5 · ≤3.0 ×ULN</td><td>CheckMate 9LA</td><td>≤1.5 · ≤3.0 ×ULN</td></tr>
+      <tr><td>ECOG</td><td>≤1</td><td>CheckMate 9LA</td><td>≤1</td></tr>
+    </table>
   </div>
-  <div class="foot"><span>TrialLens</span><span>7</span></div>
+  <div class="foot"><span>From evals/draft/results.json (NCT03409614). A drafted value shows a precedent, not that it is safe.</span><span>6</span></div>
 </section>
 
-<!-- 8 -->
+<!-- 7 Impact -->
 <section class="slide">
-  <div class="kicker">The deliverable</div>
-  <h2 style="margin-bottom:12px">A review packet the protocol team can act on</h2>
-  <div class="cols" style="grid-template-columns:1.3fr 1fr;gap:26px">
-    <img class="shot" src="../img/packet.png" style="height:480px;object-fit:cover;object-position:0 30%">
-    <div style="font-size:18px"><ul>
-      <li>Original requirement, verbatim, with page</li>
-      <li>Priority and the reason for it</li>
-      <li>Likely purpose: <i>inferred</i> unless sourced</li>
-      <li>Supporting · challenging · context evidence, by tier</li>
-      <li>Unresolved questions</li>
-      <li>Next action</li>
-      <li>Decision: accept · reject · <b>needs medical review</b> · defer</li>
-    </ul></div>
+  <div class="kicker">Measured, not predicted</div>
+  <h2 style="margin-bottom:14px">What we measured, on committed data</h2>
+  <div class="cols3" style="gap:16px">
+    <div class="stat"><div class="num">0</div><p><b>criteria drafted without a verified precedent</b> across the draft eval on 4 real trials; no overclaiming wording found. Drafts agree with the protocol as written for <b>22/31</b> comparable criteria.</p></div>
+    <div class="stat"><div class="num">336/336</div><p><b>planted investigator defects rejected</b> (unknown trial, changed number, causal phrase, one-word misquote, dropped counter-evidence, injected instruction); <b>44/44</b> verbatim controls kept.</p></div>
+    <div class="stat"><div class="num">24/24</div><p><b>verifier faults rejected</b> and <b>0/10</b> valid changes rejected, in a Chalk Evaluation over 39 cases.</p></div>
+    <div class="stat"><div class="num">122/128</div><p><b>criteria extracted</b> from 19 real protocol PDFs (97.6% precision), each with its verbatim line and page.</p></div>
+    <div class="stat"><div class="num">24/24</div><p><b>planted stricter thresholds</b> never marked as supported; <b>0/10</b> loosened thresholds falsely flagged (synthetic edits of authentic protocols).</p></div>
+    <div class="stat"><div class="num">NHANES</div><p>Share of US adults below the EL3 hemoglobin limit and below the ≥9 g/dL peer limit, survey-weighted (NHANES 2017-2018). <b>Caveat:</b> a US population share, not a trial-eligible share and not an enrollment prediction.</p></div>
   </div>
-  <div class="foot"><span>Export: Markdown · printable PDF · JSON</span><span>8</span></div>
+  <div class="foot"><span>Developers wrote both the planted defects and the checks; single annotator; no clinician review yet. Scripts in evals/ reproduce every number.</span><span>7</span></div>
 </section>
 
-<!-- 9 -->
+<!-- 8 Readiness -->
 <section class="slide">
-  <div class="kicker">Evaluation (not clinical validation)</div>
-  <h2 style="margin-bottom:14px">Measured on real protocols, including the ones we hadn't seen</h2>
-  <table style="font-size:21px">
-    <tr><th>What</th><th>Result</th><th>Note</th></tr>
-    <tr><td>Extraction, 19 real protocols</td><td><b>122/128</b> criteria · 97.6% precision</td><td>Unseen set 1 first run <b>15/21</b> (→21/21 after fix); unseen set 2 <b>29/33</b>, single run</td></tr>
-    <tr><td>Planted stricter thresholds (24, Regeneron method)</td><td>Never "supports retaining" <b>24/24</b> · escalated <b>16–22/24</b></td><td>Depends on precedent cutoff; first run found 3 bugs, documented</td></tr>
-    <tr><td>Loosened thresholds falsely flagged</td><td><b>0/10</b></td><td>Synthetic edits of authentic protocols</td></tr>
-    <tr><td>FDA quotes / protocol source lines</td><td><b>32/32</b> · <b>157/157</b></td><td>Verbatim, page-anchored</td></tr>
-    <tr><td>Verifier, developer-designed faults</td><td><b>24/24</b> rejected · <b>0/10</b> valid rejected</td><td>Same author wrote faults and verifier. Also run on Chalk.</td></tr>
+  <div class="kicker">Readiness</div>
+  <h2>Deployed, documented, installable</h2>
+  <div class="cols">
+    <div class="box"><h3>Use it now</h3><ul style="font-size:18px">
+      <li><b>App:</b> protocolos-web.vercel.app (<code>/review</code>, <code>/draft</code>, <code>/tour</code>, <code>/tour/draft</code>)</li>
+      <li><b>API:</b> protocolos-api-production.up.railway.app, OpenAPI page at <code>/docs</code></li>
+      <li><b>Code:</b> github.com/rinatrizvanov/ProtocolOS, MIT licensed</li>
+      <li>Public demo runs the deterministic engine; no model output is substituted when no model key is configured</li></ul></div>
+    <div class="box"><h3>Install and integrate</h3><ul style="font-size:18px">
+      <li>Python + FastAPI engine; Next.js app; one Dockerfile</li>
+      <li><code>docs/INSTALL.md</code>: clean-clone install, prewarm, run both UIs</li>
+      <li>164 automated tests pass; end-to-end demo check and a numbers check gate every pitch number</li>
+      <li>Structured JSON over HTTP: plugs into a protocol-review workflow; packet export as Markdown and JSON</li></ul></div>
+  </div>
+  <div class="flow">
+    <div><b>Traceable</b>every value links to a page of a public document</div>
+    <div><b>Reproducible</b>committed eval results, scripts in <code>evals/</code></div>
+    <div><b>Auditable</b>verifier checks and investigator audit log</div>
+  </div>
+  <div class="foot"><span>ProtocolOS</span><span>8</span></div>
+</section>
+
+<!-- 9 Agent risks -->
+<section class="slide">
+  <div class="kicker">Agent risks and mitigations</div>
+  <h2 style="margin-bottom:12px">The deterministic verifier is the authority, not the model</h2>
+  <table style="font-size:17px">
+    <tr><th style="width:36%">Risk</th><th>Mitigation</th></tr>
+    <tr><td>A model invents a value, a quote or a trial</td><td>Every statement is checked against the provenance graph; numbers, quotes and trial IDs must match. The model may only <b>downgrade</b> a flag, never upgrade it</td></tr>
+    <tr><td>A drafted criterion has no real basis</td><td>Drafts need a verified precedent or FDA passage; otherwise <span class="tag insuf">Insufficient evidence</span></td></tr>
+    <tr><td>Agreement mistaken for evidence</td><td>Agreement among comparators may be template carry-forward; a looser peer shows use, not safety</td></tr>
+    <tr><td>Instructions hidden in a PDF</td><td>Document text is data, never instructions; injected-instruction defects are in the eval</td></tr>
+    <tr><td>Causal or outcome overclaims</td><td>No claims of safety, enrollment or cost gains, or causality between trials; wording checks in tests</td></tr>
+    <tr><td>Patient privacy</td><td>Public data only: ClinicalTrials.gov, posted protocols, FDA guidance, NHANES. No patient data</td></tr>
+    <tr><td><b>Blind spot</b></td><td>Rationale in non-public sources (preclinical toxicology, internal development data, regulator correspondence) cannot be seen by ProtocolOS</td></tr>
   </table>
-  <div class="foot"><span>Single annotator; no clinician review yet. Scripts in evals/ reproduce every number.</span><span>9</span></div>
+  <div class="foot"><span>Not clinically validated; outputs are review questions for the protocol team</span><span>9</span></div>
 </section>
 
-<!-- 10 -->
+<!-- 10 Chalk -->
 <section class="slide">
   <div class="kicker">Built on Chalk</div>
-  <h2>Chalk does real work in TrialLens</h2>
+  <h2>Chalk does real work in ProtocolOS</h2>
   <div class="cols3">
-    <div class="box"><h3>Features + resolver</h3>A <code>Trial</code> feature set resolved live from ClinicalTrials.gov inside Chalk. The dashboard queries it per trial: is the threshold even in the registry? <b>Deployed; online queries succeed.</b></div>
-    <div class="box"><h3>Compute + Evaluations</h3>The verifier runs as a Chalk function over 39 cases, graded by Chalk scorers. <b>Run SUCCEEDED, 0 task errors</b>; 24/24 faults rejected remotely.</div>
-    <div class="box"><h3>Model Gateway</h3>Router-backed LLM critic (may only downgrade) and free-text challenge parsing, always gated by the verifier. <b>Implemented; awaiting event key.</b></div>
+    <div class="box"><h3>Features + resolver</h3>A <code>Trial</code> feature set resolved live from ClinicalTrials.gov inside Chalk (query <code>triallens_registry_profile</code>). It answers per trial: is the threshold even in the registry? For EMPOWER-Lung 3 the lab criteria are only in the protocol PDF.</div>
+    <div class="box"><h3>Compute + Evaluations</h3>The verifier runs as a Chalk function over 39 cases graded by Chalk scorers: <b>run succeeded, 0 task errors</b>, 24/24 faults rejected. The <code>protocolos-investigator</code> suite has run locally.</div>
+    <div class="box"><h3>Model Gateway</h3>Router-backed critic and Ask answers. The model may only downgrade, and every statement passes the verifier. The public demo stays deterministic.</div>
   </div>
-  <p class="muted" style="font-size:16px;margin-top:20px">Evaluation <code>cmvco3m0n01dw01y520oc80sq</code> · environment <code>trllf247b678</code></p>
-  <div class="foot"><span>TrialLens</span><span>10</span></div>
+  <p class="muted" style="font-size:16px;margin-top:20px">Verifier evaluation <code>cmvco3m0n01dw01y520oc80sq</code> · environment <code>trllf247b678</code> · Chalk team <code>triallens</code></p>
+  <div class="foot"><span>ProtocolOS</span><span>10</span></div>
 </section>
 
-<!-- 11 -->
+<!-- 11 Close -->
 <section class="slide">
-  <div class="kicker">Honest scope and what's next</div>
-  <h2>What TrialLens is, and isn't</h2>
+  <div class="kicker">Scope and what's next</div>
+  <h2>What ProtocolOS is, and isn't</h2>
   <div class="cols">
-    <div class="box"><h3>Is</h3><ul>
-      <li>A working, reproducible reviewer for lab, ECOG and washout criteria in oncology</li>
-      <li>Complementary to criteria-drafting tools (e.g. Regeneron/Keiji ISPOR 2026): they draft from precedent; we challenge individual restrictions</li>
-      <li>MIT-licensed, runs from a clean clone, 13 tests</li></ul></div>
-    <div class="box"><h3>Isn't (yet)</h3><ul>
+    <div class="box"><h3>Is</h3><ul style="font-size:18px">
+      <li>A working, deployed rationale reviewer and drafter for lab, ECOG and washout criteria in oncology</li>
+      <li>Grounded in public protocols and FDA final guidance (July 2026), with a deterministic verifier</li>
+      <li>MIT licensed, documented install, reproducible evals</li></ul></div>
+    <div class="box"><h3>Isn't (yet)</h3><ul style="font-size:18px">
       <li>Clinically validated: rule-based, single-annotator gold, no clinician review</li>
       <li>A recruitment, cost or safety predictor; we make no such claims</li>
-      <li><b>Next:</b> internal precedent and amendments · learning from team decisions · ICH M11 / USDM structured protocols · clinician review</li></ul></div>
+      <li><b>Next:</b> internal precedent and amendments · ICH M11 structured protocols · clinician review</li></ul></div>
   </div>
-  <p style="font-size:26px;font-weight:700;margin-top:26px;color:var(--accent)">Every exclusion deserves evidence.</p>
-  <div class="foot"><span>TrialLens · HackHarvard 2026</span><span>11</span></div>
+  <p style="font-size:28px;font-weight:700;margin-top:24px;color:var(--accent)">Every exclusion deserves a rationale.</p>
+  <p class="muted" style="font-size:18px;margin-top:4px">Try it: protocolos-web.vercel.app · Code: github.com/rinatrizvanov/ProtocolOS</p>
+  <div class="foot"><span>ProtocolOS · HackHarvard 2026</span><span>11</span></div>
 </section>
 
 </body>
