@@ -139,7 +139,8 @@ class DemoGuard:
     def _check_body(path: str, data: dict) -> str | None:
         if "nct" in data and not valid_nct(data["nct"]):
             return "Expected an NCT identifier like NCT03409614"
-        if "as_of" in data and not valid_as_of(data["as_of"]):
+        # POST /api/draft takes an idea whose as_of is null, YYYY-MM or YYYY-MM-DD; routes_draft.Idea validates it.
+        if path != "/api/draft" and "as_of" in data and not valid_as_of(data["as_of"]):
             return "as_of must be auto, none or YYYY-MM-DD"
         if path == "/api/decision" and len(str(data.get("reason") or "")) > MAX_REASON:
             return f"reason is limited to {MAX_REASON} characters"
