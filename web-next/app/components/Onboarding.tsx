@@ -11,7 +11,7 @@ const STEPS = [
     title: "Read the rationale",
     text: "Each criterion shows its likely rationale, which arm it comes from where a drug link exists, and what similar trials used.",
   },
-  { n: 3, title: "Verify, then decide", text: "Propose another limit, see the deterministic verifier's verdict, then record the team's reason." },
+  { n: 3, title: "Redraft, then decide", text: "Rewrite the criterion, watch the deterministic checks update as you type, then record the team's reason." },
 ];
 
 const listeners = new Set<() => void>();
