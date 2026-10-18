@@ -37,7 +37,7 @@ The Next.js app proxies `/api/*` to `PROTOCOLOS_API_URL` (legacy `TRIALLENS_API_
 for an engine on another port: `PROTOCOLOS_API_URL=http://127.0.0.1:<port> npm run dev -- -p 3765`. In a production
 build the proxy target is fixed when the app is built, so set it before building:
 `cd web-next && PROTOCOLOS_API_URL=http://127.0.0.1:8765 npm run build && npm start`. Run `/tour` against the guarded
-engine: its step 6 probes the guard live.
+engine: its last step (7, Tested) probes the guard live.
 
 API reference: FastAPI serves interactive docs at `http://localhost:8765/docs` and the schema at `/openapi.json`.
 `GET /api/build` returns `{sha, web_next, built_at}` for the running build (`sha` is "unknown" unless `PROTOCOLOS_BUILD_SHA` is set).

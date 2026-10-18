@@ -1,24 +1,71 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { CRITERION, NCT } from "@/lib/api";
 import { AppHeader } from "../components/AppHeader";
+import { RationalePanel } from "../components/RationalePanel";
+import Redraft from "../screens/Redraft";
 import Screen1 from "../screens/Screen1";
 import Screen2 from "../screens/Screen2";
-import Screen3 from "../screens/Screen3";
 import Screen4 from "../screens/Screen4";
-import Screen5 from "../screens/Screen5";
 import Screen6 from "../screens/Screen6";
 import Screen7 from "../screens/Screen7";
 
+// Tour framing for a screen that has no tour variant of its own: one headline, then the app's own panel.
+function TourStep({ headline, caption, children }: { headline: string; caption?: ReactNode; children: ReactNode }) {
+  return (
+    <section className="flex min-h-0 flex-col gap-3">
+      <div className="flex flex-col gap-1">
+        <h1 data-role="headline" className="text-balance text-2xl font-semibold tracking-tight text-ink">
+          {headline}
+        </h1>
+        {caption ? (
+          <p data-role="caption" className="max-w-3xl text-base text-muted">
+            {caption}
+          </p>
+        ) : null}
+      </div>
+      <div className="flex w-full flex-col">{children}</div>
+    </section>
+  );
+}
+
+// The tour's example redraft and rationale note (Redraft step); both are labelled on screen as typed by the tour.
+const TOUR_DRAFT = "Hemoglobin \u2265 9.0 g/dL";
+const TOUR_NOTE = "This change is safe.";
+
+// Same names and order as the /review tabs (Rationale, Compare, Ask, Redraft, Decide), framed by the overview first
+// and the readiness check last.
 const STEPS = [
   { title: "The rules", render: () => <Screen1 nct={NCT} /> },
-  { title: "Compared", render: () => <Screen2 nct={NCT} criterionId={CRITERION} /> },
-  { title: "Rationale", render: () => <Screen3 nct={NCT} criterionId={CRITERION} /> },
+  {
+    title: "Rationale",
+    render: () => (
+      <TourStep headline="Rationale: why this rule is here.">
+        <RationalePanel nct={NCT} criterionId={CRITERION} armTextOpen />
+      </TourStep>
+    ),
+  },
+  { title: "Compare", render: () => <Screen2 nct={NCT} criterionId={CRITERION} /> },
   { title: "Ask", render: () => <Screen4 nct={NCT} criterionId={CRITERION} autoAsk="why_flagged" /> },
-  { title: "Verify", render: () => <Screen5 nct={NCT} /> },
-  { title: "Tested", render: () => <Screen6 /> },
+  {
+    title: "Redraft",
+    render: () => (
+      <TourStep
+        headline="Redraft a rule. Every change is checked."
+        caption={
+          <>
+            The tour typed a lower limit, {TOUR_DRAFT}. The checks run live against the protocol, similar trials, FDA
+            guidance, NHANES and the verifier. Add the example note to see an overclaim rejected.
+          </>
+        }
+      >
+        <Redraft nct={NCT} criterionId={CRITERION} prefill={TOUR_DRAFT} exampleNote={TOUR_NOTE} />
+      </TourStep>
+    ),
+  },
   { title: "Decide", render: () => <Screen7 nct={NCT} criterionId={CRITERION} /> },
+  { title: "Tested", render: () => <Screen6 /> },
 ];
 
 // The step lives in the URL hash (#1..#7) so a screen can be opened directly.
@@ -107,7 +154,7 @@ export default function Tour() {
         </nav>
 
         <div className="mt-4 flex flex-1 flex-col">
-          <div key={step} className="flex flex-1 flex-col">
+          <div key={step} data-testid="tour-step" data-step={step + 1} className="flex flex-1 flex-col">
             {STEPS[step].render()}
           </div>
         </div>
@@ -115,6 +162,7 @@ export default function Tour() {
         <footer className="mt-4 flex items-center justify-between border-t border-line pt-3">
           <button
             type="button"
+            data-testid="tour-back"
             onClick={() => go(step - 1)}
             disabled={step === 0}
             className="rounded-md px-4 py-2 text-ink transition-colors duration-150 hover:bg-line focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:invisible"
@@ -124,6 +172,7 @@ export default function Tour() {
           <span className="text-sm text-muted pointer-coarse:hidden">Arrow keys move between steps</span>
           <button
             type="button"
+            data-testid="tour-next"
             onClick={() => go(step + 1)}
             disabled={step === STEPS.length - 1}
             className="rounded-md bg-ink px-5 py-2 text-paper transition-opacity duration-150 hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:invisible"

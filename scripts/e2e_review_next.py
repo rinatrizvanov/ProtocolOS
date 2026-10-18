@@ -8,7 +8,8 @@ unless next.config.ts lists it in allowedDevOrigins, and the page never hydrates
 
 Each step prints PASS, FAIL or SKIP. A step SKIPs when the piece it needs is missing from the deployment (for
 example /api/rationale answers 404, or the Decide tab has no structured reason buttons). A skip is never a pass:
-with --strict any SKIP makes the run fail. Screenshots go to /tmp/protocolos-logs/ui/.
+with --strict any SKIP makes the run fail. Screenshots go to /tmp/protocolos-logs/ui/ and, for the guided tour
+(/tour#1..#7, same names and order as the /review tabs), /tmp/protocolos-logs/tour/.
 
 The Decide step saves a decision. Against a local BASE_URL it first backs up data/decisions/<nct>.json of the engine's
 data directory (--data-dir, else $PROTOCOLOS_DATA_DIR, else this checkout's data/) and restores it byte for byte, or
@@ -32,6 +33,9 @@ from playwright.sync_api import Page, sync_playwright
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:3765").rstrip("/")
 NCT = "NCT03409614"
 SHOTS = Path("/tmp/protocolos-logs/ui")
+TOUR_SHOTS = Path("/tmp/protocolos-logs/tour")
+# The tour mirrors the /review tabs (Rationale, Compare, Ask, Redraft, Decide) between the overview and the guard step.
+TOUR_STEPS = ("The rules", "Rationale", "Compare", "Ask", "Redraft", "Decide", "Tested")
 REPO = Path(__file__).resolve().parents[1]
 TABS = ("rationale", "compare", "ask", "verify", "decide")
 BANNED = re.compile(r"feedback loop|learns from|safe to|will increase enrol", re.I)
@@ -100,6 +104,7 @@ def main() -> int:
     parser.add_argument("--write-decision", action="store_true", help="also save a decision against a non-local BASE_URL")
     args = parser.parse_args()
     SHOTS.mkdir(parents=True, exist_ok=True)
+    TOUR_SHOTS.mkdir(parents=True, exist_ok=True)
 
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
@@ -301,6 +306,82 @@ def main() -> int:
                     report("decide: decisions file restored byte for byte", "PASS" if wrote and restored else "FAIL",
                            f"{decisions}" + ("" if wrote else " did not receive the decision (pass --data-dir)"))
 
+        # 7. Guided tour: step names and order mirror the app, every step passes the wording rule, the Redraft step shows
+        # the tour's prefilled draft with a value_changed flag and, after the labelled example note, an overclaim fail and
+        # a rejected verifier status. The Decide step is only opened: the tour never saves a decision.
+        tour_problems: dict[str, list[str]] = {}
+        try:
+            page.goto(f"{BASE_URL}/tour#1", wait_until="networkidle")
+            page.get_by_test_id("tour-step").wait_for(timeout=15000)
+            names = page.eval_on_selector_all("nav[aria-label='Demo steps'] ol button", "els => els.map(e => e.innerText.trim())")
+            report("tour: step names and order mirror the app", "PASS" if tuple(names) == TOUR_STEPS else "FAIL", " / ".join(names))
+            exit_href = page.get_by_test_id("exit-demo").get_attribute("href") or ""
+            report("tour: Exit opens the review on EL3 hemoglobin",
+                   "PASS" if exit_href == f"../review?nct={NCT}&c=hemoglobin" else "FAIL", exit_href)
+            for i, name in enumerate(TOUR_STEPS, start=1):
+                page.goto(f"{BASE_URL}/tour#{i}", wait_until="networkidle")
+                page.locator(f"[data-testid=tour-step][data-step='{i}']").wait_for(timeout=15000)
+                page.wait_for_timeout(1500)
+                if name == "Rationale":
+                    page.get_by_test_id("arm-attribution").wait_for(timeout=15000)
+                if name == "Redraft":
+                    page.locator("[data-testid=redraft-flag][data-code=value_changed]").first.wait_for(timeout=30000)
+                found = wording_problems(visible_text(page))
+                if found:
+                    tour_problems[f"{i} {name}"] = found
+                page.screenshot(path=str(TOUR_SHOTS / f"tour-{i}-{name.lower().replace(' ', '-')}-1440.png"), full_page=True)
+            report("tour: wording scan on every step", "PASS" if not tour_problems else "FAIL",
+                   json.dumps(tour_problems, ensure_ascii=False)[:600] if tour_problems else "")
+        except Exception as exc:  # noqa: BLE001 - reported as a failed step
+            report("tour: every step renders", "FAIL", str(exc)[:200])
+
+        step = "tour: Rationale step shows the badges and the engine's arm sentence (all arms, chemotherapy)"
+        try:
+            page.goto(f"{BASE_URL}/tour#2", wait_until="networkidle")
+            arm = page.get_by_test_id("arm-attribution")
+            arm.wait_for(timeout=15000)
+            driver = arm.get_attribute("data-driver")
+            arm_text = arm.inner_text()
+            badges = page.locator("[data-testid=rationale-badge]").count()
+            ok = driver == "all_arms" and "Every arm" in arm_text and "chemotherapy" in arm_text and badges > 0
+            report(step, "PASS" if ok else "FAIL", f"driver={driver}, badges={badges}")
+        except Exception as exc:  # noqa: BLE001
+            report(step, "FAIL", str(exc)[:200])
+
+        step = "tour: Redraft step prefills Hemoglobin \u2265 9.0 g/dL (value_changed); the example note is rejected"
+        try:
+            page.goto(f"{BASE_URL}/tour#5", wait_until="networkidle")
+            page.locator("[data-testid=redraft-flag][data-code=value_changed]").first.wait_for(timeout=30000)
+            draft = page.get_by_test_id("redraft-input").input_value()
+            labelled = page.get_by_test_id("redraft-tour-typed").is_visible()
+            page.get_by_test_id("redraft-example-note").click()
+            page.locator("[data-testid=redraft-flag][data-level=fail][data-code=overclaim]").first.wait_for(timeout=30000)
+            page.locator("[data-testid=redraft-status][data-status=REJECTED]").wait_for(timeout=15000)
+            note = page.get_by_test_id("redraft-rationale").input_value()
+            note_labelled = page.get_by_test_id("redraft-note-typed").is_visible()
+            found = wording_problems(visible_text(page))
+            page.screenshot(path=str(TOUR_SHOTS / "tour-5-redraft-note-1440.png"), full_page=True)
+            ok = draft == "Hemoglobin \u2265 9.0 g/dL" and labelled and note == "This change is safe." and note_labelled and not found
+            report(step, "PASS" if ok else "FAIL",
+                   f"draft={draft!r}, note={note!r}, labelled={labelled}/{note_labelled}" + (f", wording {found}" if found else ""))
+        except Exception as exc:  # noqa: BLE001
+            report(step, "FAIL", str(exc)[:200])
+
+        step = "tour: Next, Back and arrow keys move between steps"
+        try:
+            page.goto(f"{BASE_URL}/tour#1", wait_until="networkidle")
+            page.get_by_test_id("tour-next").click()
+            page.locator("[data-testid=tour-step][data-step='2']").wait_for(timeout=5000)
+            page.keyboard.press("ArrowRight")
+            page.locator("[data-testid=tour-step][data-step='3']").wait_for(timeout=5000)
+            page.keyboard.press("ArrowLeft")
+            page.locator("[data-testid=tour-step][data-step='2']").wait_for(timeout=5000)
+            page.get_by_test_id("tour-back").click()
+            page.locator("[data-testid=tour-step][data-step='1']").wait_for(timeout=5000)
+            report(step, "PASS")
+        except Exception as exc:  # noqa: BLE001
+            report(step, "FAIL", str(exc)[:200])
+
         # 6. Phone width: no horizontal scroll at 390px on the landing, every review tab and the Compare plot of
         # every EL3 criterion (the plot is the widest view); screenshots at both sizes.
         phone = browser.new_context(viewport={"width": 390, "height": 844})
@@ -310,13 +391,22 @@ def main() -> int:
         mobile.get_by_test_id("criterion-item").first.wait_for(timeout=15000)
         criteria = mobile.eval_on_selector_all("[data-testid=criterion-item]", "els => els.map(e => e.dataset.criterion)")
         pages += [(f"compare-{c}", review_url(c, tab="compare")) for c in criteria if c != "hemoglobin"]
+        pages += [(f"tour-{i}-{n.lower().replace(' ', '-')}", f"{BASE_URL}/tour#{i}") for i, n in enumerate(TOUR_STEPS, start=1)]
         widths = {}
         for name, url in pages:
             mobile.goto(url, wait_until="networkidle")
-            mobile.get_by_role("tabpanel").or_(mobile.get_by_test_id("mode-review")).first.wait_for(timeout=15000)
-            mobile.wait_for_timeout(600)
+            if name.startswith("tour-"):
+                # A hash-only change does not reload the page; reload so each step mounts from its own URL.
+                mobile.reload(wait_until="networkidle")
+                mobile.get_by_test_id("tour-step").wait_for(timeout=15000)
+                mobile.wait_for_timeout(1500)
+            else:
+                mobile.get_by_role("tabpanel").or_(mobile.get_by_test_id("mode-review")).first.wait_for(timeout=15000)
+                mobile.wait_for_timeout(600)
             widths[name] = mobile.evaluate("document.documentElement.scrollWidth")
-            if not name.startswith("compare-"):
+            if name.startswith("tour-"):
+                mobile.screenshot(path=str(TOUR_SHOTS / f"{name}-390.png"), full_page=True)
+            elif not name.startswith("compare-"):
                 mobile.screenshot(path=str(SHOTS / f"{name}-390.png"), full_page=True)
         wide = {k: w for k, w in widths.items() if w > 390}
         report(f"no horizontal scroll at 390px ({len(widths)} pages)", "PASS" if not wide else "FAIL",

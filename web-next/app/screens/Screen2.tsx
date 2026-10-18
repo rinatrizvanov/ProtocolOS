@@ -209,7 +209,7 @@ export default function Screen2({ nct, criterionId, detailed = false }: Selectio
   return (
     <Frame
       variant={detailed ? "app" : "tour"}
-      headline={detailed ? "Limits in similar trials" : "One rule, compared."}
+      headline={detailed ? "Limits in similar trials" : "Compare: one rule, similar trials."}
       caption={caption}
       details={
         rows.length > 0 ? (
