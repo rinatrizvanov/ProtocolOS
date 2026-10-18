@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Do not generate AGENTS.md / CLAUDE.md files in the app folder when running `next dev`.
+  agentRules: false,
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

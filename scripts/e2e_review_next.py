@@ -8,7 +8,7 @@ unless next.config.ts lists it in allowedDevOrigins, and the page never hydrates
 
 Each step prints PASS, FAIL or SKIP. A step SKIPs when the piece it needs is missing from the deployment (for
 example /api/rationale answers 404, or the Decide tab has no structured reason buttons). A skip is never a pass:
-with --strict any SKIP makes the run fail. Screenshots go to /tmp/triallens-logs/v2/ui/.
+with --strict any SKIP makes the run fail. Screenshots go to /tmp/protocolos-logs/v2/ui/.
 
 The Decide step saves a decision. Against a local BASE_URL it first backs up data/decisions/<nct>.json of the engine's
 data directory (--data-dir, else $PROTOCOLOS_DATA_DIR, else this checkout's data/) and restores it byte for byte, or
@@ -31,7 +31,7 @@ from playwright.sync_api import Page, sync_playwright
 
 BASE_URL = os.environ.get("BASE_URL", "http://localhost:3766").rstrip("/")
 NCT = "NCT03409614"
-SHOTS = Path("/tmp/triallens-logs/v2/ui")
+SHOTS = Path("/tmp/protocolos-logs/v2/ui")
 REPO = Path(__file__).resolve().parents[1]
 TABS = ("rationale", "compare", "ask", "verify", "decide")
 BANNED = re.compile(r"feedback loop|learns from|safe to|will increase enrol", re.I)
@@ -268,7 +268,7 @@ def main() -> int:
         local = is_local(BASE_URL)
         decisions = Path(args.data_dir) / "decisions" / f"{NCT}.json"
         if reason.count() == 0:
-            report(step, "SKIP", "reason-safety_concern not merged")
+            report(step, "SKIP", "reason-safety_concern not on the page")
         elif not local and not args.write_decision:
             report(step, "SKIP", f"{BASE_URL} is not local; pass --write-decision to save a decision there")
         else:

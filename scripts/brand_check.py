@@ -62,7 +62,7 @@ def tracked() -> list[str]:
 
 def allowed(path: str, line: str) -> str | None:
     if any(fnmatch(path, g) for g in CR_PENDING):
-        return "CR pending (CR-v2-R)"
+        return "rename pending in this file"
     if any(fnmatch(path, g) for g in GENERATED):
         return "generated"
     for glob, rx, reason in ALLOW:

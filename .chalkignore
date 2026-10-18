@@ -34,7 +34,6 @@ trialforge/
 web/
 evals/
 data/
-research/
 tests/
 Regeneron starter-kit/
 chalk_project/*.py

@@ -2,14 +2,14 @@
 # Clean-clone check for ProtocolOS: clone, fresh venv (pip, no uv), cache documents, pytest, web-next npm ci + build.
 #   scripts/clean_clone.sh [source repo or URL] [branch]
 # Defaults: the GitHub repository, branch main (pass "$(pwd)" to check this checkout instead). Logs go to
-# /tmp/triallens-logs/v2/clean/. The clone (about 1 GB with venv and node_modules) is deleted at the end unless
+# /tmp/protocolos-logs/v2/clean/. The clone (about 1 GB with venv and node_modules) is deleted at the end unless
 # KEEP=1. PYTHON picks the interpreter (default: python3.13, else python3).
 # Exits non-zero on the first failing step.
 set -euo pipefail
 SRC="${1:-https://github.com/rinatrizvanov/ProtocolOS.git}"
 BRANCH="${2:-main}"
 PY="${PYTHON:-$(command -v python3.13 || command -v python3)}"
-LOGS=/tmp/triallens-logs/v2/clean
+LOGS=/tmp/protocolos-logs/v2/clean
 mkdir -p "$LOGS"
 WORK="$(mktemp -d /tmp/protocolos-clean.XXXXXX)"
 [ "${KEEP:-0}" = "1" ] || trap 'rm -rf "$WORK"' EXIT

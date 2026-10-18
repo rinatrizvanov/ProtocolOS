@@ -10,7 +10,7 @@ every statement is supported or uncertain and no check fails; (6) load the ANC "
 example and verify -> Rejected; (7) record "Needs medical review" in the packet tab; (8) export Markdown and
 find the decision in it; (9) only for a non-localhost BASE_URL: `refresh=1` is refused.
 Steps 3-5 report "skipped: graph UI not installed" when the page has no graph tab; a skip is never a pass.
-Screenshots and summary.json go to E2E_OUT (default /tmp/triallens-logs/e2e/). Exit 1 if any step fails.
+Screenshots and summary.json go to E2E_OUT (default /tmp/protocolos-logs/e2e/). Exit 1 if any step fails.
 Step 7 writes a real decision (data/decisions/NCT03409614.json on the server), so the run leaves no test data:
 - local BASE_URL: the script first checks that the server reads E2E_DECISIONS_DIR (default: this checkout's
   data/decisions), backs up NCT03409614.json and restores it byte for byte after step 8 (or deletes it when it did
@@ -31,7 +31,7 @@ from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
 
 BASE = os.environ.get("BASE_URL", "http://localhost:8765").rstrip("/")
-OUT = Path(os.environ.get("E2E_OUT", "/tmp/triallens-logs/e2e"))
+OUT = Path(os.environ.get("E2E_OUT", "/tmp/protocolos-logs/e2e"))
 NCT = "NCT03409614"
 LOCAL = urlparse(BASE).hostname in ("localhost", "127.0.0.1", "0.0.0.0", "::1")
 STAMP = time.strftime("%Y-%m-%d %H:%M:%S")

@@ -48,12 +48,12 @@ skips=0
 if [ -f "$ROOT/trialforge/routes_rationale.py" ]; then
   check "GET /api/rationale/$NCT" 200 GET "/api/rationale/$NCT" "" '"blind_spot"'
 else
-  echo "SKIPPED (not merged) GET /api/rationale/$NCT"; skips=$((skips + 1))
+  echo "SKIPPED (endpoint not installed) GET /api/rationale/$NCT"; skips=$((skips + 1))
 fi
 if [ -f "$ROOT/trialforge/routes_draft.py" ]; then
   check "GET /api/draft/presets" 200 GET "/api/draft/presets" "" '"id"'
 else
-  echo "SKIPPED (not merged) GET /api/draft/presets"; skips=$((skips + 1))
+  echo "SKIPPED (endpoint not installed) GET /api/draft/presets"; skips=$((skips + 1))
 fi
 OPTIONAL=1 check "GET /api/graph/$NCT?criterion_id=hemoglobin" 200 GET "/api/graph/$NCT?criterion_id=hemoglobin" "" '"nodes"'
 printf '{"nct":"%s","criterion_id":"hemoglobin","question":"why_flagged","as_of":"auto","mode":"deterministic"}' "$NCT" > "$TMP/inv.json"
@@ -71,6 +71,6 @@ else
   echo "SKIPPED        guard checks for refresh/as_of/critique: guard not active (they would recompute or call a model)"
 fi
 
-[ "$skips" -gt 0 ] && echo "note: $skips required check(s) SKIPPED (not merged); a skip is not a pass"
+[ "$skips" -gt 0 ] && echo "note: $skips required check(s) SKIPPED (endpoint not installed); a skip is not a pass"
 if [ "$fails" -eq 0 ]; then echo "smoke: all checks passed"; else echo "smoke: $fails check(s) failed"; fi
 exit $((fails > 0))
