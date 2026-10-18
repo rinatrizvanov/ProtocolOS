@@ -28,8 +28,9 @@ ALLOW: list[tuple[str, str, str]] = [
     ("trialforge/demo_guard.py", r"legacy TRIALLENS_PUBLIC", "documents the legacy env name"),
     ("web-next/README.md", r"legacy `TRIALLENS_API_URL`", "documents the legacy env name"),
     # Chalk identifiers that are deployed; renaming them needs `chalk apply` (NH7).
-    ("trialforge/chalk_bridge.py", r"triallens_registry_profile", "deployed Chalk query name"),
-    ("*", r"\bteam `?triallens`?|team triallens", "Chalk team name"),
+    ("*", r"triallens_registry_profile", "deployed Chalk query name"),
+    ("*", r"\bteam\W+(?:<code>|`)?triallens", "Chalk team name"),
+    ("tests/*", r"not in", "a negative check that the old name is gone"),
     # Paths: the local folder is renamed only after submission (NH11); log dirs and spec ids keep the name.
     ("*", r"triallens/|/tl-|triallens-logs|task-triallens-", "local folder, log directory or spec id"),
     ("*", r"rinatrizvanov/triallens", "old GitHub URL (redirects to ProtocolOS)"),
@@ -41,12 +42,7 @@ ALLOW: list[tuple[str, str, str]] = [
 ]
 
 # Collaborator-owned files: renamed through CR-v2-R (plan-v2 section 9) unless NH5/NH12 is granted.
-CR_PENDING: list[str] = [
-    "README.md", "LICENSE", "CHALK.md", "chalk.yaml", ".chalkignore",
-    "docs/DEVPOST.md", "docs/DEMO_SCRIPT.md", "docs/TEAMMATE_ONBOARDING.md", "docs/deck/*",
-    "web/index.html", "web/app.js",
-    "trialforge/api.py", "trialforge/packet.py", "trialforge/review.py", "trialforge/extract.py",
-]
+CR_PENDING: list[str] = []  # all applied on 2026-10-18 (user approved direct edits at 03:55 ET)
 
 # Generated files: regenerated after the rename, never hand-edited.
 GENERATED: list[str] = []
