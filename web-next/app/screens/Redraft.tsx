@@ -78,6 +78,9 @@ function Section({ title, children, aside }: { title: string; children: ReactNod
   );
 }
 
+// Display-time relabel: engine and verifier sentences say "evidence"; the UI keeps that word for "Insufficient evidence".
+const relabel = (t: string) => t.replace(/(?<!Insufficient )\bevidence\b/gi, "sources");
+
 const fmt = (n: number | null | undefined) => (n === null || n === undefined ? "" : Number.isInteger(n) ? n.toFixed(1) : String(n));
 
 export default function Redraft({ nct, criterionId }: Selection) {
@@ -185,7 +188,7 @@ export default function Redraft({ nct, criterionId }: Selection) {
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">
-      <div className="flex min-w-0 flex-col gap-3">
+      <div className="flex min-w-0 flex-col gap-3 lg:sticky lg:top-4 lg:self-start">
         <Section
           title="As written in the protocol"
           aside={
@@ -299,7 +302,7 @@ export default function Redraft({ nct, criterionId }: Selection) {
         {status ? (
           <div data-testid="redraft-status" data-status={result?.verification?.status} className={`rounded-md border px-3 py-2 text-sm ${status.tone}`}>
             <span className="font-medium">{status.label}</span>
-            {result?.verification?.outcome ? <span className="text-ink/80"> · {result.verification.outcome}</span> : null}
+            {result?.verification?.outcome && result.verification.outcome.toLowerCase() !== result.verification.status.toLowerCase() ? <span className="text-ink/80"> · {relabel(result.verification.outcome)}</span> : null}
           </div>
         ) : result ? (
           <div data-testid="redraft-status" data-status="none" className="rounded-md border border-line px-3 py-2 text-sm text-muted">
@@ -328,7 +331,7 @@ export default function Redraft({ nct, criterionId }: Selection) {
                         >
                           <Glyph level={f.level} className={`mt-0.5 ${dot}`} />
                           <div className="min-w-0">
-                            <p className="text-sm leading-snug text-ink">{f.message}</p>
+                            <p className="text-sm leading-snug text-ink">{relabel(f.message)}</p>
                             <SourceLink flag={f} />
                           </div>
                         </li>
@@ -378,7 +381,7 @@ export default function Redraft({ nct, criterionId }: Selection) {
                 <span className="text-muted"> (protocol limit {fmt(o.value)} {o.unit ?? ""}: {pop.current_pct.toFixed(2)}%)</span>
               ) : null}
             </p>
-            <p className="mt-1 text-xs text-muted">{pop.caveat}</p>
+            <p className="mt-1 text-xs text-muted">{relabel(pop.caveat)}</p>
           </Section>
         ) : null}
       </div>
