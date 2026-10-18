@@ -139,10 +139,13 @@ const CHECK_NAMES: Record<string, string> = {
 };
 
 function checkDetail(detail: string): string {
-  // The curated pharmacology table reports properties as flags, e.g. "carboplatin myelosuppressive=True".
-  return detail
-    .replace(/\b([a-z_]+)=True\b/g, (_, p: string) => p.replaceAll("_", " "))
-    .replace(/\b([a-z_]+)=False\b/g, (_, p: string) => `not ${p.replaceAll("_", " ")}`);
+  // The curated pharmacology table reports properties as flags: "carboplatin myelosuppressive=True is consistent ...".
+  const consistent = /^(.+?) ([a-z_]+)=(True|False) is consistent with the curated table\.$/.exec(detail);
+  if (consistent) {
+    const [, drug, prop, value] = consistent;
+    return `${drug}: ${value === "True" ? "" : "not "}${prop.replaceAll("_", " ")}, as in the curated table.`;
+  }
+  return detail.replace(/\b([a-z_]+)=(True|False)\b/g, (_, p: string, v: string) => `${p.replaceAll("_", " ")}: ${v === "True" ? "yes" : "no"}`);
 }
 
 function Checks({ c }: { c: DraftCriterion }) {

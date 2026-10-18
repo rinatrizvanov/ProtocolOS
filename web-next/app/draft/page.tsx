@@ -79,17 +79,18 @@ function Summary({ draft }: { draft: Draft }) {
       <p className="text-base text-ink">
         <span className="font-semibold">
           {s.drafted} criteri{s.drafted === 1 ? "on" : "a"} drafted
-        </span>
+        </span>{" "}
+        from {s.precedents} regimen-matched precedent{s.precedents === 1 ? "" : "s"}
         {s.insufficient ? (
           <>
-            <span className="text-muted"> · </span>
+            {" · "}
             <span className="font-semibold">{s.insufficient} with no value</span> (Insufficient evidence)
           </>
         ) : null}
-        <span className="text-muted">
+        <span className="text-sm text-muted">
           {" "}
-          from {s.precedents} regimen-matched precedent{s.precedents === 1 ? "" : "s"} ({s.candidates_checked} candidates checked
-          {s.skipped ? `, ${s.skipped} skipped` : ""}){s.cached ? "" : ` · computed in ${s.elapsed_s.toFixed(1)} s`}
+          · {s.candidates_checked} candidates checked{s.skipped ? `, ${s.skipped} skipped` : ""}
+          {s.cached ? "" : ` · computed in ${s.elapsed_s.toFixed(1)} s`}
         </span>
       </p>
       {counts.length ? (
@@ -154,14 +155,15 @@ const STEPS = [
 
 function Steps() {
   return (
-    <ol aria-label="How a draft is made" className="grid grid-cols-1 gap-x-5 gap-y-1 text-xs text-muted sm:grid-cols-3">
+    <ol aria-label="How a draft is made" className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted sm:grid sm:grid-cols-3 sm:gap-x-5">
       {STEPS.map(([title, detail], i) => (
         <li key={title} className="flex gap-1.5">
           <span aria-hidden="true" className="mt-px inline-grid h-4 w-4 shrink-0 place-items-center rounded-full bg-ink text-[10px] font-medium text-paper">
             {i + 1}
           </span>
           <span>
-            <span className="font-medium text-ink">{title}:</span> {detail}
+            <span className="font-medium text-ink">{title}</span>
+            <span className="hidden sm:inline">: {detail}</span>
           </span>
         </li>
       ))}
