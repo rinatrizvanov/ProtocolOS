@@ -101,7 +101,9 @@ function Question({ row }: { row: Row }) {
   );
 }
 
-function CriterionLink({ c, onOpen }: { c: DraftCriterion; onOpen: (id: string) => void }) {
+// On /draft the label opens and scrolls to the card; the guided tour shows no cards next to this table, so it is plain text.
+function CriterionLink({ c, onOpen }: { c: DraftCriterion; onOpen?: (id: string) => void }) {
+  if (!onOpen) return <span className="font-medium text-ink">{c.label}</span>;
   return (
     <a href={`#draft-${c.id}`} onClick={() => onOpen(c.id)} className="font-medium text-ink underline decoration-line underline-offset-2 hover:decoration-ink">
       {c.label}
@@ -152,13 +154,13 @@ const rowTone = (row: Row) => (row.measure || row.differs ? "bg-look-soft/50" : 
 export default function BeforeAfter({
   draft,
   nct,
-  presetTitle,
+  presetTitle = null,
   onOpen,
 }: {
   draft: Draft;
   nct: string;
-  presetTitle: string | null;
-  onOpen: (id: string) => void;
+  presetTitle?: string | null;
+  onOpen?: (id: string) => void;
 }) {
   const [review, setReview] = useState<ReviewLite | null>(null);
   const [failed, setFailed] = useState(false);

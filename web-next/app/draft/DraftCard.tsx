@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import type { DraftCriterion, Precedent, PrecedentValue } from "@/lib/contracts";
 import { RationaleBadges } from "../components/RationaleBadges";
 
@@ -372,6 +372,8 @@ function FdaGuidance({ c, drafted }: { c: DraftCriterion; drafted: boolean }) {
   );
 }
 
+// /draft passes open and onToggle and keeps every card's state; the guided tour passes neither, and the card then starts
+// open and keeps its own toggle state, which resets when another criterion is shown in the same place.
 export default function DraftCard({
   c,
   precedents,
@@ -380,9 +382,12 @@ export default function DraftCard({
 }: {
   c: DraftCriterion;
   precedents: Map<string, Precedent>;
-  open: boolean;
-  onToggle: () => void;
+  open?: boolean;
+  onToggle?: () => void;
 }) {
+  const [own, setOwn] = useState<{ id: string; open: boolean } | null>(null);
+  const isOpen = onToggle ? (open ?? true) : own?.id === c.id ? own.open : (open ?? true);
+  const toggle = onToggle ?? (() => setOwn({ id: c.id, open: !isOpen }));
   const cls = c.critique.classification;
   const bucket = bucketOf(c);
   const drafted = c.status === "drafted" && c.proposed !== null;
@@ -414,7 +419,7 @@ export default function DraftCard({
       data-status={c.status}
       data-analyte={c.analyte}
       data-bucket={bucket}
-      data-open={open}
+      data-open={isOpen}
       className="scroll-mt-4 rounded-lg border border-line bg-white"
     >
       <div className="flex flex-col gap-2.5 p-4">
@@ -476,18 +481,18 @@ export default function DraftCard({
           <button
             type="button"
             data-testid="draft-toggle"
-            aria-expanded={open}
+            aria-expanded={isOpen}
             aria-controls={bodyId}
-            onClick={onToggle}
+            onClick={toggle}
             className="-my-1 inline-flex min-h-8 items-center gap-1 rounded-md px-2 text-[13px] font-medium text-ink hover:bg-uncounted-soft focus-visible:outline-2 focus-visible:outline-ink"
           >
-            {open ? "Hide reasoning" : "Show reasoning"}
-            <Icon d={CHEVRON} className={`transition-transform duration-150 ${open ? "rotate-180" : ""}`} />
+            {isOpen ? "Hide reasoning" : "Show reasoning"}
+            <Icon d={CHEVRON} className={`transition-transform duration-150 ${isOpen ? "rotate-180" : ""}`} />
           </button>
         </div>
       </div>
 
-      <div id={bodyId} hidden={!open} className="grid grid-cols-1 gap-x-8 gap-y-4 border-t border-line px-4 pb-4 pt-3 xl:grid-cols-2">
+      <div id={bodyId} hidden={!isOpen} className="grid grid-cols-1 gap-x-8 gap-y-4 border-t border-line px-4 pb-4 pt-3 xl:grid-cols-2">
         <div className="flex min-w-0 flex-col gap-3">
           <section data-testid="draft-critique" data-classification={cls} className="flex flex-col gap-1.5 rounded-md bg-paper px-3 py-2.5 text-sm">
             <h4 className="text-xs font-medium text-muted">Self-critique</h4>
