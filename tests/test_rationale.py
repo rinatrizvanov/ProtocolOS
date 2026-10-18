@@ -65,10 +65,16 @@ def test_category_rules(el3):
     assert set(cats) == {"enrichment", "precedent"}
     assert cats["enrichment"]["status"] == "stated in protocol"
     assert {s["kind"] for s in cats["precedent"]["sources"]} == {"fda"}
+    assert cats["precedent"]["basis"].startswith("1 criterion-specific FDA passage(s) address this criterion, 1 of them "
+                                                 "challenging it as written")
     item["purposes"] = [{"purpose": "Predictive enrichment", "status": "not indicated", "basis": "b"}]
     item["evidence"] = [{"kind": "comparator", "stance": "challenges", "strength": "moderate", "nct_id": "NCT1"},
                         {"kind": "fda", "stance": "challenges", "strength": "general"}]
     assert rationale.categories(item, el3) == []
+    steroid = next(rv for rv in el3["reviews"] if rv["criterion"]["id"] == "washout_corticosteroid")
+    enrich = next(c for c in rationale.categories(steroid, el3) if c["key"] == "enrichment")
+    assert enrich["basis"].startswith("Statistical design (interpretability / predictive): ")
+    assert "Predictive enrichment:" not in enrich["basis"]
 
 
 def _review(arms, drugs=("carboplatin", "pembrolizumab")):

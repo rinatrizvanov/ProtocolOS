@@ -90,7 +90,10 @@ def categories(item: dict, review: dict) -> list[dict]:
                 if fc.get("link"):
                     src["url"] = fc["link"]
                 sources.append(src)
-        basis = " ".join(f"{p['purpose']}: {p['basis']}" for p in enrich)
+        # A Predictive enrichment entry next to a "Statistical design (... / predictive)" one only points back to it.
+        named = any("predictive" in p["purpose"] for p in enrich if p.get("purpose") != "Predictive enrichment")
+        basis = " ".join(f"{p['purpose']}: {p['basis']}" for p in enrich
+                         if not (named and p.get("purpose") == "Predictive enrichment"))
         out.append({"key": "enrichment", "label": LABELS["enrichment"], "status": status, "basis": basis,
                     "sources": sources})
 
@@ -117,7 +120,9 @@ def categories(item: dict, review: dict) -> list[dict]:
             parts.append(f"{len(comps)} comparable trial(s) used the same, a stricter or a related threshold; "
                          "agreement may reflect template carry-forward")
         if fda:
-            parts.append(f"{len(fda)} criterion-specific FDA passage(s) apply"
+            against = sum(e.get("stance") == "challenges" for e in fda)
+            parts.append(f"{len(fda)} criterion-specific FDA passage(s) address this criterion"
+                         + (f", {against} of them challenging it as written" if against else "")
                          + (" (issued after this trial started; applied retrospectively)"
                             if any(e.get("retrospective") for e in fda) else ""))
         out.append({"key": "precedent", "label": LABELS["precedent"], "status": status,
