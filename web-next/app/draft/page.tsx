@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import {
   ApiError,
   getDraft,
@@ -106,12 +106,8 @@ const STATUS_COPY: Record<Exclude<Draft["status"], "ok">, string> = {
 };
 
 function Result({ draft, presetId }: { draft: Draft; presetId: string | null }) {
-  const [href, setHref] = useState<string | null>(null);
-  useEffect(() => {
-    const url = URL.createObjectURL(new Blob([JSON.stringify(draft, null, 2)], { type: "application/json" }));
-    setHref(url);
-    return () => URL.revokeObjectURL(url);
-  }, [draft]);
+  // The exact response, re-serialized; a data: URL needs no cleanup.
+  const href = useMemo(() => `data:application/json;charset=utf-8,${encodeURIComponent(JSON.stringify(draft, null, 2))}`, [draft]);
   const drafted = draft.criteria.filter((c) => c.status === "drafted");
   const insufficient = draft.criteria.filter((c) => c.status !== "drafted");
 
@@ -247,14 +243,14 @@ export default function DraftPage() {
     const params = new URLSearchParams(search);
     const d = params.get("d");
     const preset = params.get("preset");
+    // Started from a microtask so the effect itself does not set state synchronously.
     if (d) {
       started.current = true;
-      go("saved draft", false, () => getDraft(d), null, () => `?d=${encodeURIComponent(d)}`);
+      queueMicrotask(() => go("saved draft", false, () => getDraft(d), null, () => `?d=${encodeURIComponent(d)}`));
     } else if (preset && presets) {
       started.current = true;
       const p = presets.find((x) => x.id === preset);
-      if (p) openPreset(p);
-      else setRun({ state: "error", message: `Unknown preset "${preset}".` });
+      queueMicrotask(() => (p ? openPreset(p) : setRun({ state: "error", message: `Unknown preset "${preset}".` })));
     }
   }, [search, presets, go, openPreset]);
 
