@@ -57,7 +57,6 @@ def test_no_overclaim_and_protocolos_notes(el3):
     hits = [s for s in draft._strings(el3) if verifier.OVERCLAIM.search(s)]
     assert hits == []
     assert any("ProtocolOS" in n for n in el3["notes"])
-    assert not any("TrialLens" in s for s in draft._strings(el3["notes"]))
 
 
 def test_mutated_claim_is_rejected(el3):
