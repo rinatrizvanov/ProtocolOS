@@ -2,7 +2,7 @@
 
     python3.13 -m venv /tmp/pw && /tmp/pw/bin/pip install playwright && /tmp/pw/bin/playwright install chromium
     BASE_URL=http://localhost:8765 /tmp/pw/bin/python scripts/e2e_demo.py
-    BASE_URL=https://<demo-url> /tmp/pw/bin/python scripts/e2e_demo.py
+    BASE_URL=https://<demo-url> /tmp/pw/bin/python scripts/e2e_demo.py [--write-decision]
 
 Steps: (1) load NCT03409614; (2) select hemoglobin, see "Review recommended"; (3) open the graph tab, see >= 3
 comparator nodes; (4) click a comparator passage, the viewer shows that page; (5) ask "Why was this flagged?",
@@ -11,10 +11,16 @@ example and verify -> Rejected; (7) record "Needs medical review" in the packet 
 find the decision in it; (9) only for a non-localhost BASE_URL: `refresh=1` is refused.
 Steps 3-5 report "skipped: graph UI not installed" when the page has no graph tab; a skip is never a pass.
 Screenshots and summary.json go to E2E_OUT (default /tmp/triallens-logs/e2e/). Exit 1 if any step fails.
-Step 7 writes a real decision (data/decisions/NCT03409614.json on the server).
+Step 7 writes a real decision (data/decisions/NCT03409614.json on the server), so the run leaves no test data:
+- local BASE_URL: the script first checks that the server reads E2E_DECISIONS_DIR (default: this checkout's
+  data/decisions), backs up NCT03409614.json and restores it byte for byte after step 8 (or deletes it when it did
+  not exist). If the server keeps its decisions elsewhere, step 7 is skipped and step 8 checks only the export.
+- non-local BASE_URL: step 7 is skipped and step 8 checks only the export, unless --write-decision is passed; the
+  decision then stays on the server, since no API clears one.
 """
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import sys
@@ -30,15 +36,37 @@ NCT = "NCT03409614"
 LOCAL = urlparse(BASE).hostname in ("localhost", "127.0.0.1", "0.0.0.0", "::1")
 STAMP = time.strftime("%Y-%m-%d %H:%M:%S")
 REASON = f"e2e demo check {STAMP}"
+ROOT = Path(__file__).resolve().parents[1]
+DECISIONS = Path(os.environ.get("E2E_DECISIONS_DIR", ROOT / "data" / "decisions")) / f"{NCT}.json"
 
 
 class Skip(Exception):
     pass
 
 
-def main() -> int:
+def _local_decisions() -> dict:
+    return json.loads(DECISIONS.read_text()) if DECISIONS.exists() else {}
+
+
+def _restore(backup: bytes | None) -> str:
+    """Put the decisions file back exactly as it was before step 7."""
+    if backup is None:
+        DECISIONS.unlink(missing_ok=True)
+        assert not DECISIONS.exists(), f"{DECISIONS} still exists"
+        return f"deleted {DECISIONS} (it did not exist before step 7)"
+    DECISIONS.write_bytes(backup)
+    assert DECISIONS.read_bytes() == backup, f"{DECISIONS} differs from its backup"
+    return f"restored {DECISIONS} byte for byte ({len(backup)} bytes)"
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--write-decision", action="store_true",
+                    help="record the step 7 test decision on a non-local BASE_URL (it stays there)")
+    args = ap.parse_args(argv)
     OUT.mkdir(parents=True, exist_ok=True)
     results, errors = [], []
+    state: dict = {"written": False, "backup": None, "backed_up": False, "restore": "not needed: step 7 wrote nothing"}
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
         ctx = browser.new_context(viewport={"width": 1440, "height": 900}, accept_downloads=True)
@@ -124,6 +152,16 @@ def main() -> int:
             return f"ANC example -> {status} ({fails} failing checks)"
 
         def step7():
+            if not LOCAL and not args.write_decision:
+                raise Skip("non-local BASE_URL: pass --write-decision to record a test decision (no API clears it)")
+            if LOCAL:
+                r = page.request.get(f"{BASE}/api/packet/{NCT}?format=json")
+                assert r.ok, f"GET /api/packet/{NCT} answered {r.status}"
+                server = {i["criterion_id"]: i["decision"] for i in r.json()["items"] if i.get("decision")}
+                if server != _local_decisions():
+                    raise Skip(f"the server does not read {DECISIONS}; set E2E_DECISIONS_DIR to its data/decisions")
+                state["backup"] = DECISIONS.read_bytes() if DECISIONS.exists() else None
+                state["backed_up"] = True
             page.click('.tab[data-tab="packet"]')
             page.wait_for_selector('[data-save="hemoglobin"]', timeout=60_000)
             page.fill("#reviewerName", "e2e script")
@@ -131,10 +169,16 @@ def main() -> int:
             page.fill('[data-reason="hemoglobin"]', REASON)
             page.click('[data-save="hemoglobin"]')
             page.wait_for_function("document.querySelector('[data-saved=\"hemoglobin\"]').textContent.startsWith('saved: Needs medical review')")
+            state["written"] = True
             shot(7, "decision-saved")
+            if LOCAL and _local_decisions().get("hemoglobin", {}).get("reason") != REASON:
+                state["backed_up"] = False  # the local file did not change; the server's own copy holds the decision
+                raise AssertionError(f"the server wrote its decision outside {DECISIONS}; remove it there")
             return page.locator('[data-saved="hemoglobin"]').inner_text().strip()
 
         def step8():
+            if not state["written"]:  # step 7 was skipped before it opened the packet tab
+                page.click('.tab[data-tab="packet"]')
             link = page.locator("#packet a.btn-link", has_text="Export Markdown")
             with page.expect_download() as dl:
                 link.click()
@@ -143,6 +187,9 @@ def main() -> int:
             saved = OUT / dl.value.suggested_filename
             saved.write_text(md)
             shot(8, "packet")
+            if not state["written"]:
+                assert NCT in md, f"{NCT} not found in the exported Markdown"
+                return f"{saved.name}: exported ({len(md)} chars); decision line not checked, step 7 wrote no decision"
             assert "Needs medical review" in md and REASON in md, "decision not found in the exported Markdown"
             return f"{saved.name}: decision line found ({len(md)} chars)"
 
@@ -153,23 +200,30 @@ def main() -> int:
             assert r.status == 403, f"refresh=1 answered {r.status}"
             return f"refresh=1 -> {r.status}"
 
-        for n, fn in enumerate([step1, step2, step3, step4, step5, step6, step7, step8, step9], start=1):
-            t0 = time.time()
-            try:
-                detail, status = fn(), "PASS"
-            except Skip as e:
-                detail, status = f"skipped: {e}", "SKIP"
-            except Exception as e:  # noqa: BLE001
-                detail, status = f"{type(e).__name__}: {str(e).splitlines()[0][:300]}", "FAIL"
+        try:
+            for n, fn in enumerate([step1, step2, step3, step4, step5, step6, step7, step8, step9], start=1):
+                t0 = time.time()
                 try:
-                    shot(n, "failure")
-                except Exception:  # noqa: BLE001
-                    pass
-            results.append({"step": n, "status": status, "detail": detail, "seconds": round(time.time() - t0, 1)})
-            print(f"step {n}: {status:4} {results[-1]['seconds']:5.1f} s  {detail}", flush=True)
-        browser.close()
+                    detail, status = fn(), "PASS"
+                except Skip as e:
+                    detail, status = f"skipped: {e}", "SKIP"
+                except Exception as e:  # noqa: BLE001
+                    detail, status = f"{type(e).__name__}: {str(e).splitlines()[0][:300]}", "FAIL"
+                    try:
+                        shot(n, "failure")
+                    except Exception:  # noqa: BLE001
+                        pass
+                results.append({"step": n, "status": status, "detail": detail, "seconds": round(time.time() - t0, 1)})
+                print(f"step {n}: {status:4} {results[-1]['seconds']:5.1f} s  {detail}", flush=True)
+        finally:
+            browser.close()
+            if state["backed_up"]:
+                state["restore"] = _restore(state["backup"])
+            elif state["written"]:
+                state["restore"] = f"not restored: the test decision ({REASON!r}) stays on {BASE}"
+            print(f"decisions: {state['restore']}", flush=True)
 
-    summary = {"base_url": BASE, "ran_at": STAMP, "steps": results, "browser_errors": errors}
+    summary = {"base_url": BASE, "ran_at": STAMP, "steps": results, "browser_errors": errors, "decisions": state["restore"]}
     (OUT / "summary.json").write_text(json.dumps(summary, indent=1))
     for e in errors:
         print("browser", e)
