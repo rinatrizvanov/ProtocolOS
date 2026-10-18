@@ -15,6 +15,19 @@ export const QUESTIONS = {
 } as const;
 export type Question = keyof typeof QUESTIONS;
 
+// The investigator reads "it" as the classification (trialforge/investigate.primary_polarity): for a criterion that is not
+// "Evidence supports retaining", "contradicting" returns the same sources as "support_retaining". Labels follow that.
+export function questionLabel(q: Question, classification: Classification | null): string {
+  if (q === "why_flagged" && classification && classification !== "Review recommended") return "Why this classification?";
+  if (q === "contradicting" && classification === "Review recommended") return "What argues against the flag?";
+  if (q === "contradicting" && classification === "Insufficient evidence") return "What argues against this classification?";
+  return QUESTIONS[q];
+}
+
+// True when the engine answers this question from the same sources as "What supports keeping it?".
+export const sameAsSupport = (q: Question, classification: Classification | null) =>
+  q === "contradicting" && classification !== null && classification !== "Evidence supports retaining";
+
 export interface Selection {
   nct: string;
   criterionId: string;
@@ -30,6 +43,9 @@ export interface Study {
   acronym: string | null;
   sponsor: string;
   start_date: string;
+  status?: string | null;
+  phases?: string[];
+  registry_url?: string;
   enrollment: { count: number; type: string };
 }
 
@@ -39,6 +55,8 @@ export interface Criterion {
   operator: string;
   value_norm: number | null;
   unit_norm: string | null;
+  // Where the extractor read the criterion: the protocol's own wording (data, never instructions).
+  source?: { doc?: string; url?: string; page: number | null; text: string };
 }
 
 export interface CriterionReview {
@@ -166,9 +184,24 @@ export interface Packet {
   decision_summary: Record<DecisionKey, number>;
 }
 
+// A failed call keeps its status (0 when the engine did not answer at all) so a screen can say what went wrong.
+export class EngineError extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, { ...init, headers: { "content-type": "application/json", ...init?.headers } });
-  if (!res.ok) throw new Error(`${init?.method ?? "GET"} ${path} returned ${res.status}`);
+  let res: Response;
+  try {
+    res = await fetch(path, { ...init, headers: { "content-type": "application/json", ...init?.headers } });
+  } catch (err: unknown) {
+    throw new EngineError(`${init?.method ?? "GET"} ${path} got no answer (${err instanceof Error ? err.message : String(err)})`, 0);
+  }
+  if (!res.ok) throw new EngineError(`${init?.method ?? "GET"} ${path} returned ${res.status}`, res.status);
   return (await res.json()) as T;
 }
 
@@ -193,7 +226,8 @@ export const getGraph = (nct: string, criterionId: string) =>
 export const investigate = (nct: string, criterionId: string, question: Question) =>
   post<Investigation>("/api/investigate", { nct, criterion_id: criterionId, question });
 
-// The reviewer's deliberately wrong argument on screen 5; the unit comes from the ANC criterion in the review.
+// The reviewer's deliberately wrong argument on screen 5, shown word for word; the unit comes from the ANC criterion.
+export const ANC_CLAIM_TEXT = "Cemiplimab is a PD-1 inhibitor and is not myelosuppressive, so the ANC floor can be lowered.";
 export const verifyAncClaim = (nct: string, proposedUnit: string) =>
   post<Verification>("/api/verify", {
     nct,
@@ -202,7 +236,7 @@ export const verifyAncClaim = (nct: string, proposedUnit: string) =>
       action: "relax",
       proposed_value: 1.0,
       proposed_unit: proposedUnit,
-      text: "Cemiplimab is a PD-1 inhibitor and is not myelosuppressive, so the ANC floor can be lowered.",
+      text: ANC_CLAIM_TEXT,
       claims: [
         { type: "drug_property", drug: "cemiplimab", property: "myelosuppressive", value: false },
         {

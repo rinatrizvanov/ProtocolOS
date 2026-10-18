@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import type { Graph, GraphNode } from "@/lib/api";
+import { sameText } from "./limits";
 import { ProtocolDrawer } from "./Screen2";
 
 type Stance = "challenges" | "supports" | "context";
@@ -61,6 +62,18 @@ function threshold(data: GraphNode["data"]): string {
   return `${text(data.operator)}${text(data.value_norm)} ${text(data.unit_norm)}`.trim();
 }
 
+function limitOf(data: GraphNode["data"]) {
+  const v = typeof data.value_norm === "number" ? data.value_norm : null;
+  return { operator: text(data.operator), value: v, unit: text(data.unit_norm) || null };
+}
+
+// "Same value as this trial", unless the engine's "same" hides a different operator or a washout within 10%.
+function sameSentence(node: GraphNode, target: GraphNode | undefined): string {
+  if (!target) return "Same value as this trial";
+  const said = sameText(limitOf(target.data), limitOf(node.data));
+  return said === "same limit" ? "Same value as this trial" : `${said.charAt(0).toUpperCase()}${said.slice(1)}`;
+}
+
 // Plain language for each card: what the evidence is, then how the score used it. The rule wording mirrors
 // trialforge/review.py (regimen rule, looser-comparator group, same-value matches) so the card never claims more
 // than the score did.
@@ -77,27 +90,30 @@ function explain(node: GraphNode, graph: Graph): Explained {
     if (rule?.data.group === "looser_comparators")
       return {
         title,
-        why: `Less strict than this trial's ${targetValue}. The ${members} trials like this score +${points} together, once, not per trial. Used is precedent, not proof of safety.`,
+        why: `Less strict than this trial's ${targetValue}. ${
+          members === 1 ? `The 1 trial like this scores +${points}.` : `The ${members} trials like this score +${points} together, once, not per trial.`
+        } A limit another trial used is precedent, not proof of safety.`,
       };
     if (rule?.data.group === "same_comparators")
       return {
         title,
-        why: `Same value as this trial. ${members} trials match and none is less strict, so together they add +${points}, once. Matching values may still be copied from a template.`,
+        why: `${sameSentence(node, target)}. ${members} trials match and none is less strict, so together they add +${points}, once. Matching values may still be copied from a template.`,
       };
     if (direction === "same")
       return {
         title,
-        why: `Same value as this trial, so it scores nothing alone: one match may be copied from a protocol template. Matches add +1 only when two or more trials match and none is less strict.`,
+        why: `${sameSentence(node, target)}, so it scores nothing alone: one match may be copied from a protocol template. Matches add +1 only when two or more trials match and none is less strict.`,
       };
     if (direction === "different measure") return { title, why: "Measures this differently, so it is not directly comparable and scores nothing." };
     return { title, why: text(node.data.summary) };
   }
   if (node.type === "CuratedFact") {
     const match = /^Arms include (.+?) \((.+), curated pharmacology table\)/.exec(text(node.data.summary));
+    // Never "can cause {property}": the curated property can be a metabolism route or a drug interaction, not a toxicity.
     if (match && rule?.data.group === "regimen_support")
       return {
-        title: `This trial's drugs can cause ${match[2]}`,
-        why: `${match[1]}, per ProtocolOS's curated drug table. So the trial needs some limit: +${points}. It does not show that ${targetValue} is the right one.`,
+        title: `Regimen flagged for: ${match[2]}`,
+        why: `Listed in the ProtocolOS curated drug table: ${match[1]}. This supports having some limit (+${points}); it does not show that ${targetValue} is the right value.`,
       };
     return { title: node.label, why: text(node.data.summary) };
   }
@@ -174,10 +190,10 @@ export function EvidenceColumns({ graph }: { graph: Graph }) {
       <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-3">
         {COLUMNS.map((col) => (
           <section key={col.stance} data-testid={`evidence-${col.stance}`} className="flex flex-col gap-3">
-            <h2 className="text-base font-semibold text-ink">
+            <h4 className="text-base font-semibold text-ink">
               {col.title}
               {col.stance === "context" ? null : <span className="tabular-nums"> +{pointsFor(graph, col.stance)}</span>}
-            </h2>
+            </h4>
             {columns[col.stance].map((node) => (
               <Card key={node.id} node={node} graph={graph} tone={col.tone} onOpen={(source, title) => setOpen({ source, title })} />
             ))}

@@ -7,6 +7,8 @@
   --color-muted: #5f5b53;
   --color-line: #dedad2;
   --color-look: #c27a12;
+  /* Text-safe amber for small text (5.89:1 on paper); --color-look stays for fills, rules and large verdicts. */
+  --color-look-ink: #8a560b;
   --color-look-soft: #f6e7cc;
   --color-support: #2f7a4b;
   --color-support-soft: #dcefe2;
@@ -21,6 +23,17 @@
   --color-precedent: #4b4a7a;
   --color-precedent-soft: #e8e7f3;
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* The onboarding strip is in the server HTML; a script in <head> sets this attribute before first paint when it was
+   dismissed, so the strip never appears and then vanishes (no layout shift). */
+html[data-onboarding="dismissed"] [data-testid="onboarding"] {
+  display: none;
+}
+
+::selection {
+  background: var(--color-look-soft);
+  color: var(--color-ink);
 }
 
 body {

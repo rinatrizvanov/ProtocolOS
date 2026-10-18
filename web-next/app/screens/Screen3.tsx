@@ -6,7 +6,7 @@ import { getGraph, getReview, type CriterionReview, type Graph, type Selection }
 // Plain-language reading of each scoring rule group; anything else falls back to the edge's own label.
 const GROUP_TEXT: Record<string, string> = {
   looser_comparators: "Similar trials used a less strict limit",
-  regimen_support: "The regimen needs some limit, not this one",
+  regimen_support: "The regimen supports having some limit; it does not justify this value",
 };
 
 function axisText(graph: Graph, axis: "support" | "challenge", overrides: Record<string, string> = {}): string {

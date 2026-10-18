@@ -11,14 +11,14 @@ const DEBOUNCE_MS = 450;
 
 const LEVELS: { level: FlagLevel; title: string; tone: string; dot: string }[] = [
   { level: "fail", title: "Fails", tone: "border-verdict/40 bg-verdict/5", dot: "text-verdict" },
-  { level: "warn", title: "Needs review", tone: "border-look/40 bg-look-soft/60", dot: "text-look" },
+  { level: "warn", title: "Needs review", tone: "border-look/40 bg-look-soft/60", dot: "text-look-ink" },
   { level: "info", title: "For context", tone: "border-line bg-uncounted-soft/60", dot: "text-muted" },
   { level: "pass", title: "Holds", tone: "border-support/30 bg-support-soft/60", dot: "text-support" },
 ];
 
 const STATUS_TEXT: Record<string, { label: string; tone: string }> = {
   PASSED: { label: "Verifier: passed", tone: "border-support/40 bg-support-soft text-support" },
-  PASSED_WITH_WARNINGS: { label: "Verifier: passed with warnings", tone: "border-look/40 bg-look-soft text-look" },
+  PASSED_WITH_WARNINGS: { label: "Verifier: passed with warnings", tone: "border-look/40 bg-look-soft text-look-ink" },
   REJECTED: { label: "Verifier: rejected", tone: "border-verdict/40 bg-verdict/5 text-verdict" },
 };
 
@@ -80,6 +80,12 @@ function Section({ title, children, aside }: { title: string; children: ReactNod
 
 // Display-time relabel: engine and verifier sentences say "evidence"; the UI keeps that word for "Insufficient evidence".
 const relabel = (t: string) => t.replace(/(?<!Insufficient )\bevidence\b/gi, "sources");
+
+// The NHANES caveat's Duffy-null sentence is about neutrophil counts; other analytes show only the general sentence.
+function caveatFor(caveat: string, criterionId: string): string {
+  const sentences = caveat.match(/[^.]+(?:\.|$)/g)?.map((x) => x.trim()).filter(Boolean) ?? [caveat];
+  return sentences.filter((x) => criterionId === "anc" || !/duffy/i.test(x)).join(" ");
+}
 
 const fmt = (n: number | null | undefined) => (n === null || n === undefined ? "" : Number.isInteger(n) ? n.toFixed(1) : String(n));
 
@@ -244,7 +250,7 @@ export default function Redraft({ nct, criterionId }: Selection) {
             maxLength={2000}
             rows={4}
             spellCheck={false}
-            className="w-full resize-y rounded border border-line bg-paper px-2.5 py-2 font-mono text-[13px] leading-relaxed text-ink outline-none focus:border-ink/50"
+            className="w-full resize-y rounded border border-uncounted bg-paper px-2.5 py-2 font-mono text-[13px] leading-relaxed text-ink outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
           />
           <label htmlFor="redraft-rationale" className="mt-2 block text-xs font-medium text-muted">
             Why this value (rationale note, optional)
@@ -257,7 +263,7 @@ export default function Redraft({ nct, criterionId }: Selection) {
             maxLength={1000}
             rows={2}
             placeholder="e.g. aligns with the comparator arm's labelled toxicity"
-            className="mt-1 w-full resize-y rounded border border-line bg-paper px-2.5 py-1.5 text-sm text-ink outline-none focus:border-ink/50"
+            className="mt-1 w-full resize-y rounded border border-uncounted bg-paper px-2.5 py-1.5 text-sm text-ink outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
           />
           {result?.changed && (result.changed.operator || result.changed.value || result.changed.unit || result.changed.conditions_dropped.length > 0) ? (
             <p className="mt-2 text-xs text-muted">
@@ -381,7 +387,7 @@ export default function Redraft({ nct, criterionId }: Selection) {
                 <span className="text-muted"> (protocol limit {fmt(o.value)} {o.unit ?? ""}: {pop.current_pct.toFixed(2)}%)</span>
               ) : null}
             </p>
-            <p className="mt-1 text-xs text-muted">{relabel(pop.caveat)}</p>
+            <p className="mt-1 text-xs text-muted">{relabel(caveatFor(pop.caveat, criterionId))}</p>
           </Section>
         ) : null}
       </div>

@@ -39,7 +39,7 @@ export function MissingCriteria({ nct }: { nct: string }) {
   if (current.status === "error") {
     return (
       <p role="status" className="text-sm text-muted">
-        Could not load the comparison
+        Could not load the comparison with comparable protocols, so missing criteria were not checked.
       </p>
     );
   }
@@ -55,45 +55,53 @@ export function MissingCriteria({ nct }: { nct: string }) {
     );
   }
   return (
-    <ul data-testid="missing-criteria" className="flex flex-col gap-3">
-      {current.missing.map((m) => (
-        <li
-          key={m.criterion_id}
-          data-testid="missing-item"
-          data-criterion={m.criterion_id}
-          className="rounded-md border border-look bg-look-soft/40 px-4 py-3"
-        >
-          <p className="font-semibold text-ink">{m.label}</p>
-          <p className="mt-1 text-sm text-ink">{m.text}</p>
-          {m.examples.length > 0 ? (
-            <ul className="mt-2 flex flex-col gap-1 text-sm text-muted">
-              {m.examples.map((e) => {
-                const name = e.acronym ?? e.nct_id;
-                const where = e.page != null ? `p. ${e.page}` : "protocol";
-                return (
-                  <li key={e.nct_id} title={e.quote || undefined}>
-                    <span className="text-ink">{name}</span>: {e.threshold}
-                    {" ("}
-                    {e.url ? (
-                      <a
-                        href={e.page != null ? `${e.url}#page=${e.page}` : e.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="underline decoration-line underline-offset-2 hover:decoration-ink"
-                      >
-                        {where}
-                      </a>
-                    ) : (
-                      where
-                    )}
-                    {")"}
-                  </li>
-                );
-              })}
-            </ul>
-          ) : null}
-        </li>
-      ))}
-    </ul>
+    <section aria-labelledby="missing-heading" className="flex flex-col gap-2">
+      <h2 id="missing-heading" className="text-sm font-semibold text-ink">
+        Possibly missing: check the protocol
+      </h2>
+      <ul data-testid="missing-criteria" className="flex flex-col gap-3">
+        {current.missing.map((m) => (
+          <li
+            key={m.criterion_id}
+            data-testid="missing-item"
+            data-criterion={m.criterion_id}
+            className="rounded-md border border-look bg-look-soft/40 px-3 py-2.5"
+          >
+            <p className="font-semibold text-ink">{m.label}</p>
+            <p className="mt-1 text-sm text-ink">{m.text}</p>
+            {m.examples.length > 0 ? (
+              <ul className="mt-2 flex flex-col gap-2 text-sm text-muted">
+                {m.examples.map((e) => {
+                  const name = e.acronym ?? e.nct_id;
+                  const where = e.page != null ? `${name}, p. ${e.page}` : `${name} protocol`;
+                  return (
+                    <li key={e.nct_id} className="flex flex-col">
+                      <span>
+                        <span className="text-ink">{name}</span>: {e.threshold}
+                      </span>
+                      {e.quote ? (
+                        <span data-role="quote" className="text-xs text-ink">
+                          &ldquo;{e.quote}&rdquo;
+                        </span>
+                      ) : null}
+                      {e.url ? (
+                        <a
+                          href={e.page != null ? `${e.url}#page=${e.page}` : e.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex min-h-11 items-center self-start text-ink underline decoration-uncounted underline-offset-2 hover:decoration-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
+                        >
+                          Open {where}
+                        </a>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

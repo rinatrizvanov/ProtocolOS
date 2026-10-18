@@ -5,16 +5,22 @@ import { CRITERION, NCT, getEvals, getPlanted, probeStatus, type Evals, type Pla
 import { useApi } from "../../lib/useApi";
 import { Failed, Frame, Pending } from "../components/Frame";
 
+// Each probe names the refusal the public-demo guard gives (trialforge/demo_guard.py). Only that status earns the lock;
+// anything else means the guard is not active on this server, and the screen says so instead of claiming it is locked.
 interface Probe {
   meaning: string;
+  open: string;
+  expected: number;
   run: () => Promise<number>;
 }
 
 const PROBES: Probe[] = [
-  { meaning: "Refresh not allowed", run: () => probeStatus(`/api/review/${NCT}?refresh=1`) },
-  { meaning: "Path tricks refused", run: () => probeStatus(`/api/review/${NCT}?as_of=../../x`) },
+  { meaning: "Refresh not allowed", open: "Refresh allowed", expected: 403, run: () => probeStatus(`/api/review/${NCT}?refresh=1`) },
+  { meaning: "Path tricks refused", open: "Path tricks not refused", expected: 400, run: () => probeStatus(`/api/review/${NCT}?as_of=../../x`) },
   {
     meaning: "Model calls off",
+    open: "Model calls allowed",
+    expected: 503,
     run: () =>
       probeStatus("/api/critique", {
         method: "POST",
@@ -37,13 +43,24 @@ function Stat({ testId, value, of, label }: { testId: string; value: number; of:
   );
 }
 
-function LockGlyph() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 16 20" className="h-6 w-5 text-ink" fill="none" stroke="currentColor" strokeWidth="1.6">
+function LockGlyph({ locked }: { locked: boolean }) {
+  return locked ? (
+    <svg aria-hidden="true" viewBox="0 0 16 20" className="h-6 w-5 shrink-0 text-ink" fill="none" stroke="currentColor" strokeWidth="1.6">
       <path d="M4 9V6a4 4 0 0 1 8 0v3" />
       <rect x="2" y="9" width="12" height="9" rx="1" />
     </svg>
+  ) : (
+    <svg aria-hidden="true" viewBox="0 0 16 20" className="h-6 w-5 shrink-0 text-look-ink" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M4 9V6a4 4 0 0 1 7.6-1.8" />
+      <rect x="2" y="9" width="12" height="9" rx="1" />
+    </svg>
   );
+}
+
+// null: still waiting; true: every probe got its refusal; false: at least one was allowed or got no answer.
+function guardActive(statuses: (number | string | null)[]): boolean | null {
+  if (statuses.some((s) => s === null)) return null;
+  return PROBES.every((probe, i) => statuses[i] === probe.expected);
 }
 
 // One run per page load: React dev mode mounts effects twice and would send each refused request twice.
@@ -84,11 +101,14 @@ function Body({ planted, evals, statuses }: { planted: Planted; evals: Evals; st
       <ul className="grid grid-cols-1 gap-6 border-t border-line pt-8 sm:grid-cols-3">
         {PROBES.map((probe, index) => {
           const status = statuses[index];
+          const locked = status === probe.expected;
           return (
-            <li key={probe.meaning} data-testid="blocked" data-status={status ?? ""} className="flex items-center gap-4">
-              <LockGlyph />
-              <span className="text-4xl font-semibold tabular-nums text-ink">{status ?? "–"}</span>
-              <span className="text-base text-muted">{probe.meaning}</span>
+            <li key={probe.meaning} data-testid="blocked" data-status={status ?? ""} data-locked={status === null ? "" : String(locked)} className="flex items-center gap-4">
+              {status === null ? <span className="h-6 w-5 shrink-0" /> : <LockGlyph locked={locked} />}
+              <span className={`text-4xl font-semibold tabular-nums ${locked || status === null ? "text-ink" : "text-look-ink"}`}>{status ?? "–"}</span>
+              <span className="text-base text-muted">
+                {status === null || locked ? probe.meaning : `${probe.open}: the public-demo guard is not active on this server (got ${status})`}
+              </span>
             </li>
           );
         })}
@@ -111,10 +131,22 @@ export default function Screen6() {
         </p>
       </>
     ) : undefined;
+  const guard = guardActive(statuses);
   return (
     <Frame
-      headline="Tested and locked down."
-      caption="Scored against planted rule changes and gold labels; the public demo refuses risky requests, live, as you watch."
+      headline={guard === false ? "Tested." : "Tested and locked down."}
+      caption={
+        guard === false ? (
+          <>
+            Scored against planted rule changes and gold labels.{" "}
+            <span data-testid="guard-off" className="text-look-ink">
+              The public-demo guard is off on this server: not every risky request below was refused.
+            </span>
+          </>
+        ) : (
+          "Scored against planted rule changes and gold labels; the public demo refuses risky requests, live, as you watch."
+        )
+      }
       details={details}
     >
       {scores.status === "loading" ? <Pending label="Loading eval results" /> : null}
