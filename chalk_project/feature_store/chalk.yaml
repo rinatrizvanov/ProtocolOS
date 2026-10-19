@@ -1,4 +1,0 @@
-project: Default
-environments:
-  default:
-    requirements: ./requirements.txt

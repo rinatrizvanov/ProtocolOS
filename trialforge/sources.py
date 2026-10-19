@@ -188,6 +188,16 @@ def fetch_protocol(nct_id: str, refresh: bool = False) -> PdfDoc | None:
     )
 
 
+def protocol_cached(nct_id: str) -> bool:
+    """True when fetch_protocol(nct_id) would read only the cache (registry record and page text on disk)."""
+    nct_id = nct_id.strip().upper()
+    path = REGISTRY_DIR / f"{nct_id}.json"
+    if not path.exists():
+        return False
+    docs = protocol_documents(json.loads(path.read_text()))
+    return bool(docs) and (PROTOCOL_DIR / f"{nct_id}__{docs[0]['filename']}").with_suffix(".pages.json").exists()
+
+
 # ---------------------------------------------------------------- FDA
 
 def fetch_guidance(key: str, refresh: bool = False) -> PdfDoc:

@@ -4,7 +4,7 @@
 
 Eligibility criteria (lab thresholds, ECOG performance status, washout periods) decide who may join a cancer trial, and they are often carried forward from earlier protocols without a written reason. FDA's final guidance of July 2026 says lab restrictions from earlier trials "should not be carried forward automatically", but restrictions also exist for real reasons: safety, enrichment, interpretability. **ProtocolOS** shows a protocol team the likely rationale behind each criterion of an oncology protocol, compares it with earlier comparable trials and FDA guidance, checks every suggested change with a deterministic verifier, and can draft criteria for a new trial idea from verified precedents only. The team decides; ProtocolOS prepares the rationale and a review packet.
 
-ProtocolOS (formerly TrialLens) was built at HackHarvard 2026 for the Regeneron "Reinvent Clinical Trials & Drug Development" and Chalk "Best Data-Driven Agent Built on Chalk" tracks. It is a research prototype, not clinical, regulatory or safety advice.
+ProtocolOS (formerly TrialLens) was built at HackHarvard 2026 for the Regeneron "Reinvent Clinical Trials & Drug Development" and Chalk "Best Data-Driven Agent Built on Chalk" tracks. The Chalk integration was removed after the event; the submitted state is the git tag `hackharvard-submission`. It is a research prototype, not clinical, regulatory or safety advice.
 
 ## Try it
 
@@ -18,7 +18,7 @@ ProtocolOS (formerly TrialLens) was built at HackHarvard 2026 for the Regeneron 
 | Engine API and OpenAPI page | https://protocolos-api-production.up.railway.app/docs |
 | Vanilla dashboard (served by the engine) | https://protocolos-api-production.up.railway.app |
 
-The public deployment runs with a demo guard: cached reviews of four completed trials, no recomputation and no model calls. Decisions recorded there are visible to anyone with the URL and are lost on redeploy.
+Four completed trials are preloaded and open at once. Anyone can also add another trial by its NCT number, draft criteria for a new idea, or ask for model-written answers in the Ask tab. Those need your own OpenAI or Anthropic API key (see [Your own model key](#your-own-model-key)); the server has no model key of its own. Decisions you record are kept per browser, and everything stored on the public server is lost when it is redeployed.
 
 ![Landing page with the two modes](docs/img/landing.png)
 
@@ -60,10 +60,21 @@ flowchart LR
 
 - **Deterministic engine.** Extraction, comparator discovery, classification, the rationale report, redraft checks, drafting and the review packet are rule-based and auditable. Every displayed value links to its source page.
 - **The verifier is the authority.** Any suggested change (from a reviewer, the redraft workspace, the draft module or a model) is a structured recommendation. Factual checks compare quotes, values and units with the sources; clinical-logic checks catch regimen contradictions, wrong direction, missing evidence and overclaiming. A threshold change that passes is still escalated to *Needs medical review*.
-- **Model mode is optional and off on the public demo.** When a key is configured (Chalk Model Gateway or Anthropic API), a model may critique a flag and may only downgrade it, and every statement it returns passes the deterministic checks. Without a key the app says "not configured". Document text is treated as data, never as instructions; the model has no tools or write access.
-- **Chalk.** A deployed `Trial` feature set resolves ClinicalTrials.gov records inside Chalk (the app uses it to show that the registry rarely states lab thresholds); the verifier ran as a Chalk Compute function graded by Chalk Evaluations; the Model Gateway serves the optional model mode. Details and run identifiers: [CHALK.md](CHALK.md).
+- **Model mode is optional and runs on your own key.** In the Ask tab a model of your choice (Anthropic or OpenAI) may write the answer from the criterion's evidence graph; every statement it returns passes the deterministic checks, failed statements are marked, and the answer's label can only go down. The API also offers a critic that may only downgrade a flag. Document text is treated as data, never as instructions; the model has no tools or write access.
 
 Architecture, API and data schema: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## Your own model key
+
+The public server holds no model key, so nobody can spend tokens through it. Three things ask for yours:
+
+| Action | What the key is used for |
+|---|---|
+| Add a trial that is not preloaded (Finishing a trial, "Add a trial") | Only checked. The analysis is rule-based and uses no model tokens; the key keeps the shared server open by limiting who can start new work. |
+| Draft criteria for a new idea (Create criteria from an idea) | Only checked, as above. The examples open without a key. |
+| Ask tab, "A model, with your key" | One model call per question, billed to your key. |
+
+Providers and models: Anthropic (`claude-opus-5-5` by default, `claude-sonnet-5-5`, `claude-haiku-5-5`) and OpenAI (`gpt-6.1-sol` by default, `gpt-6-astra`, `gpt-6-luna`). The browser keeps the key in session storage for the current tab and sends it only with the requests above. The server checks it with the provider's models lookup (no tokens), keeps a hash of a checked key for ten minutes, and never writes the key to disk or logs. New analyses are also limited per visitor (address and key) per hour and per day across the server (`trialforge/access.py`).
 
 ## Evaluation
 
@@ -90,7 +101,7 @@ Every number below comes from a committed result file in `data/` or `evals/`; `p
 
 The first run found three bugs (agents outside the drug table treated as non-myelosuppressive, SCLC trials given NSCLC comparators, and a harness bug), which is why some first-run escalations disappeared after the fixes. The remaining misses are protocols with no comparable precedent before their start date, where ProtocolOS answers *Insufficient evidence*.
 
-**C. Verifier** (39 developer-designed cases: 24 injected faults, 10 valid, 5 ambiguous): 24/24 faults rejected, 0/10 valid recommendations rejected and 5/5 ambiguous cases flagged, both locally and on Chalk Evaluations (`data/chalk_eval_run.json`). The same developer wrote the cases and the verifier, so this tests designed behaviour, not robustness.
+**C. Verifier** (39 developer-designed cases: 24 injected faults, 10 valid, 5 ambiguous): 24/24 faults rejected, 0/10 valid recommendations rejected and 5/5 ambiguous cases flagged, (`data/eval_results.json`; during the hackathon the same cases also ran on Chalk Evaluations with the same result). The same developer wrote the cases and the verifier, so this tests designed behaviour, not robustness.
 
 **D. Investigator answer checker** (`evals/investigator/results.json`; EMPOWER-Lung 3, 11 criteria, 4 questions): 44/44 of the investigator's own answers not rejected; 336/336 planted defects rejected (unknown trial ids, changed numbers, causal phrases, misquotes, dropped counterevidence, injected instructions). This shows the checker catches these classes, not defects a model would produce.
 
@@ -123,13 +134,12 @@ Checks: `.venv/bin/python -m pytest -q tests/`, `(cd web-next && npm run build &
 | `web-next/` | Next.js app: both modes and the guided tours |
 | `web/` | Vanilla-JS dashboard served by the engine at `/` (no build step) |
 | `evals/` | Gold labels, verifier cases, planted-issue generator, investigator and draft evaluations, runners |
-| `chalk_project/` | Chalk feature set and the Chalk Evaluation bundle builders |
 | `scripts/` | Prewarm, numbers and brand checks, browser end-to-end checks, deploy smoke test, clean-clone test |
 | `tests/` | Engine unit and API tests |
 | `data/` | Committed evaluation results; document caches, reviews and decisions are created here at runtime (gitignored) |
 | `docs/` | Architecture, install, demo guide, deploy guide, demo script, Devpost text, deck, screenshots |
 
-Root files: `Dockerfile` and `railway.toml` (engine container), `pyproject.toml` and `uv.lock` (Python dependencies), `chalk.yaml` and `.chalkignore` (Chalk deployment), `.env.example` (optional keys, names only).
+Root files: `Dockerfile` and `railway.toml` (engine container), `pyproject.toml` and `uv.lock` (Python dependencies), `.env.example` (settings and optional local keys, names only).
 
 ## Limitations
 

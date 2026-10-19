@@ -1,10 +1,14 @@
 // Typed client for the ProtocolOS FastAPI engine. Requests go to /api/*, which next.config rewrites to PROTOCOLOS_API_URL.
+// Every request carries the visitor session id; the visitor's own model key is sent only when a call asks for it.
+
+import { keyHeaders, sessionId, type ModelKey } from "./visitor";
 
 // Defaults for the guided tour (EL3, hemoglobin).
 export const NCT = "NCT03409614";
 export const CRITERION = "hemoglobin";
 
-// Trials with a cached review. Public mode refuses a recompute, so the app offers only these.
+// The preloaded trials: their reviews are cached on the server, so they open without a key. Any other trial is
+// analysed on request with the visitor's own OpenAI or Anthropic key (trialforge/access.py).
 export const CACHED_TRIALS = ["NCT03409614", "NCT02578680", "NCT03088540", "NCT02819518"] as const;
 
 export const QUESTIONS = {
@@ -47,6 +51,8 @@ export interface Study {
   phases?: string[];
   registry_url?: string;
   enrollment: { count: number; type: string };
+  // Protocol PDFs posted on ClinicalTrials.gov; empty when the criteria could come only from the registry text.
+  protocol_docs?: unknown[];
 }
 
 export interface Criterion {
@@ -82,6 +88,7 @@ export interface ComparatorRow {
 }
 
 export interface Review {
+  computed_at?: string;
   target: { study: Study };
   comparators: { study: Study }[];
   reviews: CriterionReview[];
@@ -184,35 +191,62 @@ export interface Packet {
   decision_summary: Record<DecisionKey, number>;
 }
 
-// A failed call keeps its status (0 when the engine did not answer at all) so a screen can say what went wrong.
+// A failed call keeps its status (0 when the engine did not answer at all) so a screen can say what went wrong; `code` is
+// the engine's machine-readable reason when it gives one (key_required, key_invalid, rate_limited, daily_limit, ...).
 export class EngineError extends Error {
   constructor(
     message: string,
     readonly status: number,
+    readonly code: string | null = null,
+    readonly detail: string | null = null,
   ) {
     super(message);
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+// Codes that the visitor can fix by entering (another) model key.
+const KEY_CODES = new Set(["key_required", "key_invalid", "key_malformed", "model_unavailable"]);
+export const needsKey = (err: unknown) => err instanceof EngineError && err.code !== null && KEY_CODES.has(err.code);
+
+type Init = RequestInit & { withKey?: boolean | ModelKey };
+
+async function request<T>(path: string, init?: Init): Promise<T> {
+  const { withKey, ...rest } = init ?? {};
+  const key = withKey ? keyHeaders(withKey === true ? undefined : withKey) : {};
   let res: Response;
   try {
-    res = await fetch(path, { ...init, headers: { "content-type": "application/json", ...init?.headers } });
+    res = await fetch(path, {
+      ...rest,
+      headers: { "content-type": "application/json", "X-ProtocolOS-Session": sessionId(), ...key, ...rest.headers },
+    });
   } catch (err: unknown) {
-    throw new EngineError(`${init?.method ?? "GET"} ${path} got no answer (${err instanceof Error ? err.message : String(err)})`, 0);
+    throw new EngineError(`${rest.method ?? "GET"} ${path} got no answer (${err instanceof Error ? err.message : String(err)})`, 0);
   }
-  if (!res.ok) throw new EngineError(`${init?.method ?? "GET"} ${path} returned ${res.status}`, res.status);
+  if (!res.ok) {
+    let code: string | null = null;
+    let detail: string | null = null;
+    try {
+      const body = (await res.json()) as { code?: unknown; detail?: unknown };
+      code = typeof body.code === "string" ? body.code : null;
+      detail = typeof body.detail === "string" ? body.detail : null;
+    } catch {
+      // not JSON: the status is all there is
+    }
+    throw new EngineError(`${rest.method ?? "GET"} ${path} returned ${res.status}${detail ? `: ${detail}` : ""}`, res.status, code, detail);
+  }
   return (await res.json()) as T;
 }
 
-const post = <T>(path: string, body: unknown) => request<T>(path, { method: "POST", body: JSON.stringify(body) });
+const post = <T>(path: string, body: unknown, withKey?: boolean) =>
+  request<T>(path, { method: "POST", body: JSON.stringify(body), withKey });
 
-// Several views read the same review; fetch each trial's once per page load.
+// Several views read the same review; fetch each trial's once per page load. `withKey` sends the visitor's key, which
+// the engine needs only to analyse a trial that is not cached yet.
 const reviews = new Map<string, Promise<Review>>();
-export function getReview(nct: string): Promise<Review> {
+export function getReview(nct: string, withKey = false): Promise<Review> {
   const cached = reviews.get(nct);
   if (cached) return cached;
-  const pending = request<Review>(`/api/review/${encodeURIComponent(nct)}`).catch((err: unknown) => {
+  const pending = request<Review>(`/api/review/${encodeURIComponent(nct)}`, { withKey }).catch((err: unknown) => {
     reviews.delete(nct);
     throw err;
   });
@@ -223,8 +257,13 @@ export function getReview(nct: string): Promise<Review> {
 export const getGraph = (nct: string, criterionId: string) =>
   request<Graph>(`/api/graph/${encodeURIComponent(nct)}?criterion_id=${encodeURIComponent(criterionId)}`);
 
-export const investigate = (nct: string, criterionId: string, question: Question) =>
-  post<Investigation>("/api/investigate", { nct, criterion_id: criterionId, question });
+export type AskMode = "deterministic" | "model";
+export const investigate = (nct: string, criterionId: string, question: Question, mode: AskMode = "deterministic") =>
+  post<Investigation>("/api/investigate", { nct, criterion_id: criterionId, question, mode }, mode === "model");
+
+// Checks a key with the provider's free models lookup; the engine stores nothing but a hash, for a few minutes.
+export const checkModelKey = (k: ModelKey) =>
+  request<{ ok: true; provider: string; model: string; label: string }>("/api/model/check", { method: "POST", withKey: k });
 
 // The reviewer's deliberately wrong argument on screen 5, shown word for word; the unit comes from the ANC criterion.
 export const ANC_CLAIM_TEXT = "Cemiplimab is a PD-1 inhibitor and is not myelosuppressive, so the ANC floor can be lowered.";
@@ -296,6 +335,8 @@ export const saveDecision = (nct: string, criterionId: string, decision: Decisio
   post<Record<string, DecisionRecord>>("/api/decision", { nct, criterion_id: criterionId, decision, reason, reviewer });
 
 export const getPacket = (nct: string) => request<Packet>(`/api/packet/${encodeURIComponent(nct)}`);
+// A plain link cannot send headers, so the export link names the session in the query.
+export const packetExportUrl = (nct: string) => `/api/packet/${encodeURIComponent(nct)}?format=md&session=${sessionId()}`;
 
 // For requests the public deploy is meant to refuse: the status code is the result, so a 4xx/5xx is not an error here.
 export async function probeStatus(path: string, init?: RequestInit): Promise<number> {

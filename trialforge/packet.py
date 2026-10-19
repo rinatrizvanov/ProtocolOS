@@ -26,19 +26,33 @@ PRIORITY = {
 TIER_ORDER = ["Direct protocol evidence", "Peer-trial precedent", "Regulatory guidance", "Curated pharmacology (rule-based inference)", "Model inference"]
 
 
-def load_decisions(nct: str) -> dict:
-    p = DECISIONS / f"{nct}.json"
+MAX_SESSIONS = 20000
+
+
+def decisions_path(nct: str, session: str | None = None) -> Path:
+    """data/decisions/<nct>.json, or data/decisions/sessions/<session>/<nct>.json for one visitor session.
+    `session` must already be validated (access.session_of: 32 lowercase hex digits)."""
+    return (DECISIONS / "sessions" / session if session else DECISIONS) / f"{nct}.json"
+
+
+def load_decisions(nct: str, session: str | None = None) -> dict:
+    p = decisions_path(nct, session)
     return json.loads(p.read_text()) if p.exists() else {}
 
 
-def save_decision(nct: str, criterion_id: str, decision: str, reason: str, reviewer: str) -> dict:
+def save_decision(nct: str, criterion_id: str, decision: str, reason: str, reviewer: str, session: str | None = None) -> dict:
     if decision not in DECISION_OPTIONS:
         raise ValueError(f"decision must be one of {sorted(DECISION_OPTIONS)}")
-    DECISIONS.mkdir(parents=True, exist_ok=True)
-    d = load_decisions(nct)
+    p = decisions_path(nct, session)
+    if session and not p.parent.exists():
+        root = DECISIONS / "sessions"
+        if root.exists() and sum(1 for _ in root.iterdir()) >= MAX_SESSIONS:
+            raise OverflowError("decision storage is full on this server")
+    p.parent.mkdir(parents=True, exist_ok=True)
+    d = load_decisions(nct, session)
     d[criterion_id] = {"decision": decision, "label": DECISION_OPTIONS[decision], "reason": reason.strip(),
                        "reviewer": reviewer.strip() or "unnamed reviewer", "recorded_at": time.strftime("%Y-%m-%d %H:%M:%S")}
-    (DECISIONS / f"{nct}.json").write_text(json.dumps(d, indent=1))
+    p.write_text(json.dumps(d, indent=1))
     return d
 
 

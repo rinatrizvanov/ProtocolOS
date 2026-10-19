@@ -15,7 +15,9 @@ Checks:
 - preset el3-design-time puts the before/after table above the cards, counts its differing rows among the rows that
   state the same measure, and marks the renal row (GFR as written vs drafted CrCl) as a different measure;
 - the downloaded JSON deep-equals GET /api/draft/{draft_id}; the Markdown download lists every criterion;
-- a free idea (a condition plus 3 known drugs) returns a result or a visible error within 150 s;
+- a free idea (a condition plus 3 known drugs) that is not cached asks for the visitor's own model key (the public
+  guard answers 401 key_required); with E2E_MODEL_KEY (and E2E_MODEL_PROVIDER, default anthropic) set, the key is
+  entered and the idea returns a result or a visible error within 150 s;
 - with the last drug still typed (no Enter), a click on a setting, a phase or "Draft criteria" lands on the first try;
 - each preset click or idea sends exactly one draft request;
 - at 390 px a deep link or a tapped preset scrolls the result into view;
@@ -242,13 +244,30 @@ def check_free_idea(page) -> None:
     click_centre(page, page.locator("label", has=radio))
     check(radio.is_checked(), f"phase {phase} selected on the first click")
     start = time.monotonic()
-    click_centre(page, page.get_by_test_id("draft-submit"))
+    is_post = lambda r: r.request.method == "POST" and r.url.split("?", 1)[0].endswith("/api/draft")  # noqa: E731
     try:
-        page.wait_for_selector('[data-testid="draft-progress"], [data-testid="draft-result"], [data-testid="draft-error"]', timeout=5000)
-        check(True, "first click on Draft criteria with the last drug still typed starts the draft")
-    except Exception:
-        check(False, f"first click on Draft criteria with the last drug still typed starts the draft (requests: {sent or 'none'})")
+        with page.expect_response(is_post, timeout=DRAFT_TIMEOUT_MS) as first:
+            click_centre(page, page.get_by_test_id("draft-submit"))
+        status = first.value.status
+    except Exception:  # noqa: BLE001 - no request: the click did not submit
+        status = None
+    check(status is not None, f"first click on Draft criteria with the last drug still typed sends the idea ({sent or 'none'})")
+    if status is None:
         return
+    # A new idea needs the visitor's key on the public deployment (401); a cached idea or an unguarded engine drafts at once.
+    if status == 401:
+        page.get_by_test_id("draft-key").wait_for(timeout=10000)
+        check(page.get_by_test_id("model-key-form").count() == 1, "an uncached idea asks for the visitor's own key")
+        key = os.environ.get("E2E_MODEL_KEY")
+        if not key:
+            print("SKIP free idea result: set E2E_MODEL_KEY (and E2E_MODEL_PROVIDER) to enter a key and check the drafted result")
+            return
+        if os.environ.get("E2E_MODEL_PROVIDER", "anthropic") == "openai":
+            click_centre(page, page.locator("label", has=page.locator('input[value="openai"]')))
+        page.get_by_test_id("model-key-input").fill(key)
+        sent.clear()
+        start = time.monotonic()
+        page.get_by_test_id("model-key-submit").click()
     took = wait_for_draft(page, sent, "free idea") - start
     check(sent[:1] == ["POST /api/draft"], "free idea request is POST /api/draft")
     chips = page.get_by_test_id("drug-chip")

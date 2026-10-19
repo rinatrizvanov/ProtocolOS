@@ -61,13 +61,14 @@ def draft_section() -> dict:
 
 def reference_section() -> dict:
     planted = _load(ROOT / "data" / "planted_results.json")
-    verifier = _load(ROOT / "data" / "chalk_eval_run.json")
+    evals = _load(ROOT / "data" / "eval_results.json")
+    verifier = (evals or {}).get("suites", {}).get("verifier")
     out: dict = {}
     if planted is not None:
         out["planted"] = {"source": "data/planted_results.json", "summary": planted.get("summary")}
     if verifier is not None:
-        fields = ("status", "rows", "verdicts_matching_expectation", "fault_rejected", "n_fault", "valid_rejected", "n_valid", "ambiguous_flagged")
-        out["verifier_chalk_evaluation"] = {"source": "data/chalk_eval_run.json", **{k: verifier.get(k) for k in fields}}
+        out["verifier"] = {"source": "data/eval_results.json suites.verifier",
+                           **{k: verifier.get(k) for k in ("n_faults", "n_valid", "n_ambiguous", "deterministic")}}
     return out
 
 

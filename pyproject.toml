@@ -14,8 +14,6 @@ dependencies = [
     "pypdf>=6.21.1",
     "pydantic>=2.14.1",
     "anthropic>=1.15.0",
-    "chalkpy>=2.163.1",
-    "chalkcompute>=2.13.7",
 ]
 
 [dependency-groups]

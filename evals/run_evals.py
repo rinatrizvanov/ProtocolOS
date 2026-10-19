@@ -1,7 +1,7 @@
 """Reproducible evaluation suite.
 
     .venv/bin/python -m evals.run_evals            # local runner
-    .venv/bin/python -m evals.run_evals --llm      # also run the LLM-only verifier baseline (needs ANTHROPIC_API_KEY)
+    .venv/bin/python -m evals.run_evals --llm      # also run the LLM-only verifier baseline (needs ANTHROPIC_API_KEY or OPENAI_API_KEY)
 
 Writes data/eval_results.json (shown in the dashboard's Evaluation tab) and prints a summary.
 Every metric is computed from cached official documents and hand-labelled gold files; nothing is hard-coded.
@@ -145,7 +145,9 @@ def eval_citations(analyses):
             "nct_total": nct_total, "nct_ok": nct_ok, "nct_exist": nct_ok / nct_total if nct_total else None}
 
 
-def eval_verifier(run_llm: bool):
+def eval_verifier(creds):
+    """`creds`: llm.Credentials for the LLM-only baseline, or None to skip it."""
+    run_llm = creds is not None
     R = default_resolvers()
     ctxs = {}
     res = []
@@ -167,7 +169,7 @@ def eval_verifier(run_llm: bool):
                "det_warned_checks": [c["check"] for c in det["checks"] if c["result"] == "warn"]}
         if run_llm:
             try:
-                lv = llm.llm_only_verify(rec, ctx)
+                lv = llm.llm_only_verify(rec, ctx, creds)
                 row["llm_status"] = lv["status"]
                 row["llm_reasons"] = lv["reasons"]
             except Exception as e:
@@ -194,12 +196,12 @@ def eval_verifier(run_llm: bool):
     if run_llm:
         llm_s = summarize(lambda r: r.get("llm_status") if r.get("llm_status") in ("REJECTED", "PASSED") else None)
         if llm_s:
-            llm_s["note"] = f"{llm.model_label()}; binary PASSED/REJECTED (cannot emit warnings, so ambiguous agreement is 0 by construction)"
+            llm_s["note"] = f"{creds.label()}; binary PASSED/REJECTED (cannot emit warnings, so ambiguous agreement is 0 by construction)"
     return {
         "n_faults": sum(r["kind"] == "fault" for r in res), "n_valid": sum(r["kind"] == "valid" for r in res),
         "n_ambiguous": sum(r["kind"] == "ambiguous" for r in res),
         "deterministic": det, "no_verifier": nov,
-        "llm_only": llm_s or {"note": "not run (no model credentials: CHALK_ROUTER_API_KEY or ANTHROPIC_API_KEY)" if not llm.available() else "not run (pass --llm)"},
+        "llm_only": llm_s or {"note": "not run (pass --llm with ANTHROPIC_API_KEY or OPENAI_API_KEY set)"},
         "cases": res,
     }
 
@@ -244,15 +246,13 @@ def main():
         "regimen": eval_regimen(analyses),
         "comparison": eval_comparison(analyses),
         "citations": eval_citations(analyses),
-        "verifier": eval_verifier(args.llm and llm.available()),
+        "verifier": eval_verifier(llm.from_env() if args.llm else None),
         "classification": eval_classification(),
     }
-    chalk_status_path = DATA / "chalk_eval_run.json"
     out = {
         "generated_at": time.strftime("%Y-%m-%d %H:%M:%S"),
         "runner": "local (evals/run_evals.py)",
         "seconds": round(time.time() - t0, 1),
-        "chalk": json.loads(chalk_status_path.read_text()) if chalk_status_path.exists() else {"status": "not run"},
         "first_run": first_run_summary(),
         "suites": suites,
     }

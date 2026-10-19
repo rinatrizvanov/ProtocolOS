@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import importlib.util
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from pydantic import BaseModel
 
 from .settings import flag
@@ -21,23 +21,26 @@ class InvestigateReq(BaseModel):
     mode: str = "deterministic"
 
 
-def graph_route(nct: str, as_of: str = "auto", criterion_id: str | None = None):
-    from .api import get_review
+def graph_route(request: Request, nct: str, as_of: str = "auto", criterion_id: str | None = None):
+    from .api import decisions_for, get_review
     from .graph import build_graph
-    from .packet import load_decisions
 
     r = get_review(nct, as_of)
     if criterion_id is not None and criterion_id not in {rv["criterion"]["id"] for rv in r["reviews"]}:
         raise HTTPException(404, "criterion not found")
-    return build_graph(r, load_decisions(r["target"]["study"]["nct_id"]), criterion_id)
+    return build_graph(r, decisions_for(r["target"]["study"]["nct_id"], request), criterion_id)
 
 
-def investigate_route(req: InvestigateReq):
+def investigate_route(req: InvestigateReq, request: Request):
     if importlib.util.find_spec("trialforge.investigate") is None:
         raise HTTPException(501, "investigator not installed")
+    from . import llm
+    from .api import decisions_for
     from .investigate import investigate
 
-    return investigate(req.nct, req.criterion_id, req.question, as_of=req.as_of, mode=req.mode)
+    creds = llm.resolve(request.headers) if req.mode == "model" else None
+    return investigate(req.nct, req.criterion_id, req.question, as_of=req.as_of, mode=req.mode, creds=creds,
+                       decisions=lambda nct: decisions_for(nct, request))
 
 
 def install(app) -> None:

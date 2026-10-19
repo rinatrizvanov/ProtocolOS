@@ -8,11 +8,11 @@ import datetime as _dt
 import re
 from typing import Literal
 
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from . import draft, druglib
+from . import access, draft, druglib, settings
 
 CAP_DETAIL = "new ideas limit reached on the public demo; presets still work"
 _AS_OF_RE = re.compile(r"^\d{4}-\d{2}(-\d{2})?$")
@@ -70,9 +70,12 @@ def presets() -> list[dict]:
     return out
 
 
-def post_draft(idea: dict) -> dict:
+def post_draft(idea: dict, headers=None, client: str = "unknown") -> dict:
     pid = draft.preset_for(idea)
     exclude = tuple(draft.PRESETS[pid].get("exclude") or ()) if pid else ()
+    # On the public deployment a new idea (not a preset, not cached) needs the visitor's own key.
+    if settings.flag("PUBLIC") and not pid and draft.cached(draft.draft_id_for(idea, exclude)) is None:
+        access.allow_new_work(headers, client, "new_draft")
     try:
         d = draft.get_or_draft(idea, exclude=exclude, preset=bool(pid))
     except draft.ColdCapReached:
@@ -99,8 +102,8 @@ def install(app) -> None:
         return presets()
 
     @app.post("/api/draft")
-    async def _post(idea: Idea):
-        return await run_in_threadpool(post_draft, idea.model_dump())
+    async def _post(idea: Idea, request: Request):
+        return await run_in_threadpool(post_draft, idea.model_dump(), request.headers, access.client_of(request.headers, request.client))
 
     @app.get("/api/draft/{draft_id}")
     def _get(draft_id: str):

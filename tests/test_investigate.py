@@ -4,7 +4,7 @@ Most tests run against a synthetic graph that follows the graph contract (ids, n
 types) for EL3 hemoglobin, built here from the cached review so every quote is real; mutants can then
 edit the graph freely. The real-graph tests (trialforge.graph) and the route test build the graph from
 data/reviews/NCT03409614_auto.json. No test hits the network: the review and protocols come from data/
-caches and the Chalk registry tool is monkeypatched.
+caches and model calls are mocked.
 """
 from __future__ import annotations
 
@@ -133,11 +133,10 @@ def review():
 
 @pytest.fixture
 def env(monkeypatch, tmp_path, review):
-    """Synthetic graph behind the build_graph tool; Chalk registry stubbed; audit log in tmp."""
+    """Synthetic graph behind the build_graph tool; audit log in tmp."""
     state = {"graph": synthetic_graph(review), "review": review}
-    monkeypatch.setitem(inv.TOOLS, "build_graph", lambda review, criterion_id: copy.deepcopy(state["graph"]))
+    monkeypatch.setitem(inv.TOOLS, "build_graph", lambda review, criterion_id, decisions=None: copy.deepcopy(state["graph"]))
     monkeypatch.setitem(inv.TOOLS, "get_review", lambda nct, as_of="auto": inv._tool_get_review(nct, as_of) if state["review"] is review else state["review"])
-    monkeypatch.setitem(inv.TOOLS, "chalk_registry_profile", lambda nct: {"status": "unavailable", "detail": "stubbed in tests"})
     monkeypatch.setattr(inv, "AUDIT_DIR", tmp_path / "investigations")
     return state
 
@@ -191,8 +190,8 @@ def test_why_flagged_synthetic(env):
     assert resp["answer"]["overall"] == "supported"
     assert resp["answer"]["summary"] and "retain" not in resp["answer"]["summary"].lower()
     assert not fails(resp["checks"]), fails(resp["checks"])
-    assert resp["tools_used"] == ["get_review", "build_graph", "protocol_page", "chalk_registry_profile"]
-    assert resp["budget"] == {"max_tool_calls": 4, "used": 4, "max_model_calls": 2, "used_model": 0, "max_seconds": 60.0, "dropped": 0}
+    assert resp["tools_used"] == ["get_review", "build_graph", "protocol_page"]
+    assert resp["budget"] == {"max_tool_calls": 4, "used": 3, "max_model_calls": 2, "used_model": 0, "max_seconds": 60.0, "dropped": 0}
     assert any(c["check"] == "criterion_on_page" and c["result"] == "pass" for c in resp["checks"])
     assert resp["model"]["status"] == "not_used" and resp["mode"] == "deterministic"
 
@@ -364,10 +363,7 @@ def test_bad_inputs(env):
     assert e.value.status_code == 400
 
 
-def test_model_mode_is_not_configured(env, monkeypatch):
-    from trialforge import llm
-
-    monkeypatch.setattr(llm, "available", lambda: False)
+def test_model_mode_is_not_configured(env):
     det = stable(inv.investigate(NCT, CID, "why_flagged"))
     mod = stable(inv.investigate(NCT, CID, "why_flagged", mode="model"))
     assert mod["model"] == {"status": "not configured", "provider": None} and mod["mode"] == "deterministic"
@@ -377,16 +373,21 @@ def test_model_mode_is_not_configured(env, monkeypatch):
 # ----------------------------------------------------------------------------- model mode (router mocked)
 
 @pytest.fixture
-def model_on(monkeypatch):
+def model_on():
     from trialforge import llm
 
-    monkeypatch.setattr(llm, "available", lambda: True)
-    monkeypatch.setattr(llm, "model_label", lambda: "mock model via Chalk Model Gateway")
     return llm
 
 
+# A visitor's key as the route passes it; json_call is mocked, so no request leaves the test.
+def _creds():
+    from trialforge import llm
+
+    return llm.Credentials("openai", "gpt-6.1-sol", "sk-test-" + "x" * 24)
+
+
 def _reply(statements, seen=None):
-    def json_call(system, user, schema, effort="medium"):
+    def json_call(system, user, schema, creds, effort="medium"):
         if seen is not None:
             seen.update(system=system, user=json.loads(user), schema=schema)
         return {"statements": statements}
@@ -409,11 +410,11 @@ def test_model_unsafe_statement_and_fake_id_are_rejected(env, model_on, monkeypa
     det = inv.investigate(NCT, CID, "why_flagged")
     rule = ids_of(g, "ScoreRule", lambda n: n["data"]["group"] == "looser_comparators")[0]
     seen: dict = {}
-    monkeypatch.setattr(model_on, "_json_call", _reply([
+    monkeypatch.setattr(model_on, "json_call", _reply([
         {"text": "Comparable trials used a lower value, so 9 g/dL is safe.", "polarity": "challenges", "role": "answer", "evidence_ids": [rule]},
         {"text": "Another trial reported a lower threshold.", "polarity": "challenges", "role": "answer", "evidence_ids": ["passage:deadbeef0000"]},
     ] + _grounded_statements(g, det["counterevidence"])[1:], seen))
-    resp = inv.investigate(NCT, CID, "why_flagged", mode="model")
+    resp = inv.investigate(NCT, CID, "why_flagged", mode="model", creds=_creds())
     sts = {s["id"]: s for s in resp["answer"]["statements"]}
     assert sts["m1"]["status"] == "unsupported" and "overclaim" in sts["m1"]["failed_checks"]
     assert sts["m2"]["status"] == "unsupported" and "evidence_exists" in sts["m2"]["failed_checks"]
@@ -433,8 +434,8 @@ def test_model_answer_cannot_raise_the_label(env, model_on, monkeypatch):
     monkeypatch.setattr(inv, "_compose", lambda q, c: real_compose(q, c)[:2] + (set(),))  # templates answer nothing
     det = inv.investigate(NCT, CID, "why_flagged")
     assert det["answer"]["overall"] == "insufficient_evidence"
-    monkeypatch.setattr(model_on, "_json_call", _reply(_grounded_statements(env["graph"], det["counterevidence"])))
-    resp = inv.investigate(NCT, CID, "why_flagged", mode="model")
+    monkeypatch.setattr(model_on, "json_call", _reply(_grounded_statements(env["graph"], det["counterevidence"])))
+    resp = inv.investigate(NCT, CID, "why_flagged", mode="model", creds=_creds())
     sts = resp["answer"]["statements"]
     assert not _no_unsupported(resp) and any(s["status"] == "supported" and s["role"] == "answer" for s in sts)
     assert resp["answer"]["overall"] == "insufficient_evidence" == resp["model"]["deterministic_overall"]
@@ -448,8 +449,8 @@ def _same_answer(a, b):
 def test_model_timeout_falls_back_to_deterministic(env, model_on, monkeypatch):
     det = inv.investigate(NCT, CID, "why_flagged")
     monkeypatch.setattr(inv, "MAX_SECONDS", 1.5)
-    monkeypatch.setattr(model_on, "_json_call", lambda *a, **k: time.sleep(3) or {"statements": []})
-    resp = inv.investigate(NCT, CID, "why_flagged", mode="model")
+    monkeypatch.setattr(model_on, "json_call", lambda *a, **k: time.sleep(3) or {"statements": []})
+    resp = inv.investigate(NCT, CID, "why_flagged", mode="model", creds=_creds())
     assert resp["mode"] == "deterministic" and resp["model"]["status"].startswith("unavailable: timed out")
     assert _same_answer(resp, det) and resp["budget"]["used_model"] == 2
     assert any(c["check"] == "model" and c["result"] == "warn" for c in resp["checks"])
@@ -459,11 +460,11 @@ def test_model_error_falls_back_to_deterministic(env, model_on, monkeypatch):
     det = inv.investigate(NCT, CID, "why_flagged")
 
     def broken(*a, **k):
-        raise RuntimeError("Chalk router HTTP 500: provider is not configured")
+        raise RuntimeError("OpenAI HTTP 500: server error")
 
-    monkeypatch.setattr(model_on, "_json_call", broken)
-    resp = inv.investigate(NCT, CID, "why_flagged", mode="model")
-    assert resp["mode"] == "deterministic" and resp["model"]["status"].startswith("unavailable: RuntimeError: Chalk router HTTP 500")
+    monkeypatch.setattr(model_on, "json_call", broken)
+    resp = inv.investigate(NCT, CID, "why_flagged", mode="model", creds=_creds())
+    assert resp["mode"] == "deterministic" and resp["model"]["status"].startswith("unavailable: RuntimeError: OpenAI HTTP 500")
     assert _same_answer(resp, det)
 
 
@@ -628,7 +629,6 @@ def test_eval_harness_on_synthetic_graph(env, review, tmp_path):
 
 @pytest.fixture
 def real(monkeypatch, tmp_path):
-    monkeypatch.setitem(inv.TOOLS, "chalk_registry_profile", lambda nct: {"status": "unavailable", "detail": "stubbed in tests"})
     monkeypatch.setattr(inv, "AUDIT_DIR", tmp_path / "investigations")
 
 
@@ -717,7 +717,7 @@ def test_investigate_route(real, monkeypatch):
     assert all(set(c) >= {"check", "statement_id", "result", "detail"} and c["result"] in ("pass", "warn", "fail") for c in body["checks"])
     assert not fails(body["checks"])
     assert {k: body["budget"][k] for k in ("max_tool_calls", "used", "max_model_calls", "used_model", "max_seconds")} == \
-        {"max_tool_calls": 4, "used": 4, "max_model_calls": 2, "used_model": 0, "max_seconds": 60.0}
+        {"max_tool_calls": 4, "used": 3, "max_model_calls": 2, "used_model": 0, "max_seconds": 60.0}
     assert body["model"] == {"status": "not_used", "provider": None}
     assert body["graph_delta"] == {"nodes": [], "edges": []} and body["audit_id"].startswith("inv-")
     assert isinstance(body["elapsed_s"], (int, float)) and body["counterevidence"]

@@ -9,23 +9,23 @@ import re
 import time
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import llm, nhanes
+from . import access, llm, nhanes
 from .comparators import direction
 from .guidance import load_passages
 from .review import run_review
-from .sources import DATA, fetch_protocol
+from .settings import flag
+from .sources import DATA, fetch_protocol, protocol_cached
 from .verifier import default_resolvers, verify
 
 ROOT = Path(__file__).resolve().parent.parent
 WEB = ROOT / "web"
 REVIEW_CACHE = DATA / "reviews"
 EVAL_RESULTS = DATA / "eval_results.json"
-CHALK_STATUS = DATA / "chalk_status.json"
 
 app = FastAPI(
     title="ProtocolOS",
@@ -33,6 +33,32 @@ app = FastAPI(
 )
 _resolvers = None
 _mem: dict[str, dict] = {}
+
+
+@app.exception_handler(access.AccessDenied)
+def _access_denied(request: Request, exc: access.AccessDenied):
+    return JSONResponse(exc.body(), status_code=exc.status)
+
+
+def session_of(request: Request) -> str | None:
+    return access.session_of(request.headers, request.query_params)
+
+
+def decisions_for(nct: str, request: Request) -> dict:
+    """The decisions this request may see: its visitor session's, or (local runs only) the shared file."""
+    from .packet import load_decisions
+
+    session = session_of(request)
+    if session is None and flag("PUBLIC"):
+        return {}
+    return load_decisions(nct, session)
+
+
+def _model_creds(request: Request) -> llm.Credentials:
+    creds = llm.resolve(request.headers)
+    if creds is None:
+        raise access.AccessDenied(401, "key_required", access.KEY_NEEDED["model"])
+    return creds
 
 
 def resolvers():
@@ -70,13 +96,31 @@ def get_review(nct: str, as_of: str = "auto", refresh: bool = False) -> dict:
 @app.get("/api/status")
 def status():
     passages, failed = load_passages()
-    chalk = json.loads(CHALK_STATUS.read_text()) if CHALK_STATUS.exists() else {"status": "not configured", "detail": "Run `chalk login`, then scripts in chalk_project/."}
+    local = llm.from_env()
     return {
-        "llm": {"available": llm.available(), "model": llm.model_label(), "provider": llm.provider()},
+        "llm": {
+            "mode": "your own key",
+            "providers": {k: {"name": v["name"], "models": list(v["models"])} for k, v in llm.PROVIDERS.items()},
+            "local_key": local.label() if local else None,
+        },
+        "public": flag("PUBLIC"),
         "fda_passages": {"verified": len(passages), "failed": failed},
-        "chalk": chalk,
         "evals": EVAL_RESULTS.exists(),
     }
+
+
+@app.post("/api/model/check")
+def model_check(request: Request):
+    """Check the visitor's key (headers X-Model-Provider, X-Model-Key, X-Model-Name) with a free models lookup."""
+    client = access.client_of(request.headers, request.client)
+    creds = access.check_key(request.headers, client) if flag("PUBLIC") else access.credentials(request.headers)
+    if creds is None:
+        raise access.AccessDenied(401, "key_required", access.KEY_NEEDED["model"])
+    if not flag("PUBLIC"):
+        result = llm.check(creds)
+        if not result.ok:
+            raise access.AccessDenied(502 if result.code == "provider_unreachable" else 401, result.code, result.message)
+    return {"ok": True, "provider": creds.provider, "model": creds.model, "label": creds.label()}
 
 
 @app.get("/api/review/{nct}")
@@ -136,13 +180,14 @@ class VerifyReq(BaseModel):
 
 
 @app.post("/api/verify")
-def verify_api(req: VerifyReq):
+def verify_api(req: VerifyReq, request: Request):
     r = get_review(req.nct, req.as_of)
     out = {"deterministic": verify(req.recommendation, r, resolvers())}
-    if req.with_llm_baseline and llm.available():
+    creds = llm.resolve(request.headers) if req.with_llm_baseline else None
+    if creds is not None:
         try:
-            out["llm_only"] = llm.llm_only_verify(req.recommendation, r)
-        except Exception as e:
+            out["llm_only"] = llm.llm_only_verify(req.recommendation, r, creds)
+        except llm.ModelError as e:
             out["llm_only"] = {"error": str(e)}
     return out
 
@@ -154,11 +199,13 @@ class ParseReq(BaseModel):
 
 
 @app.post("/api/parse")
-def parse_api(req: ParseReq):
-    if not llm.available():
-        raise HTTPException(503, "LLM not configured (set ANTHROPIC_API_KEY). Use the structured form instead.")
+def parse_api(req: ParseReq, request: Request):
+    creds = _model_creds(request)
     r = get_review(req.nct, req.as_of)
-    rec = llm.parse_recommendation(req.text, r)
+    try:
+        rec = llm.parse_recommendation(req.text, r, creds)
+    except llm.ModelError as e:
+        raise HTTPException(502, f"model call failed: {e}")
     return {"recommendation": rec, "verification": verify(rec, r, resolvers())}
 
 
@@ -169,39 +216,37 @@ class CritiqueReq(BaseModel):
 
 
 @app.post("/api/critique")
-def critique_api(req: CritiqueReq):
-    if not llm.available():
-        raise HTTPException(503, "LLM critic not configured (set ANTHROPIC_API_KEY).")
+def critique_api(req: CritiqueReq, request: Request):
+    creds = _model_creds(request)
     r = get_review(req.nct, req.as_of)
     item = next((x for x in r["reviews"] if x["criterion"]["id"] == req.criterion_id), None)
     if not item:
         raise HTTPException(404, "criterion not found")
-    return llm.critique(item, r["target"]["regimen"]["drugs"])
+    try:
+        return llm.critique(item, r["target"]["regimen"]["drugs"], creds)
+    except llm.ModelError as e:
+        raise HTTPException(502, f"model call failed: {e}")
 
 
 @app.get("/api/protocol/{nct}/page/{page}")
 def protocol_page(nct: str, page: int):
+    # On the public deployment a page is served only from a protocol already downloaded for a review.
+    if flag("PUBLIC") and not protocol_cached(nct):
+        raise HTTPException(403, "this protocol has not been downloaded on this server; analyse its trial first")
     doc = fetch_protocol(nct.upper())
     if not doc or not (1 <= page <= len(doc.pages)):
         raise HTTPException(404, "page not available")
     return {"nct": nct, "page": page, "text": doc.pages[page - 1], "url": f"{doc.url}#page={page}"}
 
 
-@app.get("/api/chalk/registry/{nct}")
-def chalk_registry(nct: str):
-    from .chalk_bridge import registry_profile
-
-    return registry_profile(nct.strip().upper())
-
-
 @app.get("/api/packet/{nct}")
-def packet(nct: str, format: str = "json", as_of: str = "auto"):
+def packet(nct: str, request: Request, format: str = "json", as_of: str = "auto"):
     from fastapi.responses import HTMLResponse, PlainTextResponse
 
-    from .packet import build_packet, load_decisions, to_html, to_markdown
+    from .packet import build_packet, to_html, to_markdown
 
     r = get_review(nct, as_of)
-    p = build_packet(r, load_decisions(r["target"]["study"]["nct_id"]))
+    p = build_packet(r, decisions_for(r["target"]["study"]["nct_id"], request))
     if format == "md":
         return PlainTextResponse(to_markdown(p), headers={"Content-Disposition": f'attachment; filename="ProtocolOS_{nct}_review_packet.md"'})
     if format == "html":
@@ -218,13 +263,18 @@ class DecisionReq(BaseModel):
 
 
 @app.post("/api/decision")
-def decision(req: DecisionReq):
+def decision(req: DecisionReq, request: Request):
     from .packet import save_decision
 
+    session = session_of(request)
+    if session is None and flag("PUBLIC"):
+        raise access.AccessDenied(400, "session_required", "Decisions on the public demo are saved per browser; reload the page and try again.")
     try:
-        return save_decision(req.nct.upper(), req.criterion_id, req.decision, req.reason, req.reviewer)
+        return save_decision(req.nct.upper(), req.criterion_id, req.decision, req.reason, req.reviewer, session)
     except ValueError as e:
         raise HTTPException(400, str(e))
+    except OverflowError as e:
+        raise HTTPException(507, str(e))
 
 
 @app.get("/api/planted")

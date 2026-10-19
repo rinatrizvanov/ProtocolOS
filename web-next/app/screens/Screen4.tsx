@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
+  EngineError,
   QUESTIONS,
   getReview,
   investigate,
   questionLabel,
   sameAsSupport,
+  type AskMode,
   type Classification,
   type Investigation,
   type Question,
@@ -14,7 +16,9 @@ import {
   type Statement,
 } from "@/lib/api";
 import { useApi } from "@/lib/useApi";
+import { useModelKey } from "@/lib/visitor";
 import { Failed, Frame } from "../components/Frame";
+import { ModelKeyForm } from "../components/ModelKeyForm";
 
 type Run = { status: "idle" } | { status: "busy" } | { status: "error"; message: string } | { status: "ready"; data: Investigation };
 type Mark = "checked" | "context" | "failed";
@@ -66,6 +70,16 @@ function Result({ data }: { data: Investigation }) {
   const marks = statements.map(markOf);
   return (
     <div className="flex w-full max-w-3xl flex-col gap-2">
+      {data.mode === "model" ? (
+        <p data-testid="answered-by" className="text-xs text-muted">
+          Written by {data.model.provider ?? "the model"} from this criterion&apos;s rationale graph; every sentence checked, and one that fails
+          is marked with a cross. The classification never changes.
+        </p>
+      ) : data.model.status.startsWith("unavailable") ? (
+        <p data-testid="model-unavailable" className="text-xs text-look-ink">
+          The model did not answer ({data.model.status.replace(/^unavailable: /, "")}); the rule-based answer is shown.
+        </p>
+      ) : null}
       <figure className="flex flex-col gap-1.5">
         <figcaption className="text-xs font-medium text-muted">Investigator answer, verbatim; every sentence checked against the sources</figcaption>
         <ul data-role="quote" className="flex flex-col gap-2">
@@ -96,6 +110,34 @@ function Result({ data }: { data: Investigation }) {
 }
 
 type Turn = { id: number; text: string; key: Question | null; routed: boolean; run: Run };
+
+const MODES: { id: AskMode; label: string; hint: string }[] = [
+  { id: "deterministic", label: "Rules only", hint: "Template answers from the rationale graph. No model, no key." },
+  { id: "model", label: "A model, with your key", hint: "The model you choose writes the answer from the same rationale graph; the same checks apply." },
+];
+
+function ModePicker({ mode, onChange, disabled }: { mode: AskMode; onChange: (m: AskMode) => void; disabled: boolean }) {
+  return (
+    <fieldset className="flex flex-col gap-1.5" disabled={disabled}>
+      <legend className="text-sm text-muted">Answer with</legend>
+      <div className="flex flex-wrap gap-2">
+        {MODES.map((m) => (
+          <label
+            key={m.id}
+            title={m.hint}
+            className={`flex min-h-11 cursor-pointer items-center rounded-md border px-3 py-1.5 text-sm sm:min-h-9 ${
+              mode === m.id ? "border-ink bg-line text-ink" : "border-uncounted text-muted hover:text-ink"
+            } has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ink`}
+          >
+            <input type="radio" name="ask-mode" data-testid={`ask-mode-${m.id}`} value={m.id} checked={mode === m.id} onChange={() => onChange(m.id)} className="sr-only" />
+            {m.label}
+          </label>
+        ))}
+      </div>
+      <p className="text-xs text-muted">{MODES.find((m) => m.id === mode)?.hint}</p>
+    </fieldset>
+  );
+}
 
 // Typed text never reaches the API: the investigator accepts only its four fixed questions, so text is matched to one.
 const KEYWORDS: [RegExp, Question][] = [
@@ -143,6 +185,11 @@ export default function Screen4({
   const review = useApi(() => getReview(nct));
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState("");
+  const [mode, setMode] = useState<AskMode>("deterministic");
+  const modelKey = useModelKey();
+  // The tour shows rule-based answers only; the app tab may use the visitor's model.
+  const useModel = variant === "app" && mode === "model";
+  const needsKey = useModel && modelKey === null;
   const asked = useRef(false);
   const next = useRef(0);
 
@@ -157,11 +204,11 @@ export default function Screen4({
     setTurns((prev) => [{ id, text, key, routed, run: key ? { status: "busy" } : { status: "idle" } }, ...prev]);
     if (!key) return;
     const settle = (run: Run) => setTurns((prev) => prev.map((t) => (t.id === id ? { ...t, run } : t)));
-    investigate(nct, criterionId, key).then(
+    investigate(nct, criterionId, key, useModel ? "model" : "deterministic").then(
       (data) => settle({ status: "ready", data }),
       (err: unknown) => {
         console.error(err);
-        settle({ status: "error", message: err instanceof Error ? err.message : String(err) });
+        settle({ status: "error", message: err instanceof EngineError ? (err.detail ?? err.message) : err instanceof Error ? err.message : String(err) });
       },
     );
   }
@@ -175,14 +222,14 @@ export default function Screen4({
   }, [autoAsk]);
 
   function pick(q: Question) {
-    if (busy) return;
+    if (busy || needsKey) return;
     ask(questionLabel(q, classification), q, false);
   }
 
   function send(e: FormEvent) {
     e.preventDefault();
     const text = draft.trim();
-    if (!text || busy) return;
+    if (!text || busy || needsKey) return;
     const { key, exact } = matchQuestion(text, classification);
     setDraft("");
     ask(text, key, key !== null && !exact);
@@ -224,7 +271,11 @@ export default function Screen4({
             <span className="text-muted">(points, as on the Rationale tab)</span>
           </p>
         ) : null}
-        <Suggestions classification={classification} disabled={busy} onPick={pick} />
+        {app ? <ModePicker mode={mode} onChange={setMode} disabled={busy} /> : null}
+        {needsKey ? (
+          <ModelKeyForm purpose="Model answers are billed to your key. The model sees only this criterion's rationale graph, every sentence it writes is checked against the sources, and it cannot change the classification." />
+        ) : null}
+        <Suggestions classification={classification} disabled={busy || needsKey} onPick={pick} />
         <form onSubmit={send} className="flex gap-2">
           <input
             data-testid="chat-input"
@@ -237,7 +288,7 @@ export default function Screen4({
           <button
             type="submit"
             data-testid="run-investigation"
-            disabled={!draft.trim() || busy}
+            disabled={!draft.trim() || busy || needsKey}
             className="rounded-md bg-ink px-5 py-2 text-base text-paper transition-opacity duration-150 disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
           >
             Send

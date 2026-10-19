@@ -17,8 +17,9 @@ python3 -m venv .venv                                                           
 .venv/bin/python -m scripts.prewarm --drafts NCT03409614 NCT02578680 NCT03088540 NCT02819518  # cache reviews and draft presets
 ```
 
-(uv users: `uv sync` does the same from `pyproject.toml`.) Optional keys (model mode, the Chalk registry chip) are listed in
-`.env.example`; without them model mode says "not configured" and the chip says "unavailable".
+(uv users: `uv sync` does the same from `pyproject.toml`.) Model mode uses the visitor's own key, entered in the web
+app. For local runs you may instead set `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` (names in `.env.example`); without a
+key model mode says "not configured".
 
 ## 2. Run both UIs
 
@@ -78,14 +79,16 @@ proxies `/api/*` to the Railway URL. Exact commands: [DEPLOY.md](DEPLOY.md).
 
 ## 6. Security notes
 
-- `.env` (model and Chalk keys) is gitignored and never shipped: `.railwayignore` and `.dockerignore` exclude `.env`,
-  `.env.*`, `.venv/`, `*.pem` and `.chalk.yml`. The public deploys carry no model keys (`CHALK_ROUTER_*`,
-  `ANTHROPIC_API_KEY` and `*_ALLOW_MODEL` are unset), so model mode reports "not configured" and every answer comes
-  from the deterministic engine, with the deterministic verifier as the authority on suggested changes.
+- `.env` (local model keys) is gitignored and never shipped: `.railwayignore` and `.dockerignore` exclude `.env`,
+  `.env.*`, `.venv/`, `*.pem` and `.chalk.yml`. With `PROTOCOLOS_PUBLIC=1` the server ignores environment model keys
+  altogether: model answers, new trials and new draft ideas use the visitor's own key, sent per request and never
+  stored (`trialforge/llm.py`, `trialforge/access.py`). The deterministic verifier stays the authority on suggested
+  changes.
 - `PROTOCOLOS_PUBLIC=1` turns on the public-demo guard (`trialforge/demo_guard.py`): input validation, a 16 KB body
-  limit, no `refresh=1`, `/api/parse` and `/api/critique` disabled, investigations forced to deterministic mode.
-- Decisions recorded on the public demo are open to anyone with the URL and ephemeral: they are written inside the
-  container (`data/decisions/`) and are lost on a redeploy or restart. Do not enter confidential information.
+  limit, no `refresh=1`, the visitor's key for new work and model calls, and limits on new analyses.
+- Decisions recorded on the public demo are stored per browser session and are ephemeral: they are written inside
+  the container (`data/decisions/sessions/`) and are lost on a redeploy or restart. Trials a visitor adds are cached
+  there too and can be opened by anyone with the link. Do not enter confidential information.
 - Document text (protocol PDFs, web pages) is treated as data, never as instructions.
 - Dependency audit: `cd web-next && npm audit --omit=dev` reported `found 0 vulnerabilities` (exit 0) on
   2026-10-18. `npm ci` itself reports high-severity advisories; they are in development-only dependencies

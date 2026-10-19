@@ -24,18 +24,11 @@ data/search_cache/
 data/reviews/
 data/decisions/
 
-# generated Chalk eval dataset embeds protocol text; rebuild with `python -m chalk_project.build_eval_bundle`
-chalk_project/eval_dataset.jsonl
-chalk_project/trialforge_chalk_eval.py
-
 # Regeneron hackathon starter kit (not ours to redistribute)
 Regeneron starter-kit/
 
-# investigator audit log and generated investigator eval bundle
+# investigator audit log
 data/investigations/
-chalk_project/triallens_investigator_eval.py
-chalk_project/protocolos_investigator_eval.py
-chalk_project/investigator_dataset.jsonl
 !.env.example
 
 # authoring-mode draft cache (rebuilt on demand)

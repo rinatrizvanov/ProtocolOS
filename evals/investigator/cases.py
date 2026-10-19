@@ -38,16 +38,14 @@ NUM_IN_TEXT = re.compile(r"\d+(?:\.\d+)?")
 
 @contextlib.contextmanager
 def offline_tools():
-    """No Chalk call and no audit lines in data/ while evaluating: the registry tool reports
-    'unavailable' (a valid result) and audit lines go to a temporary directory."""
-    saved_tool, saved_dir = inv.TOOLS["chalk_registry_profile"], inv.AUDIT_DIR
+    """No audit lines in data/ while evaluating: they go to a temporary directory."""
+    saved_dir = inv.AUDIT_DIR
     with tempfile.TemporaryDirectory(prefix="protocolos-inv-eval-") as tmp:
-        inv.TOOLS["chalk_registry_profile"] = lambda nct: {"status": "unavailable", "detail": "offline evaluation: Chalk not called"}
         inv.AUDIT_DIR = Path(tmp)
         try:
             yield
         finally:
-            inv.TOOLS["chalk_registry_profile"], inv.AUDIT_DIR = saved_tool, saved_dir
+            inv.AUDIT_DIR = saved_dir
 
 
 def core(resp: dict) -> dict:

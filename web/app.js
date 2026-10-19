@@ -6,9 +6,20 @@ const fmtCrit = (c) => (c ? `${c.operator}${fmtNum(c.value_norm)} ${c.unit_norm}
 const clsKey = (c) => (c.startsWith("Review") ? "review" : c.startsWith("Evidence") ? "retain" : "insufficient");
 
 const state = { nct: null, asOf: "auto", review: null, selected: null, status: null };
+const WEB_APP = "https://protocolos-web.vercel.app";
 
-async function api(path, opts) {
-  const r = await fetch(path, opts);
+// Reviewer decisions are stored per browser session on the public deployment (trialforge/access.py).
+const SESSION = (() => {
+  const make = () => Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, "0")).join("");
+  try {
+    let id = localStorage.getItem("protocolos.session.v1");
+    if (!/^[0-9a-f]{32}$/.test(id || "")) { id = make(); localStorage.setItem("protocolos.session.v1", id); }
+    return id;
+  } catch (_) { return make(); }
+})();
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, { ...opts, headers: { ...(opts.headers || {}), "X-ProtocolOS-Session": SESSION } });
   if (!r.ok) {
     let msg = r.statusText;
     try { msg = (await r.json()).detail || msg; } catch (_) {}
@@ -22,11 +33,9 @@ const post = (path, body) => api(path, { method: "POST", headers: { "Content-Typ
 async function loadStatus() {
   const s = await api("/api/status");
   state.status = s;
-  const chalk = s.chalk || {};
   $("#chips").innerHTML = [
     `<span class="chip on" title="Quotes verified verbatim against the FDA PDFs at startup">FDA passages verified: ${s.fda_passages.verified}${s.fda_passages.failed.length ? ` (${s.fda_passages.failed.length} failed)` : ""}</span>`,
-    `<span class="chip ${s.llm.available ? "on" : "off"}">LLM critic: ${s.llm.available ? esc(s.llm.model) : "not configured"}</span>`,
-    `<span class="chip ${chalk.ok || (chalk.status || "").startsWith("operational") ? "on" : "off"}" title="${esc(chalk.detail || "")}">Chalk: ${esc(chalk.status || "unknown")}</span>`,
+    `<span class="chip ${s.llm.local_key ? "on" : "off"}">Model: ${s.llm.local_key ? esc(s.llm.local_key) : "your own key, in the web app"}</span>`,
   ].join("");
 }
 
@@ -80,22 +89,7 @@ function renderStudy() {
       </div>
       <div class="regimen"><span class="chip">Regimen (all arms)</span>${drugs}</div>
       ${(regimen.unrecognized || []).length ? `<div class="src" style="margin-top:6px">Agents outside the curated pharmacology table: ${esc(regimen.unrecognized.join(", "))} (their toxicity relevance is not assessed).</div>` : ""}
-      <div id="chalkProfile" class="src" style="margin-top:8px">Checking registry profile via Chalk…</div>
     </div>`;
-  loadChalkProfile(study);
-}
-
-async function loadChalkProfile(study) {
-  const el = $("#chalkProfile");
-  try {
-    const p = await api(`/api/chalk/registry/${encodeURIComponent(study.nct_id)}`);
-    if (p.status !== "ok") { el.textContent = `Chalk registry profile: ${p.status}${p.detail ? " — " + p.detail : ""}`; return; }
-    const v = p.values;
-    const labPages = (state.review.target.criteria.filter((c) => c.category === "lab" && c.source.page).map((c) => c.source.page));
-    el.innerHTML = `<span class="chip on">Chalk</span> Registry eligibility text: ${esc(v.registry_eligibility_chars)} characters · mentions neutrophil/ANC: <b>${v.registry_mentions_anc ? "yes" : "no"}</b> · ECOG in registry: ${esc(v.registry_ecog_max ?? "not stated")} · protocol PDF posted: ${v.has_protocol_pdf ? "yes" : "no"}.
-      ${!v.registry_mentions_anc && labPages.length ? ` Lab thresholds were read from the protocol PDF (p.${esc([...new Set(labPages)].join(", "))}).` : ""}
-      <span title="${esc(p.source)}">Served by Chalk online query ${esc(p.query_id || "")} (${esc(p.environment || "")}, ${esc(p.execution_seconds)} s).</span>`;
-  } catch (e) { el.textContent = `Chalk registry profile unavailable: ${e.message}`; }
 }
 
 function renderSummary() {
@@ -282,8 +276,8 @@ function challengeForm(c) {
       <span class="example-note">Examples are user inputs to demonstrate the checks; they are not system findings.</span>
     </div>
     <div class="form-row">
-      <textarea id="chFree" placeholder="${state.status?.llm?.available ? "Or type a recommendation in plain English; the LLM converts it to claims, then the deterministic verifier checks them." : "Free-text parsing needs a model (CHALK_ROUTER_API_KEY for the Chalk Model Gateway, or ANTHROPIC_API_KEY). Use the structured form above."}" ${state.status?.llm?.available ? "" : "disabled"}></textarea>
-      <button class="small ghost" id="chParse" ${state.status?.llm?.available ? "" : "disabled"}>Parse &amp; verify free text</button>
+      <textarea id="chFree" placeholder="${state.status?.llm?.local_key ? "Or type a recommendation in plain English; the model converts it to claims, then the deterministic verifier checks them." : "Free-text parsing needs a model key: set ANTHROPIC_API_KEY or OPENAI_API_KEY for a local run. Use the structured form above."}" ${state.status?.llm?.local_key ? "" : "disabled"}></textarea>
+      <button class="small ghost" id="chParse" ${state.status?.llm?.local_key ? "" : "disabled"}>Parse &amp; verify free text</button>
     </div>
     <datalist id="drugList">${drugs.map((d) => `<option value="${esc(d)}">`).join("")}</datalist>`;
 }
@@ -366,9 +360,9 @@ async function loadPacket() {
         <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
           <div><h2 style="margin:0">${esc(p.title)}</h2><div class="src">${esc(p.trial.acronym || "")} ${esc(p.trial.title)} · comparator cutoff ${esc(p.comparator_cutoff || "none")} · generated ${esc(p.generated_at)}</div></div>
           <div class="form-row" style="margin:0">
-            <a class="btn-link" href="/api/packet/${esc(p.trial.nct_id)}?format=md&as_of=${state.asOf}">Export Markdown</a>
-            <a class="btn-link" href="/api/packet/${esc(p.trial.nct_id)}?format=html&as_of=${state.asOf}" target="_blank" rel="noopener">Printable / PDF</a>
-            <a class="btn-link" href="/api/packet/${esc(p.trial.nct_id)}?as_of=${state.asOf}" target="_blank" rel="noopener">JSON</a>
+            <a class="btn-link" href="/api/packet/${esc(p.trial.nct_id)}?format=md&as_of=${state.asOf}&session=${SESSION}">Export Markdown</a>
+            <a class="btn-link" href="/api/packet/${esc(p.trial.nct_id)}?format=html&as_of=${state.asOf}&session=${SESSION}" target="_blank" rel="noopener">Printable / PDF</a>
+            <a class="btn-link" href="/api/packet/${esc(p.trial.nct_id)}?as_of=${state.asOf}&session=${SESSION}" target="_blank" rel="noopener">JSON</a>
           </div></div>
         <div class="form-row" style="margin-top:10px"><label>Reviewer</label><input type="text" id="reviewerName" placeholder="name / role" style="width:200px" value="${esc(localStorage.getItem("tl_reviewer") || "")}"/>
           <span class="src">Decisions are saved with the packet. "Needs medical review" is always available; nothing forces approve/reject.</span></div>
@@ -440,7 +434,7 @@ async function runCritic(c) {
   el.innerHTML = `<div class="src">LLM critic reviewing this flag…</div>`;
   try {
     const r = await post("/api/critique", { nct: state.nct, criterion_id: c.id, as_of: state.asOf });
-    el.innerHTML = `<div class="ev"><div class="k">LLM critic (${esc(state.status.llm.model)}) · can only downgrade</div>
+    el.innerHTML = `<div class="ev"><div class="k">LLM critic (${esc(state.status.llm.local_key)}) · can only downgrade</div>
       <b>${esc(r.verdict)}</b> — ${esc(r.summary)}<div class="src">${esc(r.safety_rationale_vs_threshold)}</div>
       <ul>${r.issues.map((i) => `<li><b>${esc(i.type)}</b>: ${esc(i.detail)}</li>`).join("")}</ul></div>`;
   } catch (e) { el.innerHTML = `<div class="src">${esc(e.message)}</div>`; }
@@ -452,11 +446,11 @@ function bindDetail(c) {
   $("#chVerify").addEventListener("click", () => verifyForm(c));
   $("#chExample").addEventListener("change", (e) => loadExample(e.target.value));
   $("#chParse")?.addEventListener("click", parseFree);
-  if (state.status?.llm?.available) {
+  if (state.status?.llm?.local_key) {
     $("#critic").innerHTML = `<button class="small ghost" id="critBtn">Ask LLM critic to challenge this flag</button>`;
     $("#critBtn").addEventListener("click", () => runCritic(c));
   } else {
-    $("#critic").innerHTML = `<span class="src">LLM critic not configured — classifications shown are fully deterministic.</span>`;
+    $("#critic").innerHTML = `<span class="src">No model here; classifications shown are fully deterministic. Model answers with your own key are in the <a href="${WEB_APP}">web app</a>.</span>`;
   }
 }
 
@@ -491,7 +485,7 @@ async function loadEvals() {
   const s = r.suites;
   const m = (v, d) => `<div class="metric"><div class="v">${v}</div><div class="d">${d}</div></div>`;
   const pct = (x) => (x == null ? "n/a" : `${(100 * x).toFixed(1)}%`);
-  let html = `<div class="card"><h3>Run</h3><div class="meta"><span><b>Generated</b> ${esc(r.generated_at)}</span><span><b>Runner</b> ${esc(r.runner)}</span><span><b>Chalk Evaluations</b> ${esc(r.chalk?.status || "not run")}</span></div>
+  let html = `<div class="card"><h3>Run</h3><div class="meta"><span><b>Generated</b> ${esc(r.generated_at)}</span><span><b>Runner</b> ${esc(r.runner)}</span></div>
     <p class="src">Every number below is computed by <code>evals/run_evals.py</code> from the cached source documents and hand-verified gold labels in <code>evals/gold/</code>. Injected-error cases are synthetic test inputs, labelled as such; they are not findings about any trial.</p></div>`;
   if (s.extraction) {
     const e = s.extraction;
@@ -529,7 +523,6 @@ async function loadEvals() {
     vhtml = `<div class="card"><h3>C · Developer-designed verifier faults — injected-error detection and false rejections</h3>
       <table><thead><tr><th>Verifier</th><th>Injected faults rejected</th><th>Valid/cautious recs rejected</th><th>Ambiguous cases flagged (warn or reject)</th><th>Notes</th></tr></thead>
       <tbody>${row("No verifier (baseline)", v.no_verifier)}${row("Deterministic verifier (ProtocolOS), local", v.deterministic)}
-      ${r.chalk && r.chalk.n_fault ? `<tr><td>Deterministic verifier, executed on <b>Chalk Compute</b> (Chalk Evaluations)</td><td>${pct(r.chalk.fault_rejected / r.chalk.n_fault)}</td><td>${pct(r.chalk.valid_rejected / r.chalk.n_valid)}</td><td>${pct(r.chalk.ambiguous_flagged / r.chalk.n_ambiguous)}</td><td>evaluation ${esc(r.chalk.evaluation_id)} · run ${esc(r.chalk.run_id)} · ${esc(r.chalk.status)} · ${esc(r.chalk.task_errors)} task errors · Chalk scorer verdict_correct mean ${esc(r.chalk.verdict_correct_mean)} (n=${esc(r.chalk.verdict_correct_n)})</td></tr>` : ""}
       ${row("LLM-only verifier", v.llm_only)}</tbody></table>
       <div class="src">${v.n_faults} injected faults, ${v.n_valid} valid or clinically cautious recommendations, ${v.n_ambiguous} ambiguous cases (expected: warnings, not a pass).
       Caveat: the cases and the verifier were written by the same developer, so this measures the designed failure modes, not robustness to unanticipated errors. A 100% score here is expected for rule-based checks and should not be read as general accuracy.</div>
@@ -546,7 +539,7 @@ async function loadEvals() {
   html += await plantedHtml(m, pct);
   html += vhtml;
   html += `<div class="card"><h3>D · Model-based evaluations</h3>
-    <p>${state.status?.llm?.available ? `Model available: ${esc(state.status.llm.model)}. Run <code>python -m evals.run_evals --llm</code> to add the LLM-only verifier baseline.` : "Not run: no model credentials configured yet (Chalk Model Gateway router key or Anthropic key). Every result on this page is deterministic."}</p>
+    <p>${state.status?.llm?.local_key ? `Model available: ${esc(state.status.llm.local_key)}. Run <code>python -m evals.run_evals --llm</code> to add the LLM-only verifier baseline.` : "Not run: no model key on this server (set ANTHROPIC_API_KEY or OPENAI_API_KEY for a local run). Every result on this page is deterministic."}</p>
     <div class="src">When run, the LLM-only verifier receives the same recommendation and context as the deterministic verifier and must answer PASSED or REJECTED.</div></div>`;
   // keep the planted section after the original-protocol cards and before verifier faults
   $("#evals").innerHTML = html;

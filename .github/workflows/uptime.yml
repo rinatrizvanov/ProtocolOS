@@ -1,0 +1,28 @@
+# Fails (and GitHub emails the workflow's owner) when the public web app or engine stops answering.
+name: uptime
+
+on:
+  schedule:
+    - cron: "17,47 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Web app, engine status and a preloaded review answer 200
+        run: |
+          set -u
+          fail=0
+          for url in \
+            https://protocolos-web.vercel.app/ \
+            https://protocolos-api-production.up.railway.app/api/status \
+            https://protocolos-web.vercel.app/api/review/NCT03409614; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 --retry 2 --retry-delay 10 "$url" || echo 000)
+            echo "$code $url"
+            [ "$code" = 200 ] || fail=1
+          done
+          exit $fail

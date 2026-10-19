@@ -5,7 +5,7 @@ import { CRITERION, NCT, getEvals, getPlanted, probeStatus, type Evals, type Pla
 import { useApi } from "../../lib/useApi";
 import { Failed, Frame, Pending } from "../components/Frame";
 
-// Each probe names the refusal the public-demo guard gives (trialforge/demo_guard.py). Only that status earns the lock;
+// Each probe names the refusal the public-demo guard gives (trialforge/demo_guard.py, access.py). Only that status earns the lock;
 // anything else means the guard is not active on this server, and the screen says so instead of claiming it is locked.
 interface Probe {
   meaning: string;
@@ -18,9 +18,9 @@ const PROBES: Probe[] = [
   { meaning: "Refresh not allowed", open: "Refresh allowed", expected: 403, run: () => probeStatus(`/api/review/${NCT}?refresh=1`) },
   { meaning: "Path tricks refused", open: "Path tricks not refused", expected: 400, run: () => probeStatus(`/api/review/${NCT}?as_of=../../x`) },
   {
-    meaning: "Model calls off",
-    open: "Model calls allowed",
-    expected: 503,
+    meaning: "Model calls need your own key",
+    open: "Model calls run without a key",
+    expected: 401,
     run: () =>
       probeStatus("/api/critique", {
         method: "POST",

@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { EngineError } from "./api";
 
-export type ApiState<T> = { status: "loading" } | { status: "error"; message: string } | { status: "ready"; data: T };
+export type ApiState<T> = { status: "loading" } | { status: "error"; message: string; error: unknown } | { status: "ready"; data: T };
 
 // Runs a fetcher on mount, and again whenever `attempt` changes (a "Try again" button increments it). Failures land in
-// state so the screen can show them; they are also logged.
+// state so the screen can show them; unexpected ones are also logged (a coded refusal such as key_required is not).
 export function useApi<T>(fetcher: () => Promise<T>, attempt = 0): ApiState<T> {
   const [state, setState] = useState<{ attempt: number; value: ApiState<T> }>({ attempt, value: { status: "loading" } });
   useEffect(() => {
@@ -13,8 +14,8 @@ export function useApi<T>(fetcher: () => Promise<T>, attempt = 0): ApiState<T> {
     fetcher().then(
       (data) => live && setState({ attempt, value: { status: "ready", data } }),
       (err: unknown) => {
-        console.error(err);
-        if (live) setState({ attempt, value: { status: "error", message: err instanceof Error ? err.message : String(err) } });
+        if (!(err instanceof EngineError && err.code)) console.error(err);
+        if (live) setState({ attempt, value: { status: "error", message: err instanceof Error ? err.message : String(err), error: err } });
       },
     );
     return () => {

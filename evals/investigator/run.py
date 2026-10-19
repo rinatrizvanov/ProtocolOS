@@ -3,7 +3,7 @@
     .venv/bin/python -m evals.investigator.run
 
 Writes evals/investigator/results.json. Base answers come from investigate() on the cached EL3 review
-(no network; the Chalk registry tool is not called). The developers wrote both the mutants and the
+(no network). The developers wrote both the mutants and the
 checker, so this measures whether the checker catches the defect classes we chose to plant, not how it
 does on defects a model would actually produce.
 """

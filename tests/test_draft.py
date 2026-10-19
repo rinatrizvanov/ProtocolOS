@@ -143,16 +143,23 @@ def test_public_cap_returns_429(monkeypatch, tmp_path):
                 "summary": {"drafted": 0, "cached": False}, "warnings": [], "notes": []}
 
     monkeypatch.setattr(draft, "draft_criteria", fake)
+    from trialforge import access, llm
+
+    access.reset()
+    monkeypatch.setattr(llm, "check", lambda creds: llm.KeyCheck(True, "ok", "ok"))
+    key = {"X-Model-Provider": "openai", "X-Model-Key": "sk-test-" + "x" * 24}
     client = TestClient(app)
     a = {"condition": "small cell lung cancer", "drugs": ["etoposide"], "setting": [], "phase": "PHASE3"}
     b = {"condition": "small cell lung cancer", "drugs": ["atezolizumab"], "setting": [], "phase": "PHASE3"}
     c = {"condition": "small cell lung cancer", "drugs": ["durvalumab"], "setting": [], "phase": "PHASE3"}
-    assert client.post("/api/draft", json=a).status_code == 200
-    r = client.post("/api/draft", json=b)
+    r = client.post("/api/draft", json=a)
+    assert r.status_code == 401 and r.json()["code"] == "key_required"  # a new idea needs the visitor's key
+    assert client.post("/api/draft", json=a, headers=key).status_code == 200
+    r = client.post("/api/draft", json=b, headers=key)
     assert r.status_code == 429
     assert r.json()["detail"] == "new ideas limit reached on the public demo; presets still work"
-    assert client.post("/api/draft", json=a).status_code == 200  # cached ideas still answer
-    assert client.post("/api/draft", json=c).status_code == 429
+    assert client.post("/api/draft", json=a).status_code == 200  # cached ideas answer without a key
+    assert client.post("/api/draft", json=c, headers=key).status_code == 429
     assert client.post("/api/draft", json={**a, "extra": 1}).status_code == 422
     assert client.post("/api/draft", json={**a, "condition": "   "}).status_code == 422
     assert client.get("/api/draft/not-an-id").status_code == 400

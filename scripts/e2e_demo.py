@@ -11,12 +11,12 @@ example and verify -> Rejected; (7) record "Needs medical review" in the packet 
 find the decision in it; (9) only for a non-localhost BASE_URL: `refresh=1` is refused.
 Steps 3-5 report "skipped: graph UI not installed" when the page has no graph tab; a skip is never a pass.
 Screenshots and summary.json go to E2E_OUT (default /tmp/protocolos-logs/e2e/). Exit 1 if any step fails.
-Step 7 writes a real decision (data/decisions/NCT03409614.json on the server), so the run leaves no test data:
-- local BASE_URL: the script first checks that the server reads E2E_DECISIONS_DIR (default: this checkout's
-  data/decisions), backs up NCT03409614.json and restores it byte for byte after step 8 (or deletes it when it did
-  not exist). If the server keeps its decisions elsewhere, step 7 is skipped and step 8 checks only the export.
+Step 7 writes a real decision in this browser's own session (data/decisions/sessions/<session>/ on the server), so no
+other visitor sees it:
+- local BASE_URL: the session's folder under E2E_DECISIONS_DIR (default: this checkout's data/decisions) is removed
+  after step 8.
 - non-local BASE_URL: step 7 is skipped and step 8 checks only the export, unless --write-decision is passed; the
-  decision then stays on the server, since no API clears one.
+  session's decision then stays on the server until it is redeployed.
 """
 from __future__ import annotations
 
@@ -37,26 +37,22 @@ LOCAL = urlparse(BASE).hostname in ("localhost", "127.0.0.1", "0.0.0.0", "::1")
 STAMP = time.strftime("%Y-%m-%d %H:%M:%S")
 REASON = f"e2e demo check {STAMP}"
 ROOT = Path(__file__).resolve().parents[1]
-DECISIONS = Path(os.environ.get("E2E_DECISIONS_DIR", ROOT / "data" / "decisions")) / f"{NCT}.json"
+DECISIONS_DIR = Path(os.environ.get("E2E_DECISIONS_DIR", ROOT / "data" / "decisions"))
 
 
 class Skip(Exception):
     pass
 
 
-def _local_decisions() -> dict:
-    return json.loads(DECISIONS.read_text()) if DECISIONS.exists() else {}
-
-
-def _restore(backup: bytes | None) -> str:
-    """Put the decisions file back exactly as it was before step 7."""
-    if backup is None:
-        DECISIONS.unlink(missing_ok=True)
-        assert not DECISIONS.exists(), f"{DECISIONS} still exists"
-        return f"deleted {DECISIONS} (it did not exist before step 7)"
-    DECISIONS.write_bytes(backup)
-    assert DECISIONS.read_bytes() == backup, f"{DECISIONS} differs from its backup"
-    return f"restored {DECISIONS} byte for byte ({len(backup)} bytes)"
+def _remove_session(session: str) -> str:
+    """Delete the test session's decisions on a local server."""
+    folder = DECISIONS_DIR / "sessions" / session
+    saved = folder / f"{NCT}.json"
+    if not saved.exists() or REASON not in saved.read_text():
+        return f"not removed: {saved} does not hold the test decision (set E2E_DECISIONS_DIR)"
+    saved.unlink()
+    folder.rmdir()
+    return f"removed the test session's decisions ({folder})"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -66,7 +62,7 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     OUT.mkdir(parents=True, exist_ok=True)
     results, errors = [], []
-    state: dict = {"written": False, "backup": None, "backed_up": False, "restore": "not needed: step 7 wrote nothing"}
+    state: dict = {"written": False, "session": "", "restore": "not needed: step 7 wrote nothing"}
     with sync_playwright() as pw:
         browser = pw.chromium.launch()
         ctx = browser.new_context(viewport={"width": 1440, "height": 900}, accept_downloads=True)
@@ -153,15 +149,7 @@ def main(argv: list[str] | None = None) -> int:
 
         def step7():
             if not LOCAL and not args.write_decision:
-                raise Skip("non-local BASE_URL: pass --write-decision to record a test decision (no API clears it)")
-            if LOCAL:
-                r = page.request.get(f"{BASE}/api/packet/{NCT}?format=json")
-                assert r.ok, f"GET /api/packet/{NCT} answered {r.status}"
-                server = {i["criterion_id"]: i["decision"] for i in r.json()["items"] if i.get("decision")}
-                if server != _local_decisions():
-                    raise Skip(f"the server does not read {DECISIONS}; set E2E_DECISIONS_DIR to its data/decisions")
-                state["backup"] = DECISIONS.read_bytes() if DECISIONS.exists() else None
-                state["backed_up"] = True
+                raise Skip("non-local BASE_URL: pass --write-decision to record a test decision (it stays in its session)")
             page.click('.tab[data-tab="packet"]')
             page.wait_for_selector('[data-save="hemoglobin"]', timeout=60_000)
             page.fill("#reviewerName", "e2e script")
@@ -170,10 +158,8 @@ def main(argv: list[str] | None = None) -> int:
             page.click('[data-save="hemoglobin"]')
             page.wait_for_function("document.querySelector('[data-saved=\"hemoglobin\"]').textContent.startsWith('saved: Needs medical review')")
             state["written"] = True
+            state["session"] = page.evaluate("() => localStorage.getItem('protocolos.session.v1')") or ""
             shot(7, "decision-saved")
-            if LOCAL and _local_decisions().get("hemoglobin", {}).get("reason") != REASON:
-                state["backed_up"] = False  # the local file did not change; the server's own copy holds the decision
-                raise AssertionError(f"the server wrote its decision outside {DECISIONS}; remove it there")
             return page.locator('[data-saved="hemoglobin"]').inner_text().strip()
 
         def step8():
@@ -217,10 +203,10 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"step {n}: {status:4} {results[-1]['seconds']:5.1f} s  {detail}", flush=True)
         finally:
             browser.close()
-            if state["backed_up"]:
-                state["restore"] = _restore(state["backup"])
+            if state["written"] and LOCAL:
+                state["restore"] = _remove_session(state["session"])
             elif state["written"]:
-                state["restore"] = f"not restored: the test decision ({REASON!r}) stays on {BASE}"
+                state["restore"] = f"the test decision ({REASON!r}) stays in its own session on {BASE} until a redeploy"
             print(f"decisions: {state['restore']}", flush=True)
 
     summary = {"base_url": BASE, "ran_at": STAMP, "steps": results, "browser_errors": errors, "decisions": state["restore"]}

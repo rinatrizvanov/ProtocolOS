@@ -150,8 +150,11 @@ def _pair(rel: str, path: str) -> str:
 
 def manifest() -> list[tuple[str, str, str]]:
     """(headline claim, value computed from the JSON field, source) for each headline number."""
-    ev = _load("data/eval_results.json")["suites"]["extraction"]
-    ch = _load("data/chalk_eval_run.json")
+    suites = _load("data/eval_results.json")["suites"]
+    ev, ver = suites["extraction"], suites["verifier"]
+    cases = ver["cases"]
+    faults_rejected = sum(c["kind"] == "fault" and c["det_status"] == "REJECTED" for c in cases)
+    valid_rejected = sum(c["kind"] == "valid" and c["det_status"] == "REJECTED" for c in cases)
     return [
         ("122/128", f"{ev['found_correct']}/{ev['gold_criteria']}", "data/eval_results.json suites.extraction.found_correct/gold_criteria"),
         ("16/24", _pair("data/planted_results.json", "summary.stricter.escalated_strict"), "data/planted_results.json summary.stricter.escalated_strict"),
@@ -159,9 +162,9 @@ def manifest() -> list[tuple[str, str, str]]:
         ("24/24", _pair("data/planted_results.json", "summary.stricter.escalated_lenient"), "data/planted_results.json summary.stricter.escalated_lenient"),
         ("24/24", _pair("data/planted_results_no_cutoff.json", "summary.stricter.escalated_lenient"), "data/planted_results_no_cutoff.json summary.stricter.escalated_lenient"),
         ("0/10", _pair("data/planted_results.json", "summary.looser.false_over_restriction_flags"), "data/planted_results.json summary.looser.false_over_restriction_flags"),
-        ("39", str(ch["rows"]), "data/chalk_eval_run.json rows"),
-        ("24/24", f"{ch['fault_rejected']}/{ch['n_fault']}", "data/chalk_eval_run.json fault_rejected/n_fault"),
-        ("0/10", f"{ch['valid_rejected']}/{ch['n_valid']}", "data/chalk_eval_run.json valid_rejected/n_valid"),
+        ("39", str(len(cases)), "data/eval_results.json suites.verifier.cases"),
+        ("24/24", f"{faults_rejected}/{ver['n_faults']}", "data/eval_results.json suites.verifier.cases (faults REJECTED)"),
+        ("0/10", f"{valid_rejected}/{ver['n_valid']}", "data/eval_results.json suites.verifier.cases (valid REJECTED)"),
     ]
 
 

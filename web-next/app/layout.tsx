@@ -1,9 +1,26 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
+const DESCRIPTION = "The rationale behind each oncology eligibility criterion, checked against precedent and FDA guidance.";
+
+// Link previews (LinkedIn, Slack, X): app/opengraph-image.png and twitter-image.png are picked up by file convention;
+// metadataBase makes their URLs absolute. PROTOCOLOS_SITE_URL overrides the public address for another deployment.
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.PROTOCOLOS_SITE_URL ?? "https://protocolos-web.vercel.app"),
   title: "ProtocolOS",
-  description: "The rationale behind each oncology eligibility criterion, checked against precedent and FDA guidance.",
+  description: DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: "ProtocolOS",
+    title: "ProtocolOS: every exclusion deserves a rationale",
+    description: DESCRIPTION,
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ProtocolOS: every exclusion deserves a rationale",
+    description: DESCRIPTION,
+  },
 };
 
 // Runs before first paint: hides the onboarding strip when it was dismissed, so the landing never shifts after hydration.

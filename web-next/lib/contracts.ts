@@ -181,6 +181,7 @@ export class ApiError extends Error {
     message: string,
     readonly status: number,
     readonly detail: string | null,
+    readonly code: string | null = null,
   ) {
     super(message);
   }

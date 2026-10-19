@@ -8,10 +8,15 @@ One pure ASGI middleware, so request bodies can be checked and rewritten before 
   a criterion of the review (`packet.save_decision` writes `DECISIONS/<nct>.json`); a body over 16 KB; a
   decision `reason` over 1000 characters.
 - 403: `refresh` set to a truthy value (recomputes a review on demand).
-- 503 "disabled on the public demo": `/api/parse` and `/api/critique` (paid model calls), and the request
-  body of `/api/verify` gets `with_llm_baseline=false`, `/api/investigate` gets `mode="deterministic"`,
-  unless PROTOCOLOS_ALLOW_MODEL=1 (set it only with a budgeted router key).
+- The visitor's own OpenAI or Anthropic key (access.py) for work that costs the server or a model: a review that
+  is not cached (any review, packet, graph or rationale GET, or a POST naming the trial) needs
+  access.allow_new_work; `/api/parse`, `/api/critique` and `/api/investigate` with `mode="model"` need
+  access.allow_model_call. A missing key answers 401 `key_required`; `/api/verify` without a key gets
+  `with_llm_baseline=false`. The server never uses a key of its own here (llm.from_env is off when public).
+- 400 `session_required`: a decision without a visitor session (decisions are stored per session).
 - Reviews that are not cached yet are computed one at a time (`sources._cached_pdf` writes are not atomic).
+
+Errors carry `{"detail": message, "code": code}` when the code matters to the web app.
 """
 from __future__ import annotations
 
@@ -21,24 +26,21 @@ import os
 import re
 
 from starlette.concurrency import run_in_threadpool
-
-from trialforge.settings import flag
 from starlette.requests import Request
 from starlette.responses import JSONResponse
+
+from trialforge import access
+from trialforge.settings import flag
 
 MAX_BODY = 16 * 1024
 MAX_REASON = 1000
 NCT_RE = re.compile(r"NCT[0-9]{8}", re.IGNORECASE)
 AS_OF_RE = re.compile(r"auto|none|[0-9]{4}-[0-9]{2}-[0-9]{2}")
-PATH_NCT = re.compile(r"^/api/(?:review|packet|graph|rationale|chalk/registry|protocol)/([^/]*)")
-REVIEW_GET = re.compile(r"^/api/(?:review|packet|graph)/([^/]*)$")
+PATH_NCT = re.compile(r"^/api/(?:review|packet|graph|rationale|protocol)/([^/]*)")
+REVIEW_GET = re.compile(r"^/api/(?:review|packet|graph|rationale)/([^/]*)$")
 MODEL_ONLY = {"/api/parse", "/api/critique"}
 REVIEW_POST = {"/api/whatif", "/api/verify", "/api/parse", "/api/critique", "/api/investigate"}
 FALSY = {"", "0", "false", "no", "off"}
-
-
-def allow_model() -> bool:
-    return flag("ALLOW_MODEL")
 
 
 def valid_nct(v) -> bool:
@@ -62,8 +64,12 @@ def is_cold(nct: str, as_of: str) -> bool:
     return key not in api._mem and not (api.REVIEW_CACHE / f"{key}.json").exists()
 
 
-def _reject(status: int, detail: str) -> JSONResponse:
-    return JSONResponse({"detail": detail}, status_code=status)
+def _reject(status: int, detail: str, code: str | None = None) -> JSONResponse:
+    return JSONResponse({"detail": detail, **({"code": code} if code else {})}, status_code=status)
+
+
+def _denied(e: access.AccessDenied) -> JSONResponse:
+    return JSONResponse(e.body(), status_code=e.status)
 
 
 class DemoGuard:
@@ -85,8 +91,8 @@ class DemoGuard:
             return await _reject(400, "Expected an NCT identifier like NCT03409614")(scope, receive, send)
         if "as_of" in q and not valid_as_of(q["as_of"]):
             return await _reject(400, "as_of must be auto, none or YYYY-MM-DD")(scope, receive, send)
-        if path in MODEL_ONLY and not allow_model():
-            return await _reject(503, "disabled on the public demo")(scope, receive, send)
+        client = access.client_of(req.headers, scope.get("client"))
+        model_call = path in MODEL_ONLY
 
         review_key = None  # (nct, as_of) of the review this request will load
         m = REVIEW_GET.match(path)
@@ -113,12 +119,17 @@ class DemoGuard:
                 if err:
                     return await _reject(400, err)(scope, receive, send)
                 changed = False
-                if not allow_model():
-                    if path == "/api/verify" and data.get("with_llm_baseline"):
+                if path == "/api/verify" and data.get("with_llm_baseline"):
+                    if req.headers.get("x-model-key"):
+                        model_call = True
+                    else:
                         data["with_llm_baseline"], changed = False, True
-                    if path == "/api/investigate" and data.get("mode", "deterministic") != "deterministic":
-                        data["mode"], changed = "deterministic", True
+                if path == "/api/investigate" and data.get("mode", "deterministic") != "deterministic":
+                    model_call = True
                 if path == "/api/decision":
+                    if access.session_of(req.headers) is None:
+                        return await _reject(400, "Decisions on the public demo are saved per browser; reload the page and try again.",
+                                             "session_required")(scope, receive, send)
                     err = await self._check_decision(data)
                     if err:
                         return await _reject(err[0], err[1])(scope, receive, send)
@@ -130,7 +141,15 @@ class DemoGuard:
                                  + [(b"content-length", str(len(body)).encode())])
             receive = _replay(body, receive)
 
-        if review_key and is_cold(*review_key):
+        try:
+            if model_call:
+                await run_in_threadpool(access.allow_model_call, req.headers, client)
+            cold = bool(review_key) and is_cold(*review_key)
+            if cold:
+                await run_in_threadpool(access.allow_new_work, req.headers, client, "new_trial")
+        except access.AccessDenied as e:
+            return await _denied(e)(scope, receive, send)
+        if cold:
             async with self.cold:
                 return await self.app(scope, receive, send)
         return await self.app(scope, receive, send)
@@ -151,12 +170,10 @@ class DemoGuard:
         if not isinstance(nct, str) or not isinstance(cid, str):
             return None  # FastAPI answers 422 for missing fields
         api = _api()
+        if valid_nct(nct) and is_cold(nct.upper(), "auto"):
+            return (403, f"{nct.upper()} has not been analysed on this server; open its review first")
         try:
-            if is_cold(nct, "auto"):
-                async with self.cold:
-                    review = await run_in_threadpool(api.get_review, nct, "auto")
-            else:
-                review = await run_in_threadpool(api.get_review, nct, "auto")
+            review = await run_in_threadpool(api.get_review, nct, "auto")
         except Exception as e:  # noqa: BLE001
             return (getattr(e, "status_code", 400), f"criterion_id could not be checked against a review of {nct}")
         if cid not in {c["id"] for c in review["target"]["criteria"]}:

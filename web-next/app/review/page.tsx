@@ -1,13 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState, useSyncExternalStore, type KeyboardEvent } from "react";
-import { CACHED_TRIALS, NCT, getReview, type Classification, type Criterion, type Review, type Selection } from "@/lib/api";
+import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type KeyboardEvent } from "react";
+import { CACHED_TRIALS, EngineError, NCT, getReview, needsKey, type Classification, type Criterion, type Review, type Selection } from "@/lib/api";
 import { DISPLAY_CLASSIFICATION } from "@/lib/contracts";
 import { useApi } from "@/lib/useApi";
+import { addedTrials, rememberTrial, useModelKey } from "@/lib/visitor";
 import { AppHeader } from "../components/AppHeader";
 import { Pending } from "../components/Frame";
 import { ChatIcon, CompareIcon, GavelIcon, InfoIcon, PenIcon } from "../components/Icons";
 import { MissingCriteria } from "../components/MissingCriteria";
+import { ModelKeyForm } from "../components/ModelKeyForm";
 import { RationalePanel } from "../components/RationalePanel";
 import Redraft from "../screens/Redraft";
 import Screen2 from "../screens/Screen2";
@@ -38,9 +40,9 @@ const DOT: Record<Classification, string> = {
 const fieldBorder = "border-uncounted";
 const focusRing = "focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink";
 
-// The selection lives only in the URL (?nct=&c=&tab=), so a reload keeps it; only cached trials are accepted. A deep link
-// to an uncached trial or an unknown criterion falls back, and `missing` / `missingc` carry what was asked for so the
-// page can say so.
+// The selection lives only in the URL (?nct=&c=&tab=), so a reload keeps it. Any NCT id is accepted: a preloaded trial
+// opens at once, another one is analysed with the visitor's key. A deep link with a malformed id or an unknown criterion
+// falls back, and `missing` / `missingc` carry what was asked for so the page can say so.
 type Parsed = { nct: string; criterionId: string | null; tab: TabId; missing: string | null; missingCriterion: string | null };
 
 function subscribeToUrl(onChange: () => void) {
@@ -74,7 +76,7 @@ function parseSelection(search: string): Parsed {
   const tab = (TABS.find((t) => t.id === rawTab)?.id ?? "rationale") as TabId;
   const missing = echo(params.get("missing"));
   const missingCriterion = echo(params.get("missingc"));
-  return (CACHED_TRIALS as readonly string[]).includes(asked)
+  return /^NCT\d{8}$/.test(asked)
     ? { nct: asked, criterionId: params.get("c"), tab, missing, missingCriterion }
     : { nct: NCT, criterionId: null, tab, missing: echo(raw), missingCriterion: null };
 }
@@ -165,14 +167,18 @@ function CriterionPicker({ review, nct, selected, tab }: { review: Review; nct: 
   );
 }
 
+const isPreloaded = (nct: string) => (CACHED_TRIALS as readonly string[]).includes(nct);
+
 // Option labels name each trial by its registry title; the other trials' reviews load after the current one is shown
-// (they are cached per page load, so switching to one is then instant).
-function useTrialTitles(): Record<string, string> {
+// (they are cached per page load, so switching to one is then instant). Added trials are asked for without the key, so a
+// trial the server no longer has (after a redeploy) is never re-analysed just to show its title.
+function useTrialTitles(trials: string[]): Record<string, string> {
   const [titles, setTitles] = useState<Record<string, string>>({});
+  const list = trials.join(",");
   useEffect(() => {
     let live = true;
     const id = window.setTimeout(() => {
-      for (const nct of CACHED_TRIALS) {
+      for (const nct of list.split(",")) {
         getReview(nct).then(
           (r) => live && setTitles((prev) => ({ ...prev, [nct]: r.target.study.title })),
           () => undefined,
@@ -183,28 +189,95 @@ function useTrialTitles(): Record<string, string> {
       live = false;
       window.clearTimeout(id);
     };
-  }, []);
+  }, [list]);
   return titles;
 }
 
 function TrialPicker({ nct, tab }: { nct: string; tab: TabId }) {
-  const titles = useTrialTitles();
+  // The page renders only in the browser (ReviewPage), and ReviewBody remounts per trial, so one read per mount is enough.
+  const [added] = useState(addedTrials);
+  const extra = [...new Set([...added, ...(isPreloaded(nct) ? [] : [nct])])].filter((id) => !isPreloaded(id));
+  const titles = useTrialTitles([...CACHED_TRIALS, ...extra]);
+  const label = (id: string) => (titles[id] ? `${id} · ${clip(titles[id], 48)}` : id);
   return (
-    <label className="flex min-w-0 flex-col gap-1 text-sm text-muted sm:flex-row sm:items-center sm:gap-2">
-      <span className="shrink-0">Trial</span>
-      <select
-        data-testid="trial-picker"
-        value={nct}
-        onChange={(e) => navigate({ nct: e.target.value, criterionId: null, tab })}
-        className={`min-h-11 w-full min-w-0 rounded-md border ${fieldBorder} bg-paper px-2 py-1 text-ink tabular-nums sm:min-h-9 sm:w-80 ${focusRing}`}
-      >
-        {CACHED_TRIALS.map((id) => (
-          <option key={id} value={id}>
-            {titles[id] ? `${id} · ${clip(titles[id], 48)}` : id}
-          </option>
-        ))}
-      </select>
-    </label>
+    <div className="flex min-w-0 flex-col gap-2 lg:items-end">
+      <label className="flex min-w-0 flex-col gap-1 text-sm text-muted sm:flex-row sm:items-center sm:gap-2">
+        <span className="shrink-0">Trial</span>
+        <select
+          data-testid="trial-picker"
+          value={nct}
+          onChange={(e) => navigate({ nct: e.target.value, criterionId: null, tab })}
+          className={`min-h-11 w-full min-w-0 rounded-md border ${fieldBorder} bg-paper px-2 py-1 text-ink tabular-nums sm:min-h-9 sm:w-80 ${focusRing}`}
+        >
+          <optgroup label="Preloaded worked examples">
+            {CACHED_TRIALS.map((id) => (
+              <option key={id} value={id}>
+                {label(id)}
+              </option>
+            ))}
+          </optgroup>
+          {extra.length ? (
+            <optgroup label="Added in this browser">
+              {extra.map((id) => (
+                <option key={id} value={id}>
+                  {label(id)}
+                </option>
+              ))}
+            </optgroup>
+          ) : null}
+        </select>
+      </label>
+      <AddTrial />
+    </div>
+  );
+}
+
+// Any ClinicalTrials.gov id; the review loads it, and asks for the visitor's key when the server has not analysed it yet.
+function AddTrial() {
+  const [value, setValue] = useState("");
+  const [invalid, setInvalid] = useState(false);
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    const id = value.trim().toUpperCase();
+    if (!/^NCT\d{8}$/.test(id)) {
+      setInvalid(true);
+      return;
+    }
+    setInvalid(false);
+    setValue("");
+    navigate({ nct: id, criterionId: null, tab: "rationale" });
+  }
+  return (
+    <form onSubmit={submit} className="flex min-w-0 flex-col gap-1 text-sm text-muted sm:flex-row sm:items-center sm:gap-2" aria-label="Add a trial">
+      <label htmlFor="add-trial" className="shrink-0">
+        Add a trial
+      </label>
+      <div className="flex min-w-0 gap-2">
+        <input
+          id="add-trial"
+          data-testid="add-trial-input"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="NCT number, e.g. NCT02775435"
+          aria-invalid={invalid || undefined}
+          aria-describedby={invalid ? "add-trial-error" : undefined}
+          className={`min-h-11 w-full min-w-0 rounded-md border ${invalid ? "border-verdict" : fieldBorder} bg-paper px-2 py-1 text-ink tabular-nums sm:min-h-9 sm:w-60 ${focusRing}`}
+        />
+        <button
+          type="submit"
+          data-testid="add-trial-submit"
+          disabled={!value.trim()}
+          className={`min-h-11 shrink-0 rounded-md border border-ink px-3 py-1 text-ink transition-opacity duration-150 disabled:opacity-40 sm:min-h-9 ${focusRing}`}
+        >
+          Analyse
+        </button>
+      </div>
+      {invalid ? (
+        <p id="add-trial-error" role="alert" className="text-xs text-verdict">
+          Expected a ClinicalTrials.gov id: NCT and 8 digits.
+        </p>
+      ) : null}
+    </form>
   );
 }
 
@@ -297,7 +370,7 @@ function Notice({ missing, missingCriterion, fallbackLabel }: { missing: string 
   if (missing === null && missingCriterion === null) return null;
   return (
     <p data-testid="deeplink-notice" role="status" className="rounded-md border border-look bg-look-soft/50 px-3 py-2 text-sm text-ink">
-      {missing !== null ? `${missing || "The requested trial"} is not one of the ${CACHED_TRIALS.length} cached trials; showing ${NCT}.` : null}
+      {missing !== null ? `${missing || "The requested trial"} is not a ClinicalTrials.gov id like ${NCT}; showing ${NCT}.` : null}
       {missing !== null && missingCriterion !== null ? " " : null}
       {missingCriterion !== null
         ? `This trial has no criterion ${missingCriterion ? `"${missingCriterion}"` : "by that name"}; showing ${fallbackLabel ?? "the first criterion"}.`
@@ -348,9 +421,85 @@ function Tabs({ nct, criterionId, active }: { nct: string; criterionId: string; 
   );
 }
 
+// A trial the server has not analysed yet: say what happens, ask for the key, then load it with the key.
+function KeyGate({ nct, error, tab, onReady }: { nct: string; error: EngineError; tab: TabId; onReady: () => void }) {
+  const invalid = error.code !== "key_required";
+  return (
+    <section data-testid="trial-key-gate" className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between lg:gap-6">
+        <div className="flex max-w-2xl flex-col gap-1">
+          <h1 className="text-xl font-semibold tracking-tight text-ink sm:text-2xl">Analyse {nct}</h1>
+          <p className="text-base text-ink">
+            {nct} is not one of the {CACHED_TRIALS.length} preloaded trials. ProtocolOS can analyse it now: it reads the
+            registry record and the protocol PDF posted on ClinicalTrials.gov, finds comparable trials that started earlier, and
+            scores each criterion with the same rules. This takes one to two minutes.
+          </p>
+        </div>
+        <TrialPicker nct={nct} tab={tab} />
+      </div>
+      {invalid && error.detail ? (
+        <p role="alert" className="rounded-md border border-verdict/40 bg-white/70 px-3 py-2 text-sm text-verdict">
+          {error.detail}
+        </p>
+      ) : null}
+      <ModelKeyForm
+        autoFocus
+        purpose="New analyses run on the demo server. To keep it open to everyone, starting one needs your own OpenAI or Anthropic key; the analysis itself uses no model tokens, and the same key answers the Ask tab's model questions."
+        onReady={onReady}
+      />
+    </section>
+  );
+}
+
+function Limited({ nct, error, tab, onRetry }: { nct: string; error: EngineError; tab: TabId; onRetry: () => void }) {
+  return (
+    <section role="alert" data-testid="trial-limited" className="flex max-w-2xl flex-col items-start gap-3">
+      <h1 className="text-xl font-semibold text-ink">{nct} could not be analysed right now.</h1>
+      <p className="text-base text-ink">{error.detail ?? error.message}</p>
+      <div className="flex flex-wrap gap-3">
+        <button type="button" onClick={onRetry} className={`min-h-11 rounded-md bg-ink px-5 py-2 text-base text-paper ${focusRing}`}>
+          Try again
+        </button>
+        <button type="button" onClick={() => navigate({ nct: NCT, criterionId: null, tab })} className={`min-h-11 rounded-md border border-ink px-5 py-2 text-base text-ink ${focusRing}`}>
+          Open a preloaded trial
+        </button>
+      </div>
+    </section>
+  );
+}
+
+// What an added trial's review could and could not read, said before the criteria.
+function AddedTrialNotes({ review }: { review: Review }) {
+  const noProtocol = (review.target.study.protocol_docs ?? []).length === 0;
+  const noCriteria = review.reviews.length === 0;
+  return (
+    <div className="flex flex-col gap-2">
+      <p data-testid="added-trial-note" className="-mt-1 text-xs text-muted">
+        Added trial: analysed on this server{review.computed_at ? ` on ${review.computed_at}` : ""} with the same rules as the
+        preloaded examples. Anyone with this link can open the result.
+      </p>
+      {noProtocol ? (
+        <p role="note" data-testid="no-protocol" className="rounded-md border border-look bg-look-soft/50 px-3 py-2 text-sm text-ink">
+          No protocol PDF is posted on ClinicalTrials.gov for this trial, so the criteria come from the registry text, which rarely
+          states lab thresholds.
+        </p>
+      ) : null}
+      {noCriteria ? (
+        <p role="note" data-testid="no-criteria" className="rounded-md border border-look bg-look-soft/50 px-3 py-2 text-sm text-ink">
+          No eligibility criterion the extractor covers (lab limits, ECOG, washouts) was found{noProtocol ? "" : " in the posted protocol"}.
+          The extractor is rule-based and misses unusual layouts; this does not mean the protocol has no such criteria.
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function ReviewBody({ nct, criterionId, tab, missing, missingCriterion }: Parsed) {
   const [attempt, setAttempt] = useState(0);
-  const state = useApi(() => getReview(nct), attempt);
+  const key = useModelKey();
+  const preloaded = isPreloaded(nct);
+  // An added trial is asked for with the key when one is set: if the server has not analysed it, that starts the analysis.
+  const state = useApi(() => getReview(nct, !preloaded && key !== null), attempt);
   const review = state.status === "ready" ? state.data : null;
   const row = review?.reviews.find((r) => r.criterion.id === criterionId);
   const active = TABS.find((t) => t.id === tab) ?? TABS[0];
@@ -360,8 +509,29 @@ function ReviewBody({ nct, criterionId, tab, missing, missingCriterion }: Parsed
     document.title = `${row.criterion.label} ${threshold(row.criterion)} · ${nct} · ProtocolOS`;
   }, [row, nct]);
 
-  if (state.status === "loading") return <Pending label="Loading the review…" />;
-  if (state.status === "error") return <EngineDown message={state.message} onRetry={() => setAttempt((a) => a + 1)} />;
+  useEffect(() => {
+    if (review && !preloaded) rememberTrial(nct);
+  }, [review, preloaded, nct]);
+
+  const retry = () => setAttempt((a) => a + 1);
+  if (state.status === "loading")
+    return (
+      <Pending
+        label={
+          preloaded || key === null
+            ? "Loading the review…"
+            : `Analysing ${nct}: reading the registry record, the posted protocol and comparable trials. A new trial can take one to two minutes.`
+        }
+      />
+    );
+  if (state.status === "error") {
+    const err = state.error;
+    if (needsKey(err)) return <KeyGate nct={nct} error={err as EngineError} tab={tab} onReady={retry} />;
+    if (err instanceof EngineError && err.code && err.status !== 0) return <Limited nct={nct} error={err} tab={tab} onRetry={retry} />;
+    if (err instanceof EngineError && err.status === 404 && !preloaded)
+      return <Limited nct={nct} error={new EngineError(err.message, 404, "not_found", `ClinicalTrials.gov has no record ${nct}, or it could not be read.`)} tab={tab} onRetry={retry} />;
+    return <EngineDown message={state.message} onRetry={retry} />;
+  }
   const data = state.data;
   const first = data.reviews[0]?.criterion;
 
@@ -371,10 +541,14 @@ function ReviewBody({ nct, criterionId, tab, missing, missingCriterion }: Parsed
         <TrialHeading review={data} />
         <TrialPicker nct={nct} tab={tab} />
       </div>
-      <p className="-mt-1 text-xs text-muted">
-        Finishing a trial: worked examples from the posted protocols of {CACHED_TRIALS.length} completed oncology trials, reviewed
-        retrospectively.
-      </p>
+      {preloaded ? (
+        <p className="-mt-1 text-xs text-muted">
+          Finishing a trial: worked examples from the posted protocols of {CACHED_TRIALS.length} completed oncology trials, reviewed
+          retrospectively.
+        </p>
+      ) : (
+        <AddedTrialNotes review={data} />
+      )}
       <Notice missing={missing} missingCriterion={missingCriterion} fallbackLabel={first ? `${first.label} ${threshold(first)}` : null} />
       <SummaryStrip review={data} />
 

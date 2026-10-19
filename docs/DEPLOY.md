@@ -40,13 +40,18 @@ ProtocolOS reads `PROTOCOLOS_<NAME>` settings first, then the legacy `TRIALLENS_
 | `as_of` not `auto`, `none` or `YYYY-MM-DD` | 400 |
 | decision `criterion_id` not a criterion of the review; `reason` over 1000 characters; body over 16 KB | 400 |
 | `refresh` truthy | 403 |
-| `/api/parse`, `/api/critique` | 503 "disabled on the public demo" |
-| `/api/verify` | `with_llm_baseline` forced to false |
-| `/api/investigate` | `mode` forced to `deterministic` |
-| a review that is not cached yet | computed one at a time |
+| a review that is not cached yet (review, packet, graph, rationale, or a POST naming the trial) | 401 `key_required` without the visitor's key; with a confirmed key, computed one at a time |
+| a new draft idea (not a preset, not cached) | 401 `key_required` without the visitor's key |
+| `/api/parse`, `/api/critique`, `/api/investigate` with `mode: "model"` | 401 `key_required` without the visitor's key |
+| `/api/verify` without a key | `with_llm_baseline` forced to false |
+| a key the provider rejects | 401 `key_invalid` or `model_unavailable` |
+| more new analyses than allowed | 429 `rate_limited` (per visitor, address plus key, per hour) or `daily_limit` (whole server) |
+| free disk below `PROTOCOLOS_MIN_FREE_MB` | 507 `storage_full` for new analyses |
+| a protocol page of a protocol not downloaded yet | 403 |
+| a decision without `X-ProtocolOS-Session` | 400 `session_required` |
 
-The model restrictions lift only with `PROTOCOLOS_ALLOW_MODEL=1`; set it only together with a router key that
-has a spending budget.
+The server never uses a model key of its own when `PROTOCOLOS_PUBLIC=1`: `ANTHROPIC_API_KEY` and
+`OPENAI_API_KEY` are ignored there, so there is no setting that lets visitors spend the project's tokens.
 
 ## 3. Variables (names only; never commit values)
 
@@ -56,12 +61,14 @@ has a spending budget.
 |---|---|
 | `PROTOCOLOS_PUBLIC` | `1` (also set in the Dockerfile) |
 | `PROTOCOLOS_BUILD_SHA` | the git SHA being deployed; `GET /api/build` reports it |
-| `PROTOCOLOS_ALLOW_MODEL` | unset |
-| `CHALK_ROUTER_API_KEY` | unset, unless the key has a spending budget |
-| `CHALK_ROUTER_ENV_ID` | the Chalk environment of the router key (required with the key; without it the gateway is not used) |
-| `CHALK_ROUTER_MODEL` | set explicitly whenever a router key is set |
-| `ANTHROPIC_API_KEY` | unset |
-| `CHALK_CLIENT_ID`, `CHALK_CLIENT_SECRET`, `CHALK_ENVIRONMENT`, `CHALK_API_SERVER` | a scoped client credential for the registry profile chip, optional; without it the chip says "unavailable" |
+| `PROTOCOLOS_NEW_PER_HOUR` | new analyses and drafts per visitor (address plus key) per hour (default 6) |
+| `PROTOCOLOS_NEW_PER_DAY` | new analyses and drafts per day for the whole server (default 25) |
+| `PROTOCOLOS_MODEL_PER_HOUR`, `PROTOCOLOS_CHECKS_PER_HOUR` | model requests and key checks per visitor per hour (defaults 30 and 20) |
+| `PROTOCOLOS_MIN_FREE_MB` | free disk below which new analyses stop (default 1024) |
+| `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` | unset (ignored when public in any case) |
+
+Remove the variables of the hackathon setup if they are still set on the service: `PROTOCOLOS_ALLOW_MODEL`,
+`CHALK_ROUTER_*` and `CHALK_CLIENT_*` are no longer read.
 
 `.env.example` lists the same names for local runs (`cp .env.example .env`; `.env` is gitignored). The Vercel
 project needs one production variable: `PROTOCOLOS_API_URL`, the backend URL.
@@ -80,21 +87,21 @@ PROTOCOLOS_PUBLIC=1 .venv/bin/uvicorn trialforge.api:app --port 8766 &
 scripts/smoke_deploy.sh http://localhost:8766           # the smoke test expects the guard to be on
 ```
 
-`e2e_demo.py` records a test decision for hemoglobin. Against a local server it backs up
+`e2e_demo.py` records a test decision for hemoglobin in its own browser session. Against a local server it backs up
 `data/decisions/NCT03409614.json` first and restores it afterwards; run it from the checkout the server runs from,
 or set `E2E_DECISIONS_DIR` to that server's `data/decisions`.
 
 Secrets scan before publishing the repository or a deploy. Report only redacted findings.
 
 ```bash
-git log -p --all | grep -nE 'ck-[A-Za-z0-9]{6,}|sk-ant-|CLIENT_SECRET=|CHALK_ROUTER_API_KEY=.'
+git log -p --all | grep -nE 'ck-[A-Za-z0-9]{6,}|sk-ant-|sk-proj-|CLIENT_SECRET=|CHALK_ROUTER_API_KEY=.'
 git ls-files | grep -E '(^|/)\.env$|\.pem$|\.chalk\.yml'
 ```
 
 The second command must print nothing. The first is deliberately broad: it also matches words such as
-"back-tested", placeholder text such as `CHALK_ROUTER_API_KEY=...` in the docs, this file's copy of the pattern and
-the empty `CHALK_CLIENT_SECRET=` in `.env.example`. Read every hit; a hit with an actual value after `=`, or `ck-` or
-`sk-ant-` followed by a key, must be removed before going public.
+"back-tested", the fake keys in `tests/` (a prefix followed by one repeated letter), placeholder text
+in older commits, and this file's copy of the pattern. Read every hit; a hit with an actual value after `=`, or
+`ck-`, `sk-ant-` or `sk-proj-` followed by a real key, must be removed before going public.
 
 ## 5. Backend on Railway
 
@@ -104,8 +111,8 @@ the empty `CHALK_CLIENT_SECRET=` in `.env.example`. Read every hit; a hit with a
 `data/search_cache/`), the reviews (`data/reviews/`) and the drafts (`data/drafts/`). The deploy ships them anyway
 with `railway up --no-gitignore`, so the build-time prewarm finds every review and draft preset cached and the
 health check passes without network access. `.railwayignore` is then the only filter: it keeps `.env`, `.env.*`,
-`*.pem`, `.chalk.yml`, `.venv/`, `.git/`, `web-next/`, `data/decisions/`, `data/investigations/` and the
-generated Chalk eval bundles out of the upload. It must not exclude `data/reviews/` or `data/drafts/`.
+`*.pem`, `.chalk.yml`, `.venv/`, `.git/`, `web-next/`, `data/decisions/` and `data/investigations/` out of the
+upload. It must not exclude `data/reviews/` or `data/drafts/`.
 
 A full checkout's `data/protocols/` holds hundreds of MB of protocol PDFs, and Railway rejects an upload that large
 (HTTP 413). Deploy from a slim staging copy instead: the committed tree (`git archive HEAD`) plus only the caches

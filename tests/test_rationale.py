@@ -217,12 +217,20 @@ def test_route_ok_and_bad_nct(client, el3):
     assert client.get(f"/api/rationale/{EL3}?as_of=../x").status_code == 400
 
 
-def test_route_public_cold_403(client, monkeypatch, el3):
+def test_route_public_cold_needs_key(monkeypatch, el3):
+    """On the public app the guard asks for the visitor's key before an uncached review is computed."""
+    from trialforge import access, demo_guard, routes_rationale
+
     monkeypatch.setenv("PROTOCOLOS_PUBLIC", "1")
+    access.reset()
+    app = FastAPI()
+    routes_rationale.install(app)
+    demo_guard.install(app)
+    client = TestClient(app)
     cold = "NCT00000001"
     assert not (REVIEW_CACHE / f"{cold}_auto.json").exists()
     r = client.get(f"/api/rationale/{cold}")
-    assert r.status_code == 403 and r.json() == {"detail": "review not cached on the public demo"}
+    assert r.status_code == 401 and r.json()["code"] == "key_required"
     assert client.get(f"/api/rationale/{EL3}").status_code == 200
     assert client.get("/api/rationale/NOTANNCT").status_code == 400
     # Arabic-Indic digits pass get_review's \d but not the ASCII guard: 400 before any review is computed.

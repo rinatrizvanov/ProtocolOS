@@ -27,9 +27,8 @@ ALLOW: list[tuple[str, str, str]] = [
     ("docs/INSTALL.md", r"TRIALLENS_", "documents the legacy env prefix"),
     ("trialforge/demo_guard.py", r"legacy TRIALLENS_PUBLIC", "documents the legacy env name"),
     ("web-next/README.md", r"legacy `TRIALLENS_API_URL`", "documents the legacy env name"),
-    # Chalk identifiers that are deployed; renaming them needs a new `chalk apply`.
-    ("*", r"triallens_registry_profile", "deployed Chalk query name"),
-    ("*", r"\bteam\W+(?:<code>|`)?triallens", "Chalk team name"),
+    # The deck as submitted at HackHarvard (git tag hackharvard-submission) names the Chalk query and team it used then.
+    ("docs/deck/*", r"triallens_registry_profile|\bteam\W+(?:<code>|`)?triallens", "deck as submitted; names the Chalk query and team"),
     ("tests/*", r"not in", "a negative check that the old name is gone"),
     # Paths: the local checkout folder and the default log directories keep the old name.
     ("*", r"triallens/|/tl-|triallens-logs", "local folder or log directory"),

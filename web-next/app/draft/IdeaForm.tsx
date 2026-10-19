@@ -31,6 +31,7 @@ export default function IdeaForm({
   busy,
   onSubmit,
   error = null,
+  readyHint = null,
 }: {
   vocabulary: DraftVocabulary | null;
   vocabularyFailed: boolean;
@@ -38,6 +39,8 @@ export default function IdeaForm({
   onSubmit: (idea: Idea) => void;
   // A failed run of this form's idea, shown under the submit button with its next step.
   error?: ReactNode;
+  // Shown under the submit button once the idea can be submitted (where the "add a condition" hint was).
+  readyHint?: ReactNode;
 }) {
   const [condition, setCondition] = useState("");
   const [drugs, setDrugs] = useState<string[]>([]);
@@ -227,6 +230,7 @@ export default function IdeaForm({
             Add a condition and at least one drug.
           </p>
         ) : null}
+        {!busy && ready && readyHint && !error ? <p className="text-xs text-muted">{readyHint}</p> : null}
         {error}
       </div>
     </form>

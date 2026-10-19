@@ -66,9 +66,13 @@ if [ "$LAST" = PASS ]; then
   check "guard: refresh=1 refused" 403 GET "/api/review/$NCT?refresh=1"
   check "guard: as_of=../../x rejected" 400 GET "/api/review/$NCT?as_of=..%2F..%2Fx"
   printf '{"nct":"%s","criterion_id":"hemoglobin"}' "$NCT" > "$TMP/crit.json"
-  check "guard: /api/critique disabled" 503 POST "/api/critique" "$TMP/crit.json" 'disabled on the public demo'
+  check "guard: /api/critique needs the visitor's key" 401 POST "/api/critique" "$TMP/crit.json" 'key_required'
+  # an uncached trial is refused before anything is fetched or computed
+  check "guard: uncached trial needs the visitor's key" 401 GET "/api/review/NCT00000001" "" 'key_required'
+  printf '{"nct":"%s","criterion_id":"hemoglobin","decision":"defer"}' "$NCT" > "$TMP/dec.json"
+  check "guard: decision without a session refused" 400 POST "/api/decision" "$TMP/dec.json" 'session_required'
 else
-  echo "SKIPPED        guard checks for refresh/as_of/critique: guard not active (they would recompute or call a model)"
+  echo "SKIPPED        guard checks for refresh/as_of/critique/keys: guard not active (they would recompute or call a model)"
 fi
 
 [ "$skips" -gt 0 ] && echo "note: $skips required check(s) SKIPPED (endpoint not installed); a skip is not a pass"

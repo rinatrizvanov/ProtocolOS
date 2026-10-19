@@ -63,6 +63,10 @@ export default function Landing() {
             </a>
           ))}
         </div>
+        <p data-testid="key-policy" className="-mt-2 max-w-3xl text-sm text-muted">
+          Four worked examples and the draft examples open at once. Adding another trial, drafting a new idea and model answers
+          in the Ask tab use your own OpenAI or Anthropic API key; this server has no model key of its own.
+        </p>
 
         <div className="flex flex-col gap-3 border-t border-line pt-4 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
           <p className="flex items-start gap-2">

@@ -17,12 +17,6 @@ web-next/
 data/decisions/
 data/investigations/
 
-# generated Chalk eval bundles (gitignored; they embed protocol text)
-chalk_project/eval_dataset.jsonl
-chalk_project/investigator_dataset.jsonl
-chalk_project/trialforge_chalk_eval.py
-chalk_project/protocolos_investigator_eval.py
-
 # tooling and local state
 __pycache__/
 *.pyc

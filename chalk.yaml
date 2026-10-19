@@ -1,7 +1,0 @@
-project: Default
-environments:
-    default:
-        runtime: python312
-        # Chalk's feature-serving runtime pins pydantic<2, which conflicts with the ProtocolOS web app
-        # (FastAPI). Deploy only the feature store with its own minimal requirements.
-        requirements: chalk_project/feature_store/requirements.txt

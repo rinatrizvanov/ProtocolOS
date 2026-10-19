@@ -13,9 +13,8 @@ Guardrails: documents are data (passage text is never interpreted; templates fil
 structured fields), the classification is never changed, nothing is written to data/reviews/.
 Each investigation appends one JSON line to AUDIT_DIR/YYYY-MM-DD.jsonl (UTC date).
 
-Model mode (mode="model"): after the same tool calls, one llm._json_call through the configured provider
-(the Chalk Model Gateway when CHALK_ROUTER_API_KEY is set) drafts statements from the criterion's graph
-nodes only. They go through the same check_answer and labelling as the templates, failed ones stay struck
+Model mode (mode="model"): after the same tool calls, one llm.json_call with the visitor's own OpenAI or
+Anthropic key (passed in as `creds`) drafts statements from the criterion's graph nodes only. They go through the same check_answer and labelling as the templates, failed ones stay struck
 through, and the overall label can only go down versus the deterministic answer. No key -> model.status
 "not configured"; timeout or error -> the deterministic answer with model.status "unavailable: <reason>".
 """
@@ -42,7 +41,6 @@ MAX_MODEL_CALLS = 2
 MAX_SECONDS = 60.0
 AUDIT_DIR = DATA / "investigations"
 
-# <<CHECK_START>>  pure section: chalk_project/build_investigator_eval.py inlines it into the Chalk bundle
 STRUCTURAL = {"Criterion", "Assessment", "Classification", "Recommendation", "MissingEvidence", "ReviewerDecision"}
 QUOTED_TYPES = {"Criterion", "Passage", "ComparatorThreshold"}
 AXIS_STANCE = {"support": "supports", "challenge": "challenges"}
@@ -363,7 +361,6 @@ def label_statements(answer: dict, checks: list[dict], graph: dict) -> None:
             for i in s.get("evidence_ids") or [] if i in nodes
         )
         s["status"] = "unsupported" if s["failed_checks"] else ("supported" if strong else "uncertain")
-# <<CHECK_END>>
 
 
 def default_check_resolvers() -> dict:
@@ -411,11 +408,12 @@ def _tool_get_review(nct: str, as_of: str = "auto") -> dict:
     return get_review(nct, as_of)
 
 
-def _tool_build_graph(review: dict, criterion_id: str) -> dict:
+def _tool_build_graph(review: dict, criterion_id: str, decisions=None) -> dict:
     from .graph import build_graph  # imported lazily so this module loads without the graph module
     from .packet import load_decisions
 
-    return build_graph(review, load_decisions(review["target"]["study"]["nct_id"]), criterion_id)
+    nct = review["target"]["study"]["nct_id"]
+    return build_graph(review, (decisions or load_decisions)(nct), criterion_id)
 
 
 def _tool_protocol_page(nct: str, page: int) -> str | None:
@@ -427,17 +425,10 @@ def _tool_protocol_page(nct: str, page: int) -> str | None:
     return doc.pages[int(page) - 1]
 
 
-def _tool_chalk_registry_profile(nct: str) -> dict:
-    from .chalk_bridge import registry_profile
-
-    return registry_profile(nct)
-
-
 TOOLS = {
     "get_review": _tool_get_review,
     "build_graph": _tool_build_graph,
     "protocol_page": _tool_protocol_page,
-    "chalk_registry_profile": _tool_chalk_registry_profile,
 }
 _POOL = ThreadPoolExecutor(max_workers=4, thread_name_prefix="investigate")
 
@@ -449,9 +440,6 @@ def _summary_of(name: str, result) -> str:
         return f"{len(result.get('nodes', []))} nodes, {len(result.get('edges', []))} edges, {len(result.get('validation') or [])} validation issue(s)"
     if name == "protocol_page":
         return "page not available" if result is None else f"{len(result)} characters of cached page text"
-    if name == "chalk_registry_profile":
-        r = result or {}
-        return f"status {r.get('status')}" + (f", query {r['query_id']}" if r.get("query_id") else "")
     return type(result).__name__
 
 
@@ -516,8 +504,6 @@ def plan_steps(question: str, graph: dict, review: dict, criterion_id: str) -> l
     steps: list[tuple[str, dict]] = []
     if question in ("why_flagged", "contradicting", "support_retaining") and page:
         steps.append(("protocol_page", {"nct": nct, "page": page}))
-    if question == "why_flagged":
-        steps.append(("chalk_registry_profile", {"nct": nct}))
     return steps
 
 
@@ -876,26 +862,26 @@ def _model_statements(raw) -> list[dict]:
     return out
 
 
-def _ask_model(run: _Runner, question: str, c: _Ctx, counter: list[str]) -> tuple[list[dict] | None, dict, int]:
-    """(statements or None, model info, model calls used). One llm._json_call may retry once inside llm, so it
+def _ask_model(run: _Runner, question: str, c: _Ctx, counter: list[str], creds) -> tuple[list[dict] | None, dict, int]:
+    """(statements or None, model info, model calls used). One llm.json_call may retry once inside llm, so it
     takes the whole model-call budget; it runs under the remaining time budget and may finish in the background."""
     from . import llm
 
-    if not llm.available():
+    if creds is None:
         return None, {"status": "not configured", "provider": None}, 0
-    info = {"status": "", "provider": llm.model_label()}
+    info = {"status": "", "provider": creds.label()}
     if run.remaining() <= 0:
         info["status"] = "unavailable: no time left in the 60 s budget"
         return None, info, 0
     payload = json.dumps(_model_payload(question, c, counter), ensure_ascii=False, default=str)
-    fut = _POOL.submit(llm._json_call, MODEL_SYSTEM, payload, MODEL_SCHEMA)
+    fut = _POOL.submit(llm.json_call, MODEL_SYSTEM, payload, MODEL_SCHEMA, creds)
     try:
         raw = fut.result(timeout=max(run.remaining(), 0.001))
     except FutureTimeout:
         info["status"] = "unavailable: timed out (60 s budget)"
         return None, info, MAX_MODEL_CALLS
-    except Exception as e:  # router HTTP error, refusal, invalid JSON: reported to the user, deterministic answer shown
-        info["status"] = f"unavailable: {type(e).__name__}: {str(e)[:160]}"
+    except Exception as e:  # provider HTTP error, refusal, invalid JSON: reported to the user, deterministic answer shown
+        info["status"] = f"unavailable: {type(e).__name__}: {llm.redact(str(e))[:160]}"
         return None, info, MAX_MODEL_CALLS
     info["status"] = "ok"
     return _model_statements(raw), info, MAX_MODEL_CALLS
@@ -914,7 +900,9 @@ def _write_audit(record: dict) -> str | None:
 
 # ----------------------------------------------------------------------------- entry point
 
-def investigate(nct: str, criterion_id: str, question: str, as_of: str = "auto", mode: str = "deterministic") -> dict:
+def investigate(nct: str, criterion_id: str, question: str, as_of: str = "auto", mode: str = "deterministic",
+                creds=None, decisions=None) -> dict:
+    """`creds`: llm.Credentials for model mode; `decisions`: nct -> decisions dict (the visitor session's)."""
     if question not in QUESTIONS:
         raise HTTPException(400, f"question must be one of {', '.join(QUESTIONS)}")
     if mode not in MODES:
@@ -926,7 +914,8 @@ def investigate(nct: str, criterion_id: str, question: str, as_of: str = "auto",
     if _review_item(review, criterion_id) is None:
         raise HTTPException(404, f"criterion '{criterion_id}' is not in the review of {review['target']['study']['nct_id']}")
     fingerprint = review_fingerprint(review)
-    graph = run.call("build_graph", {"criterion_id": criterion_id}, required=True, review=review, criterion_id=criterion_id)
+    graph = run.call("build_graph", {"criterion_id": criterion_id}, required=True, review=review, criterion_id=criterion_id,
+                     decisions=decisions)
     if graph is None:
         raise HTTPException(503, "investigation budget exhausted before the evidence graph was built")
     c = _Ctx(graph, review, criterion_id)
@@ -954,7 +943,7 @@ def investigate(nct: str, criterion_id: str, question: str, as_of: str = "auto",
         if tool == "get_review":
             run.call("get_review", {"nct": nct, "as_of": as_of}, nct=nct, as_of=as_of)
         elif tool == "build_graph":
-            run.call("build_graph", {"criterion_id": criterion_id}, review=review, criterion_id=criterion_id)
+            run.call("build_graph", {"criterion_id": criterion_id}, review=review, criterion_id=criterion_id, decisions=decisions)
         elif tool == "protocol_page":
             if args.get("nct") not in ncts_in_graph or not str(args.get("page", "")).isdigit():
                 run.refuse(tool, args, "tool_scope", "only pages of NCTs already in the graph")
@@ -964,14 +953,6 @@ def investigate(nct: str, criterion_id: str, question: str, as_of: str = "auto",
                 on_page = _norm(crit_src["quote"]) in _norm(text)
                 process.append({"check": "criterion_on_page", "statement_id": None, "result": "pass" if on_page else "fail",
                                 "detail": f"criterion text {'found' if on_page else 'not found'} on protocol p.{args['page']}"})
-        elif tool == "chalk_registry_profile":
-            if args.get("nct") not in ncts_in_graph:
-                run.refuse(tool, args, "tool_scope", "only NCTs already in the graph")
-                continue
-            prof = run.call("chalk_registry_profile", {"nct": args["nct"]}, nct=args["nct"])
-            if prof is not None:
-                process.append({"check": "registry_profile", "statement_id": None, "result": "pass" if prof.get("status") == "ok" else "warn",
-                                "detail": f"Chalk registry profile ({args['nct']}): {prof.get('status')}"})
         else:
             run.call(tool, args)  # not whitelisted: refused and counted
     if run.dropped:
@@ -984,7 +965,7 @@ def investigate(nct: str, criterion_id: str, question: str, as_of: str = "auto",
     answered_by, used_model = "deterministic", 0
     model = {"status": "not_used", "provider": None}
     if mode == "model":
-        drafted, model, used_model = _ask_model(run, question, c, counter)
+        drafted, model, used_model = _ask_model(run, question, c, counter, creds)
         if drafted is None:
             if model["status"].startswith("unavailable"):
                 process.append({"check": "model", "statement_id": None, "result": "warn",

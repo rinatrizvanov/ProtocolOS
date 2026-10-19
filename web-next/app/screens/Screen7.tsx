@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { getPacket, saveDecision, type DecisionKey, type Packet, type Selection } from "../../lib/api";
+import { getPacket, packetExportUrl, saveDecision, type DecisionKey, type Packet, type Selection } from "../../lib/api";
 import { DECISION_REASONS, encodeReason, parseReason, type ReasonKey } from "@/lib/contracts";
 import { Failed, Frame } from "../components/Frame";
 
@@ -45,7 +45,7 @@ function SavedLine({ item }: { item: PacketItem | undefined }) {
         )}
         {parsed.note ? <span className="text-muted">{reasonText ? " / " : ""}Note: {parsed.note}</span> : null}
       </p>
-      <p className="text-sm text-muted">Saved in the review packet.</p>
+      <p className="text-sm text-muted">Saved in this browser&apos;s review packet; other visitors do not see it.</p>
     </div>
   );
 }
@@ -243,7 +243,7 @@ export default function Screen7({ nct, criterionId, detailed = false }: Selectio
         </div>
         {detailed ? (
           <a
-            href={`/api/packet/${encodeURIComponent(nct)}?format=md`}
+            href={packetExportUrl(nct)}
             data-testid="export-packet"
             className={`self-start rounded-md border border-ink px-5 py-2 text-ink transition-colors duration-150 hover:bg-line ${focusRing}`}
           >

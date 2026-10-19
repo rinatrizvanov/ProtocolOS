@@ -11,9 +11,11 @@ example /api/rationale answers 404, or the Decide tab has no structured reason b
 with --strict any SKIP makes the run fail. Screenshots go to /tmp/protocolos-logs/ui/ and, for the guided tour
 (/tour#1..#7, same names and order as the /review tabs), /tmp/protocolos-logs/tour/.
 
-The Decide step saves a decision. Against a local BASE_URL it first backs up data/decisions/<nct>.json of the engine's
-data directory (--data-dir, else $PROTOCOLOS_DATA_DIR, else this checkout's data/) and restores it byte for byte, or
-removes it if it did not exist. Against any other BASE_URL the step is skipped unless --write-decision is passed.
+The Decide step saves a decision in this run's own browser session (decisions are stored per session,
+data/decisions/sessions/<session>/), so no other visitor sees it. Against a local BASE_URL the session's folder in the
+engine's data directory (--data-dir, else $PROTOCOLOS_DATA_DIR, else this checkout's data/) is removed afterwards.
+Against any other BASE_URL the step is skipped unless --write-decision is passed; the session's decision then stays on
+that server until it is redeployed.
 """
 
 from __future__ import annotations
@@ -264,20 +266,21 @@ def main() -> int:
                 report(step, "FAIL", str(exc)[:200])
 
         # Decide: a structured reason and a fresh note reach the markdown packet (needs the structured reason
-        # buttons). The decisions file is backed up first and restored byte for byte, so the demo trial never keeps
-        # test data.
+        # buttons). The decision lives in this run's browser session only.
         page.goto(review_url(tab="decide"), wait_until="networkidle")
         page.wait_for_timeout(800)
         reason = page.get_by_test_id("reason-safety_concern")
         step = "decide -> packet md has 'Reason: Safety concern. Note: <nonce>'"
         local = is_local(BASE_URL)
-        decisions = Path(args.data_dir) / "decisions" / f"{NCT}.json"
+        session = page.evaluate("() => localStorage.getItem('protocolos.session.v1')") or ""
+        decisions = Path(args.data_dir) / "decisions" / "sessions" / session
         if reason.count() == 0:
             report(step, "SKIP", "reason-safety_concern not on the page")
         elif not local and not args.write_decision:
             report(step, "SKIP", f"{BASE_URL} is not local; pass --write-decision to save a decision there")
+        elif not re.fullmatch(r"[0-9a-f]{32}", session):
+            report(step, "FAIL", f"no visitor session id in localStorage (got {session!r})")
         else:
-            backup = decisions.read_bytes() if local and decisions.exists() else None
             # A unique note proves this run's decision reached the packet, not an earlier one.
             nonce = f"e2e-{uuid.uuid4().hex[:8]}"
             try:
@@ -288,7 +291,7 @@ def main() -> int:
                 page.get_by_test_id("save-decision").click()
                 page.get_by_test_id("saved-decision").filter(has_text=nonce).wait_for(timeout=15000)
                 packet = page.evaluate(
-                    "async (n) => await (await fetch('/api/packet/' + n + '?format=md')).text()", NCT
+                    "async ([n, s]) => await (await fetch('/api/packet/' + n + '?format=md&session=' + s)).text()", [NCT, session]
                 )
                 expected = f"Reason: Safety concern. Note: {nonce}"
                 report(step, "PASS" if expected in packet and checked == "true" else "FAIL",
@@ -297,13 +300,12 @@ def main() -> int:
                 report(step, "FAIL", str(exc)[:200])
             finally:
                 if local:
-                    wrote = decisions.exists() and nonce in decisions.read_text()
-                    if backup is None:
-                        decisions.unlink(missing_ok=True)
-                    else:
-                        decisions.write_bytes(backup)
-                    restored = (decisions.read_bytes() == backup) if backup is not None else not decisions.exists()
-                    report("decide: decisions file restored byte for byte", "PASS" if wrote and restored else "FAIL",
+                    saved = decisions / f"{NCT}.json"
+                    wrote = saved.exists() and nonce in saved.read_text()
+                    if wrote:
+                        saved.unlink()
+                        decisions.rmdir()
+                    report("decide: the session's decision written and removed", "PASS" if wrote and not decisions.exists() else "FAIL",
                            f"{decisions}" + ("" if wrote else " did not receive the decision (pass --data-dir)"))
 
         # 7. Guided tour: step names and order mirror the app, every step passes the wording rule, the Redraft step shows

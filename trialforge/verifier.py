@@ -17,7 +17,7 @@ A recommendation is structured so its claims can be checked mechanically:
 }
 
 Outcome: REJECTED (any failed check), PASSED_WITH_WARNINGS, or PASSED. Each check reports why.
-This module only depends on the review context dict, so it can also run inside a Chalk function.
+This module only depends on the review context dict and the injected resolvers.
 """
 from __future__ import annotations
 

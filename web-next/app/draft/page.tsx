@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { ApiError, getDraftPresets, getDraftVocabulary, type Draft, type DraftCriterion, type DraftPreset, type DraftVocabulary, type Idea } from "@/lib/contracts";
+import { keyHeaders, sessionId, useModelKey } from "@/lib/visitor";
 import { AppHeader } from "../components/AppHeader";
+import { ModelKeyForm } from "../components/ModelKeyForm";
 import BeforeAfter from "./BeforeAfter";
 import DraftCard, {
   BUCKET,
@@ -45,6 +47,7 @@ interface Failure {
   transient: boolean;
   where: "idea" | "results";
   job: Job | null;
+  key?: boolean; // the visitor can fix it by entering (another) model key
 }
 type Run =
   | { state: "idle" }
@@ -63,28 +66,42 @@ function setQuery(query: string, keepHash: boolean) {
 
 // Like the contracts' request(), with an AbortSignal: a timed-out or superseded run stops its request instead of
 // leaving it open, so a retry does not queue behind it in the browser.
-async function fetchDraft(path: string, signal: AbortSignal, init?: RequestInit): Promise<Draft> {
-  const res = await fetch(path, { ...init, signal, headers: { "content-type": "application/json" } });
+async function fetchDraft(path: string, signal: AbortSignal, init?: RequestInit, withKey = false): Promise<Draft> {
+  const headers = { "content-type": "application/json", "X-ProtocolOS-Session": sessionId(), ...(withKey ? keyHeaders() : {}) };
+  const res = await fetch(path, { ...init, signal, headers });
   if (!res.ok) {
     let detail: string | null = null;
+    let code: string | null = null;
     try {
-      const body = (await res.json()) as { detail?: unknown };
+      const body = (await res.json()) as { detail?: unknown; code?: unknown };
       detail = typeof body.detail === "string" ? body.detail : null;
+      code = typeof body.code === "string" ? body.code : null;
     } catch {
       detail = null;
     }
-    throw new ApiError(`${init?.method ?? "GET"} ${path} returned ${res.status}`, res.status, detail);
+    throw new ApiError(`${init?.method ?? "GET"} ${path} returned ${res.status}`, res.status, detail, code);
   }
   return (await res.json()) as Draft;
 }
 const getDraftOnce = (id: string, signal: AbortSignal) => fetchDraft(`/api/draft/${encodeURIComponent(id)}`, signal);
-const postDraftOnce = (idea: Idea, signal: AbortSignal) => fetchDraft("/api/draft", signal, { method: "POST", body: JSON.stringify(idea) });
+// A new idea is drafted on the server only with the visitor's own key (trialforge/access.py); examples need none.
+const postDraftOnce = (idea: Idea, signal: AbortSignal, withKey = false) =>
+  fetchDraft("/api/draft", signal, { method: "POST", body: JSON.stringify(idea) }, withKey);
+const KEY_CODES = new Set(["key_required", "key_invalid", "key_malformed", "model_unavailable"]);
 
 // The page's own sentence for every failure; engine detail only where it helps the user fix the input.
-function describe(err: unknown, timedOut: boolean): { message: string; transient: boolean } {
+function describe(err: unknown, timedOut: boolean): { message: string; transient: boolean; key?: boolean } {
   if (timedOut) {
     return { message: "No answer after 150 seconds. The engine may still be drafting it; try again in a minute, or open an example.", transient: true };
   }
+  if (err instanceof ApiError && err.code && KEY_CODES.has(err.code)) {
+    return {
+      message: err.code === "key_required" ? "Drafting a new idea runs on the demo server, so it needs your own OpenAI or Anthropic key. The examples open without one." : (err.detail ?? "The key was not accepted."),
+      transient: false,
+      key: true,
+    };
+  }
+  if (err instanceof ApiError && err.code && err.detail) return { message: err.detail, transient: err.code === "provider_unreachable" };
   if (err instanceof ApiError) {
     if (err.status === 422) {
       return {
@@ -108,6 +125,17 @@ const BUTTON =
   "inline-flex min-h-8 items-center gap-1.5 rounded-md border border-uncounted bg-white px-2.5 py-1 text-sm font-medium text-ink hover:border-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
 
 function FailureNote({ failure, onRetry, onExample }: { failure: Failure; onRetry: (() => void) | null; onExample: (() => void) | null }) {
+  if (failure.key)
+    return (
+      <div data-testid="draft-key" className="flex flex-col gap-2">
+        <p className="text-sm text-ink">{failure.message}</p>
+        <ModelKeyForm
+          autoFocus
+          purpose="Drafting itself uses no model tokens; the key keeps the shared demo server open to everyone, and the same key answers the review's Ask tab."
+          onReady={() => onRetry?.()}
+        />
+      </div>
+    );
   return (
     <div data-testid="draft-error" role="alert" className="flex flex-col gap-2 rounded-lg border border-verdict/40 bg-white p-3 text-sm">
       <p className="break-words text-verdict [overflow-wrap:anywhere]">{failure.message}</p>
@@ -579,7 +607,7 @@ export default function DraftPage() {
       go({
         label: idea.condition,
         cold: true,
-        fetcher: (signal) => postDraftOnce(idea, signal),
+        fetcher: (signal) => postDraftOnce(idea, signal, true),
         presetId: null,
         query: (d) => `?d=${encodeURIComponent(d.draft_id)}`,
         scroll: true,
@@ -625,6 +653,7 @@ export default function DraftPage() {
     }
   }, [search, presets, go, openPreset]);
 
+  const keySet = useModelKey() !== null;
   const loading = run.state === "loading";
   const failure = run.state === "failed" ? run.failure : null;
   const activePreset = run.state === "loading" ? run.presetId : (shown?.presetId ?? null);
@@ -702,8 +731,15 @@ export default function DraftPage() {
                 vocabularyFailed={vocabularyFailed}
                 busy={loading}
                 onSubmit={submitIdea}
-                error={failure?.where === "idea" ? <FailureNote failure={failure} onRetry={onRetry} onExample={onExample} /> : null}
+                error={failure?.where === "idea" && !failure.key ? <FailureNote failure={failure} onRetry={onRetry} onExample={onExample} /> : null}
+                readyHint={keySet ? null : "A new idea needs your own OpenAI or Anthropic key; you are asked for it next."}
               />
+              {/* The key form is a form of its own, so it sits after the idea form, not inside it. */}
+              {failure?.where === "idea" && failure.key ? (
+                <div className="mt-3">
+                  <FailureNote failure={failure} onRetry={onRetry} onExample={onExample} />
+                </div>
+              ) : null}
             </div>
           </section>
         </aside>

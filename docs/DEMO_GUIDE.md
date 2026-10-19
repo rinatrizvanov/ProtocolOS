@@ -13,7 +13,7 @@ criteria from an idea"). The team decides; ProtocolOS prepares the rationale.
 | Guided tour, mode A | https://protocolos-web.vercel.app/tour |
 | Guided tour, mode B | https://protocolos-web.vercel.app/tour/draft |
 
-The public deploy runs with the demo guard on: cached reviews only, no recompute, no model calls.
+The public deploy runs with the demo guard on: the four preloaded trials and the draft examples open at once; adding a trial, drafting a new idea and model answers in the Ask tab need the visitor's own OpenAI or Anthropic key (the server has none).
 
 ## 2. Run it locally
 
