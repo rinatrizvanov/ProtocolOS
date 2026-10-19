@@ -47,7 +47,7 @@ ProtocolOS reads `PROTOCOLOS_<NAME>` settings first, then the legacy `TRIALLENS_
 | a key the provider rejects | 401 `key_invalid` or `model_unavailable` |
 | more new analyses than allowed | 429 `rate_limited` (per visitor, address plus key, per hour) or `daily_limit` (whole server) |
 | free disk below `PROTOCOLOS_MIN_FREE_MB` | 507 `storage_full` for new analyses |
-| a protocol page of a protocol not downloaded yet | 403 |
+| a protocol page of a trial that is not a target or comparator of a cached review | 403 |
 | a decision without `X-ProtocolOS-Session` | 400 `session_required` |
 
 The server never uses a model key of its own when `PROTOCOLOS_PUBLIC=1`: `ANTHROPIC_API_KEY` and
@@ -136,6 +136,10 @@ du -sh "$STAGE"                                         # tens of MB, not hundre
 
 If no caches are available at all, a plain `railway up` from a checkout still works: the build and startup
 prewarms fetch from the network, with retries.
+
+On a slow uplink the upload can time out (on 2026-10-19, at about 0.3 MB/s, the CLI gave up after about 30 seconds; the protocol
+PDFs are most of the size). Then leave `data/protocols/` out of the staging copy: the build prewarm fetches the
+preloaded trials' protocols, and a comparator's protocol is downloaded the first time one of its pages is opened.
 
 ### Deploy
 

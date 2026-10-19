@@ -351,6 +351,18 @@ def test_protocol_page_only_from_cache(public, monkeypatch):
     assert client.get(f"/api/protocol/{COLD}/page/1").status_code == 403
 
 
+def test_protocol_page_fetched_for_a_comparator_of_a_cached_review(public, monkeypatch):
+    """A comparator's protocol that is not on disk yet (a deploy without the PDFs) is downloaded on first view."""
+    client, api = public
+    comparator = api.get_review(EL3)["comparators"][0]["study"]["nct_id"]
+    monkeypatch.setattr(api, "protocol_cached", lambda nct: False)
+    fake = type("Doc", (), {"pages": ["page one"], "url": "https://example.org/p.pdf"})()
+    monkeypatch.setattr(api, "fetch_protocol", lambda nct: fake)
+    r = client.get(f"/api/protocol/{comparator}/page/1")
+    assert r.status_code == 200 and r.json()["text"] == "page one"
+    assert client.get(f"/api/protocol/{COLD}/page/1").status_code == 403
+
+
 def test_model_check_endpoint(public, monkeypatch):
     client, api = public
     assert client.post("/api/model/check").json()["code"] == "key_required"

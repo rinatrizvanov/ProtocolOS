@@ -54,6 +54,23 @@ def decisions_for(nct: str, request: Request) -> dict:
     return load_decisions(nct, session)
 
 
+_review_refs: tuple[tuple, set] = ((), set())
+
+
+def review_ncts() -> set[str]:
+    """NCT ids of the targets and comparators of the reviews cached on this server (re-read when the files change)."""
+    global _review_refs
+    files = tuple(sorted((p.name, p.stat().st_mtime) for p in REVIEW_CACHE.glob("*.json"))) if REVIEW_CACHE.exists() else ()
+    if files != _review_refs[0]:
+        ncts = set()
+        for name, _ in files:
+            r = json.loads((REVIEW_CACHE / name).read_text())
+            ncts.add(r["target"]["study"]["nct_id"])
+            ncts.update(c["study"]["nct_id"] for c in r.get("comparators", []))
+        _review_refs = (files, ncts)
+    return _review_refs[1]
+
+
 def _model_creds(request: Request) -> llm.Credentials:
     creds = llm.resolve(request.headers)
     if creds is None:
@@ -230,9 +247,9 @@ def critique_api(req: CritiqueReq, request: Request):
 
 @app.get("/api/protocol/{nct}/page/{page}")
 def protocol_page(nct: str, page: int):
-    # On the public deployment a page is served only from a protocol already downloaded for a review.
-    if flag("PUBLIC") and not protocol_cached(nct):
-        raise HTTPException(403, "this protocol has not been downloaded on this server; analyse its trial first")
+    # On the public deployment a protocol is downloaded only for a trial that is a target or comparator of a cached review.
+    if flag("PUBLIC") and not protocol_cached(nct) and nct.strip().upper() not in review_ncts():
+        raise HTTPException(403, "this protocol is not part of a review on this server; analyse its trial first")
     doc = fetch_protocol(nct.upper())
     if not doc or not (1 <= page <= len(doc.pages)):
         raise HTTPException(404, "page not available")

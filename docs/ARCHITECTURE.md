@@ -193,7 +193,7 @@ treated as data, never as instructions.
   packet, graph or rationale request, or a POST naming the trial), a new draft idea (presets stay open), and
   `/api/parse`, `/api/critique` and investigations in model mode. New analyses are limited per visitor (client address plus a hash of the key)
   per hour and per day overall, and stop when the disk is nearly full; uncached reviews are computed one at a
-  time. Protocol pages are served only from protocols already downloaded. Reviewer decisions are stored per
+  time. A protocol page is served only for a trial that is a target or comparator of a cached review. Reviewer decisions are stored per
   visitor session (`X-ProtocolOS-Session`, or `?session=` on an export link) under
   `data/decisions/sessions/<session>/`; a decision without a session is refused. Errors carry
   `{"detail", "code"}`, so the app can ask for a key (`key_required`, `key_invalid`) or explain a limit
