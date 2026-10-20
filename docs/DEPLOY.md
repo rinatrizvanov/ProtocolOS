@@ -66,6 +66,7 @@ The server never uses a model key of its own when `PROTOCOLOS_PUBLIC=1`: `ANTHRO
 | `PROTOCOLOS_MODEL_PER_HOUR`, `PROTOCOLOS_CHECKS_PER_HOUR` | model requests and key checks per visitor per hour (defaults 30 and 20) |
 | `PROTOCOLOS_MIN_FREE_MB` | free disk below which new analyses stop (default 1024) |
 | `PROTOCOLOS_STATE_DIR` | `/app/state`, the mount path of the service's volume (section 8) |
+| `PROTOCOLOS_SEMANTIC_COMPARATORS` | `1`: new analyses add comparator candidates from the semantic index (README, evaluation G) |
 | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` | unset (ignored when public in any case) |
 
 Remove the variables of the hackathon setup if they are still set on the service: `PROTOCOLOS_ALLOW_MODEL`,

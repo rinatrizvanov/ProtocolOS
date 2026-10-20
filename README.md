@@ -109,6 +109,8 @@ The first run found three bugs (agents outside the drug table treated as non-mye
 
 **F. Population context** (`evals/impact/impact_numbers.json`): the survey-weighted share of US adults (NHANES 2017-2018) below the EMPOWER-Lung 3 hemoglobin threshold and below ≥9 g/dL, with standard errors. It describes the general population, not a trial-eligible population, and is not an enrollment prediction.
 
+**G. Semantic comparator candidates** (`evals/semantic/results.json`): the 19 gold protocols reviewed twice, with comparators started before each trial: keyword discovery alone, then keyword plus the trials nearest in the semantic index (a local embedding model over the 1,412 phase 3 oncology trials with a posted protocol). Semantic candidates pass the same rules plus stricter ones the keyword query implies (shared cancer site, lung histology, breast subtype, no later-line, maintenance or radiotherapy programme for a target that is not one). 9 of 19 protocols got a different comparator set, 2 of the 4 with no keyword comparator got some, 19 comparators came only from the semantic index, and 12 of 159 criterion classifications changed. A changed classification is a different review input, not an improvement: no gold label says which comparators are right. Evaluations A to F use keyword discovery; new analyses on the public server use both.
+
 No model-based evaluation results are committed; `python -m evals.run_evals --llm` adds an LLM-only verifier baseline when a key is present.
 
 ## Quick start

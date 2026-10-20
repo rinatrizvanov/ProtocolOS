@@ -1,0 +1,2260 @@
+{
+ "note": "Keyword discovery versus keyword plus semantic candidates, comparators started before each trial. A changed classification is a different review input, not an improvement or an error.",
+ "index": {
+  "available": true,
+  "model": "BAAI/bge-small-en-v1.5",
+  "built_at": "2026-10-19",
+  "count": 1412,
+  "query": {
+   "query.cond": "cancer",
+   "filter.advanced": "AREA[Phase]PHASE3 AND AREA[LargeDocHasProtocol]true AND AREA[StudyType]INTERVENTIONAL",
+   "fields": "NCTId,BriefTitle,OfficialTitle,Acronym,Condition,InterventionName,Phase,StartDate,OverallStatus,LeadSponsorName,BriefSummary"
+  },
+  "seconds": 279.4
+ },
+ "seconds": 80.0,
+ "summary": {
+  "targets": 19,
+  "errors": 0,
+  "targets_with_different_comparators": 9,
+  "targets_without_keyword_comparators": 4,
+  "of_those_with_semantic_comparators": 2,
+  "semantic_only_comparators_used": 19,
+  "criteria": 159,
+  "criteria_with_changed_classification": 12
+ },
+ "targets": [
+  {
+   "nct": "NCT03409614",
+   "name": "EMPOWER-Lung 3",
+   "set": "gold (dev)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT03215706",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03351361",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02864251",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03850444",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03088540",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03348904",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02279732",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02578680",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02775435",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT03215706",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03351361",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "hemoglobin": "Review recommended",
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "renal": "Insufficient evidence",
+     "bilirubin": "Evidence supports retaining",
+     "ast_alt": "Evidence supports retaining",
+     "ecog": "Review recommended",
+     "washout_corticosteroid": "Insufficient evidence",
+     "washout_investigational": "Insufficient evidence",
+     "washout_vaccine": "Insufficient evidence",
+     "washout_surgery": "Insufficient evidence"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT03215706",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03351361",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02864251",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03850444",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03088540",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03348904",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02279732",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02578680",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT03215706",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03351361",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "hemoglobin": "Review recommended",
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "renal": "Insufficient evidence",
+     "bilirubin": "Evidence supports retaining",
+     "ast_alt": "Evidence supports retaining",
+     "ecog": "Review recommended",
+     "washout_corticosteroid": "Insufficient evidence",
+     "washout_investigational": "Insufficient evidence",
+     "washout_vaccine": "Insufficient evidence",
+     "washout_surgery": "Insufficient evidence"
+    }
+   },
+   "classification_changes": [],
+   "comparators_changed": false
+  },
+  {
+   "nct": "NCT03088540",
+   "name": "EMPOWER-Lung 1",
+   "set": "gold (dev)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03850444",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02578680",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02775435",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03875092",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03950674",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02864251",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT01905657",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02613507",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02864394",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03850444",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "hemoglobin": "Evidence supports retaining",
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "renal": "Insufficient evidence",
+     "bilirubin": "Insufficient evidence",
+     "ast_alt": "Evidence supports retaining",
+     "ecog": "Review recommended",
+     "washout_corticosteroid": "Review recommended",
+     "washout_investigational": "Insufficient evidence",
+     "washout_vaccine": "Evidence supports retaining",
+     "washout_surgery": "Insufficient evidence"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03850444",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02576574",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT03003962",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02578680",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02775435",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03875092",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03950674",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02542293",
+      "found_by": "semantic"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03850444",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "hemoglobin": "Evidence supports retaining",
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "renal": "Insufficient evidence",
+     "bilirubin": "Insufficient evidence",
+     "ast_alt": "Evidence supports retaining",
+     "ecog": "Review recommended",
+     "washout_corticosteroid": "Review recommended",
+     "washout_investigational": "Insufficient evidence",
+     "washout_vaccine": "Evidence supports retaining",
+     "washout_surgery": "Insufficient evidence"
+    }
+   },
+   "classification_changes": [],
+   "comparators_changed": false
+  },
+  {
+   "nct": "NCT02578680",
+   "name": "KEYNOTE-189",
+   "set": "gold (dev)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02066636",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT01905657",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02613507",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02066636",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Evidence supports retaining",
+     "renal": "Insufficient evidence",
+     "bilirubin": "Evidence supports retaining",
+     "ast_alt": "Review recommended",
+     "ecog": "Review recommended",
+     "washout_investigational": "Review recommended",
+     "washout_surgery": "Insufficient evidence",
+     "washout_radiotherapy": "Review recommended",
+     "washout_vaccine": "Evidence supports retaining"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02367781",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02409342",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02066636",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02576574",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02453282",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02542293",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT01905657",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02613507",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Evidence supports retaining",
+     "renal": "Evidence supports retaining",
+     "bilirubin": "Evidence supports retaining",
+     "ast_alt": "Review recommended",
+     "ecog": "Review recommended",
+     "washout_investigational": "Review recommended",
+     "washout_surgery": "Insufficient evidence",
+     "washout_radiotherapy": "Review recommended",
+     "washout_vaccine": "Evidence supports retaining"
+    }
+   },
+   "classification_changes": [
+    {
+     "criterion": "renal",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    }
+   ],
+   "comparators_changed": true
+  },
+  {
+   "nct": "NCT02775435",
+   "name": "KEYNOTE-407",
+   "set": "gold (dev)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT01905657",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02613507",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02578680",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03950674",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02066636",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02713867",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT01905657",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02613507",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Evidence supports retaining",
+     "renal": "Review recommended",
+     "bilirubin": "Insufficient evidence",
+     "ast_alt": "Evidence supports retaining",
+     "ecog": "Review recommended",
+     "washout_investigational": "Review recommended",
+     "washout_surgery": "Insufficient evidence",
+     "washout_radiotherapy": "Review recommended",
+     "washout_vaccine": "Evidence supports retaining"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT01905657",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02613507",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02279732",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02364999",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02367794",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02578680",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03950674",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02366143",
+      "found_by": "semantic"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT01905657",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02613507",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Evidence supports retaining",
+     "renal": "Review recommended",
+     "bilirubin": "Insufficient evidence",
+     "ast_alt": "Evidence supports retaining",
+     "ecog": "Review recommended",
+     "washout_investigational": "Review recommended",
+     "washout_surgery": "Insufficient evidence",
+     "washout_radiotherapy": "Review recommended",
+     "washout_vaccine": "Evidence supports retaining"
+    }
+   },
+   "classification_changes": [],
+   "comparators_changed": false
+  },
+  {
+   "nct": "NCT03215706",
+   "name": "CheckMate 9LA",
+   "set": "gold (dev)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02864251",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03850444",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03088540",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02279732",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02578680",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02775435",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03875092",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03950674",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02453282",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02864251",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03850444",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Evidence supports retaining",
+     "renal": "Evidence supports retaining",
+     "ast_alt": "Evidence supports retaining",
+     "bilirubin": "Evidence supports retaining",
+     "ecog": "Review recommended"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02864251",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03850444",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03088540",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02279732",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02578680",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02775435",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03875092",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03950674",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02864251",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03850444",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Evidence supports retaining",
+     "renal": "Evidence supports retaining",
+     "ast_alt": "Evidence supports retaining",
+     "bilirubin": "Evidence supports retaining",
+     "ecog": "Review recommended"
+    }
+   },
+   "classification_changes": [],
+   "comparators_changed": false
+  },
+  {
+   "nct": "NCT02367781",
+   "name": "IMpower130",
+   "set": "gold (dev)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT02366143",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02366143",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Insufficient evidence",
+     "hemoglobin": "Insufficient evidence",
+     "ast_alt": "Insufficient evidence",
+     "bilirubin": "Insufficient evidence",
+     "ecog": "Review recommended"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02366143",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02279732",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02364999",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT01121393",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02129699",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02352948",
+      "found_by": "semantic"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02366143",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "semantic"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Evidence supports retaining",
+     "ast_alt": "Evidence supports retaining",
+     "bilirubin": "Insufficient evidence",
+     "ecog": "Review recommended"
+    }
+   },
+   "classification_changes": [
+    {
+     "criterion": "platelets",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    },
+    {
+     "criterion": "hemoglobin",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    },
+    {
+     "criterion": "ast_alt",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    }
+   ],
+   "comparators_changed": true
+  },
+  {
+   "nct": "NCT02366143",
+   "name": "IMpower150",
+   "set": "gold (dev)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT02395172",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02352948",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02395172",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02352948",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Insufficient evidence",
+     "hemoglobin": "Insufficient evidence",
+     "ast_alt": "Insufficient evidence",
+     "bilirubin": "Insufficient evidence",
+     "ecog": "Review recommended"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT02395172",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02279732",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02352948",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02395172",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02279732",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "semantic"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Evidence supports retaining",
+     "ast_alt": "Evidence supports retaining",
+     "bilirubin": "Insufficient evidence",
+     "ecog": "Review recommended"
+    }
+   },
+   "classification_changes": [
+    {
+     "criterion": "platelets",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    },
+    {
+     "criterion": "hemoglobin",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    },
+    {
+     "criterion": "ast_alt",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    }
+   ],
+   "comparators_changed": true
+  },
+  {
+   "nct": "NCT03351361",
+   "name": "eNERGY",
+   "set": "gold (heldout)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03850444",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03088540",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02453282",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02542293",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02613507",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02768558",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02066636",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02713867",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02352948",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03850444",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03088540",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02453282",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Review recommended",
+     "renal": "Evidence supports retaining",
+     "ast_alt": "Evidence supports retaining",
+     "bilirubin": "Evidence supports retaining"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT03215706",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02864251",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT03850444",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT03088540",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03348904",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02279732",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02775435",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT03875092",
+      "found_by": "semantic"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT03215706",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02864251",
+      "found_by": "semantic"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Review recommended",
+     "renal": "Evidence supports retaining",
+     "ast_alt": "Evidence supports retaining",
+     "bilirubin": "Evidence supports retaining"
+    }
+   },
+   "classification_changes": [],
+   "comparators_changed": true
+  },
+  {
+   "nct": "NCT02864251",
+   "name": "CheckMate 722",
+   "set": "gold (heldout)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT02578680",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03950674",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03850444",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02453282",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02542293",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02279732",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02768558",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02775435",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02066636",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02578680",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03950674",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Evidence supports retaining",
+     "renal": "Evidence supports retaining",
+     "ast_alt": "Evidence supports retaining",
+     "bilirubin": "Evidence supports retaining",
+     "ecog": "Review recommended",
+     "washout_corticosteroid": "Insufficient evidence",
+     "washout_surgery": "Evidence supports retaining"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT02578680",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03950674",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03850444",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02453282",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02542293",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02279732",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02657434",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02768558",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02578680",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03950674",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Evidence supports retaining",
+     "renal": "Evidence supports retaining",
+     "ast_alt": "Evidence supports retaining",
+     "bilirubin": "Evidence supports retaining",
+     "ecog": "Review recommended",
+     "washout_corticosteroid": "Insufficient evidence",
+     "washout_surgery": "Evidence supports retaining"
+    }
+   },
+   "classification_changes": [],
+   "comparators_changed": false
+  },
+  {
+   "nct": "NCT02220894",
+   "name": "KEYNOTE-042",
+   "set": "gold (heldout)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT01905657",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02066636",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT01905657",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02066636",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Evidence supports retaining",
+     "renal": "Insufficient evidence",
+     "ast_alt": "Insufficient evidence",
+     "ecog": "Review recommended",
+     "washout_investigational": "Review recommended",
+     "washout_corticosteroid": "Evidence supports retaining",
+     "washout_radiotherapy": "Review recommended",
+     "washout_surgery": "Insufficient evidence",
+     "washout_vaccine": "Evidence supports retaining"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT01905657",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02279732",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02066636",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT01121393",
+      "found_by": "semantic"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT01905657",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02279732",
+      "found_by": "semantic"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Evidence supports retaining",
+     "renal": "Evidence supports retaining",
+     "ast_alt": "Evidence supports retaining",
+     "ecog": "Review recommended",
+     "washout_investigational": "Review recommended",
+     "washout_corticosteroid": "Evidence supports retaining",
+     "washout_radiotherapy": "Review recommended",
+     "washout_surgery": "Evidence supports retaining",
+     "washout_vaccine": "Evidence supports retaining"
+    }
+   },
+   "classification_changes": [
+    {
+     "criterion": "renal",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    },
+    {
+     "criterion": "ast_alt",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    },
+    {
+     "criterion": "washout_surgery",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    }
+   ],
+   "comparators_changed": true
+  },
+  {
+   "nct": "NCT02819518",
+   "name": "KEYNOTE-355 (TNBC)",
+   "set": "gold (unseen)",
+   "keyword": {
+    "candidates": [],
+    "comparators": [],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Insufficient evidence",
+     "hemoglobin": "Insufficient evidence",
+     "renal": "Insufficient evidence",
+     "bilirubin": "Insufficient evidence",
+     "ast_alt": "Insufficient evidence",
+     "ecog": "Review recommended",
+     "washout_radiotherapy": "Review recommended",
+     "washout_corticosteroid": "Insufficient evidence",
+     "washout_vaccine": "Insufficient evidence"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT02555657",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02425891",
+      "found_by": "semantic"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02555657",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02425891",
+      "found_by": "semantic"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Insufficient evidence",
+     "hemoglobin": "Insufficient evidence",
+     "renal": "Insufficient evidence",
+     "bilirubin": "Evidence supports retaining",
+     "ast_alt": "Insufficient evidence",
+     "ecog": "Review recommended",
+     "washout_radiotherapy": "Review recommended",
+     "washout_corticosteroid": "Insufficient evidence",
+     "washout_vaccine": "Insufficient evidence"
+    }
+   },
+   "classification_changes": [
+    {
+     "criterion": "bilirubin",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    }
+   ],
+   "comparators_changed": true
+  },
+  {
+   "nct": "NCT02872116",
+   "name": "CheckMate 649 (gastric)",
+   "set": "gold (unseen)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT02494583",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02370498",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02494583",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02370498",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Insufficient evidence",
+     "renal": "Insufficient evidence",
+     "ast_alt": "Insufficient evidence",
+     "bilirubin": "Insufficient evidence",
+     "ecog": "Review recommended",
+     "washout_corticosteroid": "Insufficient evidence"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT02494583",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02545504",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02322593",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02370498",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02494583",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02545504",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02322593",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02370498",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Insufficient evidence",
+     "renal": "Insufficient evidence",
+     "ast_alt": "Insufficient evidence",
+     "bilirubin": "Insufficient evidence",
+     "ecog": "Review recommended",
+     "washout_corticosteroid": "Insufficient evidence"
+    }
+   },
+   "classification_changes": [],
+   "comparators_changed": true
+  },
+  {
+   "nct": "NCT03434379",
+   "name": "IMbrave150 (HCC)",
+   "set": "gold (unseen)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT03298451",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Review recommended",
+     "hemoglobin": "Review recommended",
+     "ast_alt": "Insufficient evidence",
+     "bilirubin": "Insufficient evidence",
+     "renal": "Insufficient evidence",
+     "ecog": "Review recommended"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT03298451",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02562755",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02576509",
+      "found_by": "semantic"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02562755",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02576509",
+      "found_by": "semantic"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Review recommended",
+     "hemoglobin": "Review recommended",
+     "ast_alt": "Insufficient evidence",
+     "bilirubin": "Insufficient evidence",
+     "renal": "Evidence supports retaining",
+     "ecog": "Review recommended"
+    }
+   },
+   "classification_changes": [
+    {
+     "criterion": "renal",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    }
+   ],
+   "comparators_changed": true
+  },
+  {
+   "nct": "NCT02657434",
+   "name": "IMpower132 (NSCLC)",
+   "set": "gold (unseen2)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT02367781",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02409342",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02576574",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02367794",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02409355",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02453282",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02542293",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02366143",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02395172",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02454933",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02352948",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02367781",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02409342",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02576574",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02367794",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Evidence supports retaining",
+     "ast_alt": "Evidence supports retaining",
+     "bilirubin": "Review recommended",
+     "renal": "Evidence supports retaining",
+     "ecog": "Review recommended"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT02367781",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02409342",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02576574",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02367794",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02409355",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02453282",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02542293",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02578680",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT03950674",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02220894",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02366143",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02367781",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02409342",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02576574",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02264990",
+      "found_by": "semantic"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "hemoglobin": "Evidence supports retaining",
+     "ast_alt": "Evidence supports retaining",
+     "bilirubin": "Review recommended",
+     "renal": "Evidence supports retaining",
+     "ecog": "Review recommended"
+    }
+   },
+   "classification_changes": [],
+   "comparators_changed": true
+  },
+  {
+   "nct": "NCT03164616",
+   "name": "POSEIDON (NSCLC)",
+   "set": "gold (unseen2)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT02453282",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02542293",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02576574",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03003962",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02367781",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02409342",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02279732",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02367794",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02409355",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02657434",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02352948",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02453282",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02542293",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02576574",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "hemoglobin": "Evidence supports retaining",
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "bilirubin": "Evidence supports retaining",
+     "ast_alt": "Insufficient evidence",
+     "renal": "Evidence supports retaining",
+     "ecog": "Review recommended",
+     "washout_radiotherapy": "Review recommended",
+     "washout_vaccine": "Evidence supports retaining"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT02453282",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02542293",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02576574",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT03003962",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02367781",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02409342",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02142738",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT03088540",
+      "found_by": "semantic"
+     },
+     {
+      "nct_id": "NCT02279732",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02367794",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02409355",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02453282",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02542293",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02576574",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02477826",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "hemoglobin": "Evidence supports retaining",
+     "anc": "Review recommended",
+     "platelets": "Evidence supports retaining",
+     "bilirubin": "Evidence supports retaining",
+     "ast_alt": "Insufficient evidence",
+     "renal": "Evidence supports retaining",
+     "ecog": "Review recommended",
+     "washout_radiotherapy": "Review recommended",
+     "washout_vaccine": "Evidence supports retaining"
+    }
+   },
+   "classification_changes": [],
+   "comparators_changed": false
+  },
+  {
+   "nct": "NCT02358031",
+   "name": "KEYNOTE-048 (head and neck)",
+   "set": "gold (unseen2)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT02252042",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02252042",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Insufficient evidence",
+     "hemoglobin": "Insufficient evidence",
+     "renal": "Insufficient evidence",
+     "bilirubin": "Insufficient evidence",
+     "ast_alt": "Insufficient evidence",
+     "ecog": "Review recommended",
+     "washout_radiotherapy": "Review recommended",
+     "washout_corticosteroid": "Insufficient evidence",
+     "washout_vaccine": "Insufficient evidence"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT02252042",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02252042",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Insufficient evidence",
+     "hemoglobin": "Insufficient evidence",
+     "renal": "Insufficient evidence",
+     "bilirubin": "Insufficient evidence",
+     "ast_alt": "Insufficient evidence",
+     "ecog": "Review recommended",
+     "washout_radiotherapy": "Review recommended",
+     "washout_corticosteroid": "Insufficient evidence",
+     "washout_vaccine": "Insufficient evidence"
+    }
+   },
+   "classification_changes": [],
+   "comparators_changed": false
+  },
+  {
+   "nct": "NCT02763579",
+   "name": "IMpower133 (SCLC)",
+   "set": "gold (unseen2)",
+   "keyword": {
+    "candidates": [],
+    "comparators": [],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Insufficient evidence",
+     "hemoglobin": "Insufficient evidence",
+     "ast_alt": "Insufficient evidence",
+     "bilirubin": "Insufficient evidence",
+     "ecog": "Review recommended"
+    }
+   },
+   "semantic": {
+    "candidates": [],
+    "comparators": [],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Insufficient evidence",
+     "hemoglobin": "Insufficient evidence",
+     "ast_alt": "Insufficient evidence",
+     "bilirubin": "Insufficient evidence",
+     "ecog": "Review recommended"
+    }
+   },
+   "classification_changes": [],
+   "comparators_changed": false
+  },
+  {
+   "nct": "NCT02853331",
+   "name": "KEYNOTE-426 (renal)",
+   "set": "gold (unseen2)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT02231749",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Insufficient evidence",
+     "hemoglobin": "Insufficient evidence",
+     "renal": "Insufficient evidence",
+     "bilirubin": "Insufficient evidence",
+     "ast_alt": "Insufficient evidence",
+     "washout_investigational": "Review recommended",
+     "washout_radiotherapy": "Review recommended",
+     "washout_surgery": "Insufficient evidence",
+     "washout_vaccine": "Insufficient evidence"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT02231749",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [],
+    "classes": {
+     "anc": "Review recommended",
+     "platelets": "Insufficient evidence",
+     "hemoglobin": "Insufficient evidence",
+     "renal": "Insufficient evidence",
+     "bilirubin": "Insufficient evidence",
+     "ast_alt": "Insufficient evidence",
+     "washout_investigational": "Review recommended",
+     "washout_radiotherapy": "Review recommended",
+     "washout_surgery": "Insufficient evidence",
+     "washout_vaccine": "Insufficient evidence"
+    }
+   },
+   "classification_changes": [],
+   "comparators_changed": false
+  },
+  {
+   "nct": "NCT03043872",
+   "name": "CASPIAN (SCLC)",
+   "set": "gold (unseen2)",
+   "keyword": {
+    "candidates": [
+     {
+      "nct_id": "NCT02763579",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02538666",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02763579",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "ast_alt": "Evidence supports retaining",
+     "bilirubin": "Evidence supports retaining",
+     "ecog": "Review recommended"
+    }
+   },
+   "semantic": {
+    "candidates": [
+     {
+      "nct_id": "NCT02763579",
+      "found_by": "keyword"
+     },
+     {
+      "nct_id": "NCT02538666",
+      "found_by": "keyword"
+     }
+    ],
+    "comparators": [
+     {
+      "nct_id": "NCT02763579",
+      "found_by": "keyword"
+     }
+    ],
+    "classes": {
+     "ast_alt": "Evidence supports retaining",
+     "bilirubin": "Evidence supports retaining",
+     "ecog": "Review recommended"
+    }
+   },
+   "classification_changes": [],
+   "comparators_changed": false
+  }
+ ]
+}

@@ -30,6 +30,7 @@ SOURCES = sorted((ROOT / "data").glob("*.json")) + [
     ROOT / "evals" / "investigator" / "results.json",
     ROOT / "evals" / "draft" / "results.json",
     ROOT / "evals" / "impact" / "impact_numbers.json",
+    ROOT / "evals" / "semantic" / "results.json",
 ]
 # Numbers from an external, cited source, each checked by hand against that source.
 # Format: {"57%": "Getz et al. 2016, <table/page>"}.

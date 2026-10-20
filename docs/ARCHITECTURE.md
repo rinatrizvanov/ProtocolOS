@@ -36,7 +36,7 @@ public deployment runs without a model.
 | `sources.py` | Fetches and caches ClinicalTrials.gov records (API v2), the protocol PDFs posted there, the FDA guidance PDFs and the NHANES files. Per-page PDF text comes from poppler's `pdftotext` when installed, otherwise pypdf; Symbol-font glyphs are decoded. |
 | `extract.py` | Rule-based extraction of eligibility criteria (hemoglobin, ANC, platelets, bilirubin, AST/ALT, renal function, ECOG, washouts) with operator, value, unit, conditions and the verbatim source line and page. Also extracts the regimen (drugs in every arm) from registry interventions and protocol dosing context. |
 | `druglib.py` | Curated, class-level pharmacology table (myelosuppressive, hepatic, renal, immunotherapy). Used only to ask whether an arm contains an agent for which a lab criterion has an obvious safety rationale, never to choose a value. |
-| `comparators.py` | Discovers comparable phase 3 trials from the registry (same condition, matching setting and lung-cancer histology, overlapping drug classes, protocol PDF posted, started before the reviewed trial), ranks them by drug-class overlap, runs the same extractor on their protocols and diffs thresholds with direction and regimen coverage. |
+| `comparators.py` | Discovers comparable phase 3 trials from the registry (same condition, matching setting and lung-cancer histology, overlapping drug classes, protocol PDF posted, started before the reviewed trial), ranks them by drug-class overlap, runs the same extractor on their protocols and diffs thresholds with direction and regimen coverage. With `PROTOCOLOS_SEMANTIC_COMPARATORS=1` the nearest trials in the semantic index are added as candidates that pass the same rules plus stricter disease and setting rules; each comparator records `found_by` (keyword or semantic). |
 | `guidance.py` | Index of 32 hand-chosen FDA passages. At load time each quote must be found verbatim in the downloaded PDF; its page, FDA line numbers and section are computed from the PDF, and a quote that fails is dropped and reported. |
 | `review.py` | Assembles evidence per criterion (regimen, protocol, comparators, FDA), scores it with transparent rules and classifies the criterion. `run_review(nct, as_of="auto")` is the core result (section 4). |
 | `verifier.py` | Deterministic verification of a structured recommendation (section 5). A pure function over the review dict; network-backed resolvers are injected. |
@@ -225,6 +225,7 @@ These rules are enforced in code and tested:
 | Extraction, comparator direction, FDA quotes, regimen, verifier cases | `python -m evals.run_evals` (`--llm` adds the LLM-only baseline) | `data/eval_results.json` |
 | Planted issues in previously unseen protocols | `python -m evals.planted.make_variants && python -m evals.run_planted` | `data/planted_results.json`, `data/planted_results_no_cutoff.json` |
 | Investigator answer checker | `python -m evals.investigator.run` | `evals/investigator/results.json` |
+| Semantic comparator candidates, keyword alone versus keyword plus index | `python -m evals.semantic.run` | `evals/semantic/results.json` |
 | Draft guardrails, leave-one-out | `python -m evals.draft.run` | `evals/draft/results.json` |
 | NHANES context numbers | `python -m scripts.impact_numbers` | `evals/impact/impact_numbers.json` |
 

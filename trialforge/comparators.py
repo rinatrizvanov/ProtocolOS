@@ -3,6 +3,12 @@
 Comparators are discovered from ClinicalTrials.gov (same condition, phase 3, overlapping
 drug classes, protocol PDF available, started before the target in "as-of" mode), ranked
 by drug-class overlap, then their protocols are run through the same extractor.
+
+With PROTOCOLOS_SEMANTIC_COMPARATORS=1 the trials nearest to the target in the semantic index
+(trial_index.py) are added as candidates. They pass the same rules plus stricter ones the keyword
+query implies (_semantic_mismatch): a shared drug class, a shared cancer site, the same lung histology
+and breast subtype, no later-line, maintenance or radiotherapy programme for a target that is not one.
+Similarity itself never ranks them. Each candidate records how it was found (`found_by`).
 """
 from __future__ import annotations
 
@@ -12,6 +18,7 @@ import re
 
 from . import druglib
 from .extract import analyze_trial
+from .settings import flag
 from .sources import DATA, search_studies
 
 SEARCH_CACHE = DATA / "search_cache"
@@ -21,6 +28,18 @@ HIGHER_IS_STRICTER = {"hemoglobin", "anc", "platelets", "renal"}
 LOWER_IS_STRICTER = {"bilirubin", "ast_alt", "ecog"}
 # washouts: a longer required interval is stricter
 SIMILAR_TOLERANCE = 0.10  # values within 10% are reported as "similar", not stricter/looser
+SEMANTIC_K = 30  # nearest trials taken from the semantic index as extra candidates
+# Cancer sites for the semantic candidates' same-disease rule, matched in conditions and titles.
+SITES = {
+    "lung": r"lung|nsclc|sclc|bronch", "breast": r"breast",
+    "gastroesophageal": r"gastric|stomach|gastro-?o?esophageal|o?esophag", "colorectal": r"colorectal|colon|rect(al|um)",
+    "liver": r"hepatocellular|liver|\bhcc\b", "biliary": r"biliary|cholangio|gallbladder", "pancreas": r"pancrea",
+    "kidney": r"renal cell|kidney|\brcc\b", "urothelial": r"urothelial|bladder", "prostate": r"prostat",
+    "ovary": r"ovar|fallopian|primary peritoneal", "uterus": r"endometri|uterine", "cervix": r"cervical cancer|cervix",
+    "head and neck": r"head and neck|hnscc|oropharyn|laryn|nasopharyn|oral cavity", "melanoma": r"melanoma",
+    "lymphoma": r"lymphoma", "leukemia": r"leuka?emia", "myeloma": r"myeloma", "brain": r"glioma|glioblastoma",
+    "sarcoma": r"sarcoma|\bgist\b", "mesothelioma": r"mesothelioma", "thyroid": r"thyroid",
+}
 
 
 def _cached_search(params: dict, max_results: int) -> list[dict]:
@@ -78,6 +97,49 @@ def _lung_histology(text: str) -> str | None:
     return None
 
 
+def sites(text: str) -> set[str]:
+    return {site for site, rx in SITES.items() if re.search(rx, text)}
+
+
+LATER_LINE = (r"second[- ]line|previously treated|pretreated|after (?:failure|progression)|has progressed|"
+              r"progressed (?:on|with|after|following)|previous [a-z ]*therapy|refractory|relapsed|maintenance")
+RADIOTHERAPY = r"radiation|radiotherapy|chemoradi"
+BREAST_SUBTYPES = {"triple-negative": r"triple[- ]negative|\btnbc\b", "HER2-positive": r"her2[- ]?(?:positive|\+)",
+                   "HR-positive": r"hormone receptor[- ]positive|\bhr\+|er[- ]positive"}
+
+
+def _strict_lung_histology(text: str) -> str | None:
+    return _lung_histology(text) or ("NSCLC" if re.search(r"squamous cell (?:lung|carcinoma of the lung)|lung (?:squamous|adenocarcinoma)", text) else None)
+
+
+def _semantic_mismatch(t_title: str, t_conditions: str, s: dict) -> bool:
+    """True when a semantic candidate is a different disease or setting than the target (title and conditions)."""
+    c_title = (s["protocolSection"]["identificationModule"].get("briefTitle", "") + " "
+               + (s["protocolSection"]["identificationModule"].get("officialTitle", "") or "")).lower()
+    c_conditions = _conditions(s)
+    if not sites(t_conditions) & sites(c_conditions):
+        return True
+    t_hist, c_hist = _strict_lung_histology(t_conditions), _strict_lung_histology(c_conditions)
+    if t_hist and c_hist and t_hist != c_hist:
+        return True
+    t_sub = {k for k, rx in BREAST_SUBTYPES.items() if re.search(rx, t_title + " " + t_conditions)}
+    c_sub = {k for k, rx in BREAST_SUBTYPES.items() if re.search(rx, c_title + " " + c_conditions)}
+    if t_sub and c_sub and not t_sub & c_sub:
+        return True
+    return any(re.search(rx, c_title) and not re.search(rx, t_title) for rx in (LATER_LINE, RADIOTHERAPY))
+
+
+def _semantic_candidates(nct: str, t_full: dict, date_hi: str) -> list[dict]:
+    """Registry records of the trials nearest to the target in the semantic index, when the setting is on."""
+    if not flag("SEMANTIC_COMPARATORS"):
+        return []
+    from . import trial_index
+    from .sources import fetch_study
+
+    hits = trial_index.similar(nct, trial_index.record(t_full)["text"], k=SEMANTIC_K, until=date_hi)
+    return [fetch_study(h["nct_id"]) for h in hits]
+
+
 def discover(target: dict, k: int = 4, as_of: str | None = None) -> list[dict]:
     """Rank candidate comparators by drug-class Jaccard similarity (registry-level)."""
     tstudy = target["study"]
@@ -97,11 +159,16 @@ def discover(target: dict, k: int = 4, as_of: str | None = None) -> list[dict]:
     t_full = fetch_study(tstudy["nct_id"])
     t_setting = setting_tags(t_full)
     target_conditions = _conditions(t_full)
-    cands = []
-    for s in _cached_search(params, 200):
+    t_ident = t_full["protocolSection"]["identificationModule"]
+    target_title = (t_ident.get("briefTitle", "") + " " + (t_ident.get("officialTitle", "") or "")).lower()
+    cands, seen = [], set()
+    found = [(s, "keyword") for s in _cached_search(params, 200)]
+    found += [(s, "semantic") for s in _semantic_candidates(tstudy["nct_id"], t_full, date_hi)]
+    for s, found_by in found:
         nct = s["protocolSection"]["identificationModule"]["nctId"]
-        if nct == tstudy["nct_id"]:
+        if nct == tstudy["nct_id"] or nct in seen:
             continue
+        seen.add(nct)
         # a metastatic-setting target is not compared with perioperative / stage III programs
         c_setting = setting_tags(s)
         if ("perioperative/locally-advanced" in c_setting) != ("perioperative/locally-advanced" in t_setting):
@@ -113,9 +180,11 @@ def discover(target: dict, k: int = 4, as_of: str | None = None) -> list[dict]:
         if not c_classes:
             continue
         jac = len(t_classes & c_classes) / len(t_classes | c_classes)
-        cands.append((jac, nct, s))
+        if found_by == "semantic" and (not jac or _semantic_mismatch(target_title, target_conditions, s)):
+            continue
+        cands.append((jac, nct, found_by))
     cands.sort(key=lambda x: (-x[0], x[1]))
-    return [{"nct_id": n, "registry_similarity": round(j, 3)} for j, n, _ in cands[: k * 3]]
+    return [{"nct_id": n, "registry_similarity": round(j, 3), "found_by": f} for j, n, f in cands[: k * 3]]
 
 
 def coverage(analyte: str, target_drugs: set[str], comp_drugs: set[str]) -> dict:
@@ -193,8 +262,9 @@ def setting_tags_from(analysis: dict) -> set[str]:
 
 def load_comparators(target: dict, k: int = 4, as_of: str | None = None, fixed: list[str] | None = None) -> list[dict]:
     """Analyze the top-k comparators that yield extractable criteria."""
-    ids = fixed or [c["nct_id"] for c in discover(target, k, as_of)]
-    sims = {c["nct_id"]: c["registry_similarity"] for c in ([] if fixed else discover(target, k, as_of))}
+    found = [] if fixed else discover(target, k, as_of)
+    ids = fixed or [c["nct_id"] for c in found]
+    sims = {c["nct_id"]: c for c in found}
     t_classes = druglib.classes(target["regimen"]["drugs"])
     out = []
     for nct in ids:
@@ -211,7 +281,8 @@ def load_comparators(target: dict, k: int = 4, as_of: str | None = None, fixed: 
         a["tags"] = setting_tags(fetch_study(nct))
         c_classes = druglib.classes(a["regimen"]["drugs"])
         a["similarity"] = {
-            "registry_jaccard": sims.get(nct),
+            "registry_jaccard": sims.get(nct, {}).get("registry_similarity"),
+            "found_by": sims.get(nct, {}).get("found_by", "fixed"),
             "protocol_class_jaccard": round(len(t_classes & c_classes) / len(t_classes | c_classes), 3) if c_classes else 0.0,
             "shared_classes": sorted(t_classes & c_classes),
             "target_only_classes": sorted(t_classes - c_classes),

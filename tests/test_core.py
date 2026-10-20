@@ -140,3 +140,23 @@ def test_letter_spaced_ocr_text_is_reextracted(monkeypatch, tmp_path):
     assert sources.pdf_pages(tmp_path / "x.pdf") == ["Protocol DS8201-A-U303"]
     monkeypatch.setattr(pypdf, "PdfReader", lambda path: Reader(path, normal[0]))
     assert sources.pdf_pages(tmp_path / "x.pdf") == [normal[0]]
+
+
+def _registry(title: str, conditions: list[str]) -> dict:
+    return {"protocolSection": {"identificationModule": {"briefTitle": title}, "conditionsModule": {"conditions": conditions}}}
+
+
+@pytest.mark.parametrize("target, candidate, conditions, excluded", [
+    ("pembrolizumab plus chemotherapy in metastatic nsclc", "Radiation Therapy With Cisplatin in Oropharyngeal Cancer", ["Oropharyngeal Cancer"], True),
+    ("durvalumab with etoposide in extensive-stage small cell lung cancer", "Durvalumab as Second-Line Therapy", ["Squamous Cell Lung Carcinoma"], True),
+    ("pembrolizumab plus chemotherapy in triple negative breast cancer", "Pertuzumab in HER2-Positive Advanced Breast Cancer", ["Breast Cancer"], True),
+    ("pembrolizumab versus chemotherapy in previously untreated nsclc",
+     "Osimertinib in NSCLC Whose Disease Has Progressed With Previous EGFR TKI Therapy", ["Non-Small Cell Lung Cancer"], True),
+    ("nivolumab and ipilimumab in first-line nsclc", "Nivolumab and Ipilimumab Combined With Chemotherapy", ["Non-Small Cell Lung Cancer"], False),
+    ("pembrolizumab in previously untreated nsclc", "Pembrolizumab Plus Chemotherapy in Previously Untreated NSCLC", ["NSCLC"], False),
+])
+def test_semantic_candidate_rules(target, candidate, conditions, excluded):
+    from trialforge import comparators
+
+    t_conditions = comparators._conditions(_registry(target, [target]))
+    assert comparators._semantic_mismatch(target, t_conditions, _registry(candidate, conditions)) is excluded
