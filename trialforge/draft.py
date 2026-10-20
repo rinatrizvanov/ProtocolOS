@@ -24,14 +24,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from . import comparators, druglib, guidance, review, settings, verifier
-from .sources import DATA
+from .sources import DATA, STATE
 
 try:  # rationale categories are optional: without the module the draft falls back to _fallback_categories
     from .rationale import categories as _categories
 except ImportError:  # pragma: no cover - the module ships with the package
     _categories = None
 
-DRAFTS_DIR = DATA / "drafts"
+DRAFTS_DIR = DATA / "drafts"  # the image's drafts (presets); every draft when there is no state dir
+STATE_DRAFTS_DIR = STATE / "drafts" if STATE != DATA else None
 SETTING_TAGS = ("first-line", "metastatic", "non-squamous", "squamous", "perioperative/locally-advanced")
 PHASES = ("PHASE2", "PHASE3")
 DRAFT_ID_RE = re.compile(r"^d-[0-9a-f]{12}$")
@@ -621,8 +622,8 @@ class ColdCapReached(Exception):
 def cached(draft_id: str) -> dict | None:
     if not DRAFT_ID_RE.match(draft_id):
         return None
-    p = DRAFTS_DIR / f"{draft_id}.json"
-    if not p.exists():
+    p = next((d / f"{draft_id}.json" for d in (DRAFTS_DIR, STATE_DRAFTS_DIR) if d and (d / f"{draft_id}.json").exists()), None)
+    if p is None:
         return None
     d = json.loads(p.read_text())
     d["summary"]["cached"] = True
@@ -630,8 +631,9 @@ def cached(draft_id: str) -> dict | None:
 
 
 def _write(d: dict) -> None:
-    DRAFTS_DIR.mkdir(parents=True, exist_ok=True)
-    p = DRAFTS_DIR / f"{d['draft_id']}.json"
+    target = STATE_DRAFTS_DIR or DRAFTS_DIR
+    target.mkdir(parents=True, exist_ok=True)
+    p = target / f"{d['draft_id']}.json"
     tmp = p.with_suffix(f".tmp{os.getpid()}.{threading.get_ident()}")
     tmp.write_text(json.dumps(d, default=lambda o: sorted(o) if isinstance(o, set) else str(o)))
     os.replace(tmp, p)

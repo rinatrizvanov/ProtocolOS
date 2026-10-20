@@ -61,7 +61,7 @@ def is_cold(nct: str, as_of: str) -> bool:
     """True when `api.get_review(nct, as_of)` would compute instead of reading a cache."""
     api = _api()
     key = f"{nct.strip().upper()}_{as_of}"
-    return key not in api._mem and not (api.REVIEW_CACHE / f"{key}.json").exists()
+    return key not in api._mem and api.review_file(key) is None
 
 
 def _reject(status: int, detail: str, code: str | None = None) -> JSONResponse:

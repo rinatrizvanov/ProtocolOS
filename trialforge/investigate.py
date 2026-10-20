@@ -31,7 +31,7 @@ from datetime import datetime, timezone
 
 from fastapi import HTTPException
 
-from .sources import DATA
+from .sources import STATE
 from .verifier import GUIDANCE_FOR_CATEGORY, NECESSITY, OVERCLAIM, RELEVANT_PROPERTY, verify
 
 QUESTIONS = ("why_flagged", "contradicting", "support_retaining", "what_would_change")
@@ -39,7 +39,7 @@ MODES = ("deterministic", "model")
 MAX_TOOL_CALLS = 4
 MAX_MODEL_CALLS = 2
 MAX_SECONDS = 60.0
-AUDIT_DIR = DATA / "investigations"
+AUDIT_DIR = STATE / "investigations"
 
 STRUCTURAL = {"Criterion", "Assessment", "Classification", "Recommendation", "MissingEvidence", "ReviewerDecision"}
 QUOTED_TYPES = {"Criterion", "Passage", "ComparatorThreshold"}

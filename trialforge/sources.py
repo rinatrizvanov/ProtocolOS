@@ -16,8 +16,13 @@ from pathlib import Path
 
 import httpx
 
+from .settings import env
+
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
+# What visitors create (reviews and drafts made on request, decisions, the audit log) goes under
+# PROTOCOLOS_STATE_DIR when it is set, a volume that survives redeploys; the image's own caches stay under data/.
+STATE = Path(env("STATE_DIR")) if env("STATE_DIR") else DATA
 REGISTRY_DIR = DATA / "registry"
 PROTOCOL_DIR = DATA / "protocols"
 FDA_DIR = DATA / "fda"

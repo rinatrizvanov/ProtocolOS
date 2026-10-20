@@ -379,3 +379,15 @@ def test_status_names_providers_not_a_server_key(public):
     assert set(s["llm"]["providers"]) == {"anthropic", "openai"} and s["llm"]["local_key"] is None
     assert "chalk" not in s
     assert client.get("/api/status", headers={"X-Forwarded-For": "203.0.113.7, 10.0.0.1"}).json()["client"] == "203.0.113.7"
+
+
+def test_added_trial_review_is_kept_in_the_state_dir(cold_review, key_ok, monkeypatch, tmp_path):
+    """With a state dir (a volume), a review made on request is written there, beside the image's own cache."""
+    client, api, calls = cold_review
+    state = tmp_path / "state" / "reviews"
+    monkeypatch.setattr(api, "REVIEW_STATE", state)
+    assert client.get(f"/api/review/{COLD}", headers=KEY).status_code == 200
+    assert (state / f"{COLD}_auto.json").exists() and not (api.REVIEW_CACHE / f"{COLD}_auto.json").exists()
+    api._mem.pop(f"{COLD}_auto", None)  # as after a restart: only the files remain
+    assert client.get(f"/api/review/{COLD}").status_code == 200 and calls == [COLD]
+    assert COLD in api.review_ncts()

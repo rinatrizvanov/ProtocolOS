@@ -19,12 +19,13 @@ from .comparators import direction
 from .guidance import load_passages
 from .review import run_review
 from .settings import flag
-from .sources import DATA, fetch_protocol, protocol_cached
+from .sources import DATA, STATE, fetch_protocol, protocol_cached
 from .verifier import default_resolvers, verify
 
 ROOT = Path(__file__).resolve().parent.parent
 WEB = ROOT / "web"
-REVIEW_CACHE = DATA / "reviews"
+REVIEW_CACHE = DATA / "reviews"  # the image's reviews (preloaded trials); every review when there is no state dir
+REVIEW_STATE = STATE / "reviews" if STATE != DATA else None
 EVAL_RESULTS = DATA / "eval_results.json"
 
 app = FastAPI(
@@ -60,11 +61,11 @@ _review_refs: tuple[tuple, set] = ((), set())
 def review_ncts() -> set[str]:
     """NCT ids of the targets and comparators of the reviews cached on this server (re-read when the files change)."""
     global _review_refs
-    files = tuple(sorted((p.name, p.stat().st_mtime) for p in REVIEW_CACHE.glob("*.json"))) if REVIEW_CACHE.exists() else ()
+    files = tuple(sorted((str(p), p.stat().st_mtime) for d in (REVIEW_CACHE, REVIEW_STATE) if d and d.exists() for p in d.glob("*.json")))
     if files != _review_refs[0]:
         ncts = set()
         for name, _ in files:
-            r = json.loads((REVIEW_CACHE / name).read_text())
+            r = json.loads(Path(name).read_text())
             ncts.add(r["target"]["study"]["nct_id"])
             ncts.update(c["study"]["nct_id"] for c in r.get("comparators", []))
         _review_refs = (files, ncts)
@@ -85,6 +86,11 @@ def resolvers():
     return _resolvers
 
 
+def review_file(key: str) -> Path | None:
+    """The cached review file for `<NCT>_<as_of>`, in the image's cache or the state dir, or None."""
+    return next((d / f"{key}.json" for d in (REVIEW_CACHE, REVIEW_STATE) if d and (d / f"{key}.json").exists()), None)
+
+
 def get_review(nct: str, as_of: str = "auto", refresh: bool = False) -> dict:
     nct = nct.strip().upper()
     if not re.fullmatch(r"NCT\d{8}", nct):
@@ -96,11 +102,12 @@ def get_review(nct: str, as_of: str = "auto", refresh: bool = False) -> dict:
     key = f"{nct}_{as_of}"
     if not refresh and key in _mem:
         return _mem[key]
-    REVIEW_CACHE.mkdir(parents=True, exist_ok=True)
-    p = REVIEW_CACHE / f"{key}.json"
-    if p.exists() and not refresh:
+    p = review_file(key)
+    if p is not None and not refresh:
         r = json.loads(p.read_text())
     else:
+        p = (REVIEW_STATE or REVIEW_CACHE) / f"{key}.json"
+        p.parent.mkdir(parents=True, exist_ok=True)
         t0 = time.time()
         r = run_review(nct, as_of=None if as_of == "none" else as_of)
         r["compute_seconds"] = round(time.time() - t0, 2)

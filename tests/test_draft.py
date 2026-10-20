@@ -164,3 +164,14 @@ def test_public_cap_returns_429(monkeypatch, tmp_path):
     assert client.post("/api/draft", json={**a, "condition": "   "}).status_code == 422
     assert client.get("/api/draft/not-an-id").status_code == 400
     assert client.get("/api/draft/d-000000000000").status_code == 404
+
+
+def test_new_draft_is_kept_in_the_state_dir(monkeypatch, tmp_path):
+    """With a state dir, a new draft is written there; the image's drafts (presets) stay where they are."""
+    baked, state = tmp_path / "baked", tmp_path / "state"
+    monkeypatch.setattr(draft, "DRAFTS_DIR", baked)
+    monkeypatch.setattr(draft, "STATE_DRAFTS_DIR", state)
+    d = {"draft_id": "d-0123456789ab", "status": "ok", "criteria": [], "summary": {"drafted": 0}}
+    draft._write(d)
+    assert (state / "d-0123456789ab.json").exists() and not baked.exists()
+    assert draft.cached("d-0123456789ab")["summary"]["cached"] is True

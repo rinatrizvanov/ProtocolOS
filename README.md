@@ -18,7 +18,7 @@ ProtocolOS (formerly TrialLens) was built at HackHarvard 2026 for the Regeneron 
 | Engine API and OpenAPI page | https://protocolos-api-production.up.railway.app/docs |
 | Vanilla dashboard (served by the engine) | https://protocolos-api-production.up.railway.app |
 
-Four completed trials are preloaded and open at once. Anyone can also add another trial by its NCT number, draft criteria for a new idea, or ask for model-written answers in the Ask tab. Those need your own OpenAI or Anthropic API key (see [Your own model key](#your-own-model-key)); the server has no model key of its own. Decisions you record are kept per browser, and everything stored on the public server is lost when it is redeployed.
+Four completed trials are preloaded and open at once. Anyone can also add another trial by its NCT number, draft criteria for a new idea, or ask for model-written answers in the Ask tab. Those need your own OpenAI or Anthropic API key (see [Your own model key](#your-own-model-key)); the server has no model key of its own. Decisions you record are kept per browser. Trials you add, new drafts and decisions are stored on a volume, so they survive redeploys.
 
 ![Landing page with the two modes](docs/img/landing.png)
 

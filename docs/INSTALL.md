@@ -86,9 +86,10 @@ proxies `/api/*` to the Railway URL. Exact commands: [DEPLOY.md](DEPLOY.md).
   changes.
 - `PROTOCOLOS_PUBLIC=1` turns on the public-demo guard (`trialforge/demo_guard.py`): input validation, a 16 KB body
   limit, no `refresh=1`, the visitor's key for new work and model calls, and limits on new analyses.
-- Decisions recorded on the public demo are stored per browser session and are ephemeral: they are written inside
-  the container (`data/decisions/sessions/`) and are lost on a redeploy or restart. Trials a visitor adds are cached
-  there too and can be opened by anyone with the link. Do not enter confidential information.
+- Decisions recorded on the public demo are stored per browser session in the state directory
+  (`PROTOCOLOS_STATE_DIR`, a volume on the public deploy; without it `data/` inside the container, lost on a
+  redeploy). Trials a visitor adds are kept there too and can be opened by anyone with the link. Do not enter
+  confidential information.
 - Document text (protocol PDFs, web pages) is treated as data, never as instructions.
 - Dependency audit: `cd web-next && npm audit --omit=dev` reported `found 0 vulnerabilities` (exit 0) on
   2026-10-18. `npm ci` itself reports high-severity advisories; they are in development-only dependencies

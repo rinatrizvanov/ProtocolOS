@@ -9,9 +9,9 @@ import json
 import time
 from pathlib import Path
 
-from .sources import DATA
+from .sources import STATE
 
-DECISIONS = DATA / "decisions"
+DECISIONS = STATE / "decisions"
 DECISION_OPTIONS = {
     "accept": "Accept suggested review action",
     "reject": "Reject (keep criterion as written)",

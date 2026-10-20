@@ -65,6 +65,7 @@ The server never uses a model key of its own when `PROTOCOLOS_PUBLIC=1`: `ANTHRO
 | `PROTOCOLOS_NEW_PER_DAY` | new analyses and drafts per day for the whole server (default 25) |
 | `PROTOCOLOS_MODEL_PER_HOUR`, `PROTOCOLOS_CHECKS_PER_HOUR` | model requests and key checks per visitor per hour (defaults 30 and 20) |
 | `PROTOCOLOS_MIN_FREE_MB` | free disk below which new analyses stop (default 1024) |
+| `PROTOCOLOS_STATE_DIR` | `/app/state`, the mount path of the service's volume (section 8) |
 | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` | unset (ignored when public in any case) |
 
 Remove the variables of the hackathon setup if they are still set on the service: `PROTOCOLOS_ALLOW_MODEL`,
@@ -199,12 +200,22 @@ Against a deployed URL, `e2e_demo.py` and `e2e_review_next.py` skip their decisi
 behind (so do not pass `--strict`, which turns a skip into a failure); `e2e_demo.py` also checks that `refresh=1` is
 refused. `--write-decision` records a decision, which then stays on the server until a redeploy.
 
-## 8. Decisions and audit log
+## 8. What survives a redeploy
 
-Decisions are written to `data/decisions/` and investigation audit lines to `data/investigations/` inside the
-container, so a redeploy or restart loses them. To keep decisions across restarts, attach a Railway volume mounted
-at `/app/data/decisions`. Do not mount a volume at `/app/data`: it would hide the prewarmed caches baked into the
-image.
+With `PROTOCOLOS_STATE_DIR` set, everything visitors create is written under it: reviews of trials added on request
+(`reviews/`), new draft ideas (`drafts/`), reviewer decisions (`decisions/sessions/`) and the investigation audit log
+(`investigations/`). The public deploy mounts a Railway volume at `/app/state` and sets
+`PROTOCOLOS_STATE_DIR=/app/state`:
+
+```bash
+railway volume add --mount-path /app/state
+railway variable set PROTOCOLOS_STATE_DIR=/app/state --skip-deploys
+```
+
+The image's own caches (the preloaded reviews and draft presets, documents) stay under `/app/data`, and reads check
+both places. Do not mount a volume at `/app/data`: it would hide those caches. Without the setting every file stays
+under `data/` inside the container and is lost on a redeploy or restart. Document caches fetched for added trials
+are not kept; a protocol page of an added trial is downloaded again the first time it is opened after a redeploy.
 
 ## 9. Rollback
 
