@@ -118,15 +118,17 @@ def pdf_pages(path: Path) -> list[str]:
 
 
 def _cached_pdf(source_id: str, url: str, path: Path, refresh: bool = False) -> PdfDoc:
+    txt_path = path.with_suffix(".pages.json")
+    # The engine reads only the page text, so a deploy may ship the .pages.json without the PDF (docs/DEPLOY.md).
+    if not refresh and txt_path.exists():
+        return PdfDoc(source_id, url, path, json.loads(txt_path.read_text()))
     path.parent.mkdir(parents=True, exist_ok=True)
     if refresh or not path.exists():
         content = _get(url)
         if not content.startswith(b"%PDF"):
             raise ValueError(f"{url} did not return a PDF")
         path.write_bytes(content)
-    txt_path = path.with_suffix(".pages.json")
-    if refresh or not txt_path.exists():
-        txt_path.write_text(json.dumps(pdf_pages(path)))
+    txt_path.write_text(json.dumps(pdf_pages(path)))
     return PdfDoc(source_id, url, path, json.loads(txt_path.read_text()))
 
 

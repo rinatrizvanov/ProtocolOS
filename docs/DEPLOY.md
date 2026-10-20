@@ -129,16 +129,18 @@ cp -RL data/reviews data/fda data/nhanes data/registry data/search_cache "$STAGE
 IDS=$(.venv/bin/python -c "from trialforge import draft; print(' '.join(draft.draft_id_for(p['idea'], p.get('exclude') or ()) for p in draft.PRESETS.values()))")
 for id in $IDS; do cp -L "data/drafts/$id.json" "$STAGE/data/drafts/"; done
 for n in $(cat data/reviews/*.json "$STAGE"/data/drafts/*.json | grep -oE 'NCT[0-9]{8}' | sort -u); do
-  cp -L data/protocols/"$n"__* "$STAGE/data/protocols/" 2>/dev/null || true
+  cp -L data/protocols/"$n"__*.pages.json "$STAGE/data/protocols/" 2>/dev/null || true   # page text only, no PDFs
 done
-du -sh "$STAGE"                                         # tens of MB, not hundreds
+du -sh "$STAGE"                                         # about 20 MB
 ```
 
 If no caches are available at all, a plain `railway up` from a checkout still works: the build and startup
 prewarms fetch from the network, with retries.
 
-On a slow uplink the upload can time out (on 2026-10-19, at about 0.3 MB/s, the CLI gave up after about 30 seconds; the protocol
-PDFs are most of the size). Then leave `data/protocols/` out of the staging copy: the build prewarm fetches the
+The engine reads only each protocol's extracted page text (`*.pages.json`), so the staging copy ships that and no
+PDFs; the protocol PDFs, a tenth of the size, were most of the upload. Visitors open the PDFs at their official
+ClinicalTrials.gov address. On a slow uplink the CLI's upload can still time out (on 2026-10-19, at about 0.3 MB/s,
+it gave up after about 30 seconds); then leave `data/protocols/` out entirely: the build prewarm fetches the
 preloaded trials' protocols, and a comparator's protocol is downloaded the first time one of its pages is opened.
 
 ### Deploy

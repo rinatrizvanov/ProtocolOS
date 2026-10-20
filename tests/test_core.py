@@ -105,3 +105,16 @@ def test_regimen_rationale_alone_never_retains():
     for rv in r["reviews"]:
         if rv["criterion"]["category"] == "lab":
             assert rv["classification"] != "Evidence supports retaining", rv["criterion"]["id"]
+
+
+def test_page_text_without_the_pdf_needs_no_download(tmp_path, monkeypatch):
+    """A deploy may ship only the extracted page text; the engine then never fetches the PDF again."""
+    import json
+
+    from trialforge import sources
+
+    pdf = tmp_path / "NCT00000001__Prot_000.pdf"
+    pdf.with_suffix(".pages.json").write_text(json.dumps(["page one", "page two"]))
+    monkeypatch.setattr(sources, "_get", lambda url, timeout=90.0: pytest.fail("PDF downloaded"))
+    doc = sources._cached_pdf("protocol:NCT00000001", "https://example.org/p.pdf", pdf)
+    assert doc.pages == ["page one", "page two"] and not pdf.exists()
