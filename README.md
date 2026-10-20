@@ -4,6 +4,8 @@
 
 Eligibility criteria (lab thresholds, ECOG performance status, washout periods, and conditions such as brain metastases, HIV, hepatitis B and C, prior cancers and QTc) decide who may join a cancer trial, and they are often carried forward from earlier protocols without a written reason. FDA's final guidance of July 2026 says lab restrictions from earlier trials "should not be carried forward automatically", but restrictions also exist for real reasons: safety, enrichment, interpretability. **ProtocolOS** shows a protocol team the likely rationale behind each criterion of an oncology protocol, compares it with earlier comparable trials and FDA guidance, checks every suggested change with a deterministic verifier, and can draft criteria for a new trial idea from verified precedents only. The team decides; ProtocolOS prepares the rationale and a review packet.
 
+![A short tour: landing, the Rationale, Compare, Ask and Redraft tabs, trial search, a condition criterion, a draft and an uploaded protocol](docs/img/demo.gif)
+
 ProtocolOS (formerly TrialLens) was built at HackHarvard 2026 for the Regeneron "Reinvent Clinical Trials & Drug Development" and Chalk "Best Data-Driven Agent Built on Chalk" tracks. The Chalk integration was removed after the event; the submitted state is the git tag `hackharvard-submission`. It is a research prototype, not clinical, regulatory or safety advice.
 
 ## Try it
@@ -27,7 +29,7 @@ Four completed trials are preloaded and open at once. Anyone can also add anothe
 Pick a trial (EMPOWER-Lung 3, NCT03409614, is the worked example) and a criterion. ProtocolOS reads the thresholds from the protocol PDF posted on ClinicalTrials.gov, because the registry text rarely states them.
 
 - **Rationale:** badges for the likely rationale (safety, efficacy enrichment, precedent; labelled as inferred), an arm line saying which arms list the agents behind a safety rationale, the verbatim protocol line and page, and the scoring behind the classification: *Review recommended*, *Rationale supports keeping* or *Insufficient evidence*.
-- **Compare:** earlier comparable trials and the threshold each used, with regimen coverage.
+- **Compare:** earlier comparable trials and the threshold each used, with regimen coverage. Condition criteria (brain metastases, HIV, hepatitis B and C) are policies rather than numbers; Compare lists each trial's policy in words and how it compares.
 - **Ask:** fixed questions ("Why was it flagged?", "What contradicts it?") answered from the evidence graph; every statement is checked against its source.
 - **Redraft:** type a new limit and an optional rationale note; the deterministic checks re-run as you type.
 - **Decide:** a decision with a structured reason (safety concern, regulatory requirement, efficacy enrichment, prior trial data, operational reason, other), then export the review packet as Markdown (the API also serves it as printable HTML and JSON).
@@ -36,6 +38,12 @@ Pick a trial (EMPOWER-Lung 3, NCT03409614, is the worked example) and a criterio
 
 ![Redraft workspace checking a lower hemoglobin limit](docs/img/redraft.png)
 
+To open another trial, type its NCT number or a plain description in *Find or add a trial*; the search runs over a local semantic index of 1,412 phase 3 oncology trials with a posted protocol. Analysing a trial the server has not cached needs your own model key.
+
+![Trial search by description](docs/img/search.png)
+
+![KEYNOTE-189 HIV criterion: excluded, while FDA's July 2020 guidance says patients with CD4+ counts of at least 350 cells/uL should generally be eligible](docs/img/conditions.png)
+
 **Worked example: EMPOWER-Lung 3 hemoglobin ≥10 g/dL.** Every arm contains chemotherapy, and the protocol (p. 51) notes higher grade 3-4 anemia with pemetrexed, so a plausible safety rationale exists. A toxicity rationale supports having *a* threshold, not this exact number. Among comparable trials that started earlier, CheckMate 9LA, CheckMate 227 and KEYNOTE-042 (NCT02220894) used ≥9 g/dL and eNERGY used >10 g/dL. ProtocolOS classifies the criterion *Review recommended*: a question for the protocol team, not a finding that the threshold is wrong. The posted protocol is Amendment 5, so nothing here shows how the threshold evolved, and no outcome data identify which threshold is best.
 
 ## Mode B: Create criteria from an idea
@@ -43,6 +51,10 @@ Pick a trial (EMPOWER-Lung 3, NCT03409614, is the worked example) and a criterio
 Enter a condition, drugs, setting, phase and a design date. ProtocolOS finds comparable trials that started before that date and drafts lab, ECOG, washout and condition criteria. Each proposed value is copied from a precedent whose threshold the verifier matched to its protocol page; without one, the criterion is *Insufficient evidence* and gets no value. The same review engine then critiques the draft, and a before/after compares it with a protocol as written. The preset "EMPOWER-Lung 3 at design time" drafts from that trial's own idea at its start date, with its own protocol excluded.
 
 ![Draft criteria for the EMPOWER-Lung 3 design-time preset](docs/img/draft.png)
+
+*Compare with your protocol* on the draft page takes a protocol PDF that is already public, reads its criteria with the same extractor and reviews each against the draft's precedents. The file is deleted after its text is read; the extracted criteria are kept for that browser only.
+
+![An uploaded EMPOWER-Lung 3 protocol compared with the drafted criteria](docs/img/upload.png)
 
 ## How it works
 

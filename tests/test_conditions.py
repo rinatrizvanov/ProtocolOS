@@ -114,6 +114,23 @@ def client(monkeypatch):
     return TestClient(importlib.reload(api).app)
 
 
+def test_review_cached_before_the_schema_stamp_is_computed_again(monkeypatch, tmp_path):
+    import json
+
+    import trialforge.api as api
+
+    monkeypatch.setattr(api, "REVIEW_CACHE", tmp_path)
+    monkeypatch.setattr(api, "REVIEW_STATE", None)
+    monkeypatch.setattr(api, "_mem", {})
+    (tmp_path / "NCT00000001_auto.json").write_text(json.dumps({"reviews": [], "stale": True}))
+    calls = []
+    monkeypatch.setattr(api, "run_review", lambda nct, as_of=None: calls.append(nct) or {"reviews": []})
+    r = api.get_review("NCT00000001")
+    assert calls == ["NCT00000001"] and r["review_schema"] == api.REVIEW_SCHEMA and "stale" not in r
+    monkeypatch.setattr(api, "_mem", {})
+    assert api.get_review("NCT00000001")["review_schema"] == api.REVIEW_SCHEMA and calls == ["NCT00000001"]  # read, not recomputed
+
+
 @pytest.mark.skipif(not EL3_CACHED, reason="needs the cached EL3 review")
 def test_policy_criteria_refuse_numeric_what_if_and_redraft(client):
     r = client.post("/api/whatif", json={"nct": "NCT03409614", "criterion_id": "brain_mets", "value": 2})
