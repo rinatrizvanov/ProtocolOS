@@ -118,3 +118,25 @@ def test_page_text_without_the_pdf_needs_no_download(tmp_path, monkeypatch):
     monkeypatch.setattr(sources, "_get", lambda url, timeout=90.0: pytest.fail("PDF downloaded"))
     doc = sources._cached_pdf("protocol:NCT00000001", "https://example.org/p.pdf", pdf)
     assert doc.pages == ["page one", "page two"] and not pdf.exists()
+
+
+def test_letter_spaced_ocr_text_is_reextracted(monkeypatch, tmp_path):
+    """OCR text layers that come out as split letters are re-read with pdfminer; ordinary text is left alone."""
+    from trialforge import sources
+
+    spaced = ["Pr ot o c ol D S 8 2 0 1 -A -U 3 0 3 V ersi o n 5 . 0 Inc l u si o n Cri t eri a " * 40]
+    normal = ["Inclusion Criteria: absolute neutrophil count of at least 1.5 x 10^9/L and hemoglobin of 9 g/dL " * 40]
+    assert sources._letter_spaced(spaced) and not sources._letter_spaced(normal)
+    monkeypatch.setattr(sources.shutil, "which", lambda name: None)  # the pypdf branch, stubbed below
+    monkeypatch.setattr(sources, "_pdfminer_pages", lambda path: ["Protocol DS8201-A-U303"])
+
+    class Reader:
+        def __init__(self, path, text):
+            self.pages = [type("P", (), {"extract_text": lambda self, t=text: t})()]
+
+    import pypdf
+
+    monkeypatch.setattr(pypdf, "PdfReader", lambda path: Reader(path, spaced[0]))
+    assert sources.pdf_pages(tmp_path / "x.pdf") == ["Protocol DS8201-A-U303"]
+    monkeypatch.setattr(pypdf, "PdfReader", lambda path: Reader(path, normal[0]))
+    assert sources.pdf_pages(tmp_path / "x.pdf") == [normal[0]]

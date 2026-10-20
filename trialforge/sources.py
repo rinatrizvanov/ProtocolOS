@@ -9,6 +9,7 @@ official URLs below.
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 from dataclasses import dataclass
@@ -106,8 +107,24 @@ def decode_symbol_font(text: str) -> str:
     return _SYMBOL_RE.sub(lambda m: SYMBOL_FONT[m.group(0)], text)
 
 
+def _letter_spaced(pages: list[str]) -> bool:
+    """True for an OCR text layer that pdftotext and pypdf split into letters ("Pr ot o c ol D S 8 2 0 1"): most
+    tokens are one or two letters long (about 0.9 of them in such protocols, at most 0.32 in the others cached)."""
+    tokens = re.findall(r"[A-Za-z]+", "\n".join(pages))
+    return len(tokens) > 200 and sum(len(t) <= 2 for t in tokens) / len(tokens) > 0.6
+
+
+def _pdfminer_pages(path: Path) -> list[str]:
+    """Per-page text with pdfminer's character-gap word joining; a wide word margin rejoins the split letters."""
+    from pdfminer.high_level import extract_pages
+    from pdfminer.layout import LAParams, LTTextContainer
+
+    return ["".join(el.get_text() for el in page if isinstance(el, LTTextContainer))
+            for page in extract_pages(str(path), laparams=LAParams(word_margin=1.0, char_margin=2.0))]
+
+
 def pdf_pages(path: Path) -> list[str]:
-    """Extract text per page. Prefer poppler's pdftotext (layout-preserving)."""
+    """Extract text per page. Prefer poppler's pdftotext (layout-preserving); letter-spaced OCR text goes to pdfminer."""
     if shutil.which("pdftotext"):
         out = subprocess.run(
             ["pdftotext", "-layout", str(path), "-"], capture_output=True, text=True, check=True
@@ -119,6 +136,8 @@ def pdf_pages(path: Path) -> list[str]:
         from pypdf import PdfReader
 
         pages = [p.extract_text() or "" for p in PdfReader(str(path)).pages]
+    if _letter_spaced(pages):
+        pages = _pdfminer_pages(path)
     return [decode_symbol_font(p) for p in pages]
 
 

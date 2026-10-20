@@ -12,6 +12,7 @@ dependencies = [
     "pandas>=3.0.6",
     "pyarrow>=26.0.0",
     "pypdf>=6.21.1",
+    "pdfminer.six>=20260107",
     "pydantic>=2.14.1",
     "anthropic>=1.15.0",
 ]
