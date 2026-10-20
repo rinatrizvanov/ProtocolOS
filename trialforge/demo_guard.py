@@ -40,6 +40,8 @@ PATH_NCT = re.compile(r"^/api/(?:review|packet|graph|rationale|protocol|trials/s
 REVIEW_GET = re.compile(r"^/api/(?:review|packet|graph|rationale)/([^/]*)$")
 MODEL_ONLY = {"/api/parse", "/api/critique"}
 REVIEW_POST = {"/api/whatif", "/api/verify", "/api/parse", "/api/critique", "/api/investigate"}
+# A protocol upload is a PDF body of up to upload.MAX_BYTES; its route checks size, session and key itself.
+UPLOAD_POST = re.compile(r"^/api/draft/d-[0-9a-f]{12}/protocol$")
 FALSY = {"", "0", "false", "no", "off"}
 
 
@@ -99,6 +101,8 @@ class DemoGuard:
         if m and method == "GET":
             review_key = (m.group(1), q.get("as_of", "auto"))
 
+        if method == "POST" and UPLOAD_POST.match(path):
+            return await self.app(scope, receive, send)
         if method in ("POST", "PUT", "PATCH"):
             try:
                 length = int(req.headers.get("content-length") or 0)

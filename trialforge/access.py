@@ -36,6 +36,7 @@ HOUR, DAY = 3600.0, 86400.0
 KEY_NEEDED = {
     "new_trial": "Analysing a trial that is not preloaded needs your own OpenAI or Anthropic API key.",
     "new_draft": "Drafting criteria for a new idea needs your own OpenAI or Anthropic API key.",
+    "upload": "Reviewing your own protocol needs your own OpenAI or Anthropic API key.",
     "model": "Model answers use your own OpenAI or Anthropic API key.",
 }
 

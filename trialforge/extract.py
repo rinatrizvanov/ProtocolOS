@@ -576,6 +576,16 @@ def study_summary(study: dict) -> dict:
     }
 
 
+def protocol_criteria(doc: PdfDoc) -> tuple[list[Criterion], list[Line], str]:
+    """Criteria from a protocol's eligibility section: (criteria, the lines read, how the section was found)."""
+    lines = eligibility_lines(doc)
+    if lines:
+        return (extract_labs(lines, doc.url, "protocol") + extract_ecog(lines, doc.url, "protocol")
+                + extract_washouts(lines, doc.url, "protocol"), lines, "section headings")
+    lines = anchor_lines(doc)
+    return extract_labs(lines, doc.url, "protocol"), lines, "lab-block anchor (eligibility headings not extractable from PDF text)"
+
+
 def analyze_trial(nct_id: str, doc_override: PdfDoc | None = None) -> dict:
     """doc_override lets the evaluation run the identical pipeline on a modified protocol text."""
     study = fetch_study(nct_id)
@@ -588,14 +598,7 @@ def analyze_trial(nct_id: str, doc_override: PdfDoc | None = None) -> dict:
             summary["protocol_error"] = str(e)
     criteria: list[Criterion] = []
     if doc:
-        lines = eligibility_lines(doc)
-        summary["region_method"] = "section headings"
-        if lines:
-            criteria = extract_labs(lines, doc.url, "protocol") + extract_ecog(lines, doc.url, "protocol") + extract_washouts(lines, doc.url, "protocol")
-        else:
-            lines = anchor_lines(doc)
-            summary["region_method"] = "lab-block anchor (eligibility headings not extractable from PDF text)"
-            criteria = extract_labs(lines, doc.url, "protocol")
+        criteria, lines, summary["region_method"] = protocol_criteria(doc)
         summary["eligibility_pages"] = sorted({l.page for l in lines})
         summary["criteria_source"] = "protocol PDF"
         # supplement criteria the PDF region did not yield from the registry text

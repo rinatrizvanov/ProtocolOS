@@ -1,4 +1,5 @@
-"""Authoring-mode HTTP routes: vocabulary, presets, POST /api/draft, GET /api/draft/{id}.
+"""Authoring-mode HTTP routes: vocabulary, presets, POST /api/draft, GET /api/draft/{id}, and your own protocol
+against a draft: POST /api/draft/{id}/protocol (the PDF as the request body), GET /api/draft/{id}/protocol/{upload_id}.
 
 Installed by the routes_graph module loop; install(app) is idempotent (app.state flag).
 """
@@ -12,7 +13,7 @@ from fastapi import HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from . import access, draft, druglib, settings
+from . import access, draft, druglib, settings, upload
 
 CAP_DETAIL = "new ideas limit reached on the public demo; presets still work"
 _AS_OF_RE = re.compile(r"^\d{4}-\d{2}(-\d{2})?$")
@@ -88,6 +89,29 @@ def post_draft(idea: dict, headers=None, client: str = "unknown") -> dict:
     return d
 
 
+def _cached_draft(draft_id: str) -> dict:
+    if not draft.DRAFT_ID_RE.match(draft_id):
+        raise HTTPException(status_code=400, detail="draft_id must match ^d-[0-9a-f]{12}$")
+    d = draft.cached(draft_id)
+    if d is None:
+        raise HTTPException(status_code=404, detail="draft not cached")
+    return d
+
+
+def _session(request: Request) -> str:
+    session = access.session_of(request.headers)
+    if session is None:
+        raise access.AccessDenied(400, "session_required", "Uploaded protocols are kept per browser; reload the page and try again.")
+    return session
+
+
+def review_upload(data: bytes, name: str, d: dict, session: str) -> dict:
+    try:
+        return upload.save(session, upload.review_protocol(upload.read_pdf(data, name), name, d))
+    except upload.UploadError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
 def install(app) -> None:
     if getattr(app.state, "routes_draft_installed", False):
         return
@@ -107,9 +131,29 @@ def install(app) -> None:
 
     @app.get("/api/draft/{draft_id}")
     def _get(draft_id: str):
-        if not draft.DRAFT_ID_RE.match(draft_id):
-            raise HTTPException(status_code=400, detail="draft_id must match ^d-[0-9a-f]{12}$")
-        d = draft.cached(draft_id)
-        if d is None:
-            raise HTTPException(status_code=404, detail="draft not cached")
-        return d
+        return _cached_draft(draft_id)
+
+    @app.post("/api/draft/{draft_id}/protocol")
+    async def _upload(draft_id: str, request: Request):
+        d = _cached_draft(draft_id)
+        session = _session(request)
+        try:
+            length = int(request.headers.get("content-length") or 0)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="invalid Content-Length")
+        if length > upload.MAX_BYTES:
+            raise HTTPException(status_code=413, detail=f"The PDF is larger than {upload.MAX_BYTES // (1024 * 1024)} MB.")
+        if settings.flag("PUBLIC"):
+            await run_in_threadpool(access.allow_new_work, request.headers, access.client_of(request.headers, request.client), "upload")
+        data = await request.body()
+        if len(data) > upload.MAX_BYTES:
+            raise HTTPException(status_code=413, detail=f"The PDF is larger than {upload.MAX_BYTES // (1024 * 1024)} MB.")
+        name = re.sub(r"[^\w .()-]", "", request.headers.get("x-file-name", "protocol.pdf"))[:120] or "protocol.pdf"
+        return await run_in_threadpool(review_upload, data, name, d, session)
+
+    @app.get("/api/draft/{draft_id}/protocol/{upload_id}")
+    def _get_upload(draft_id: str, upload_id: str, request: Request):
+        found = upload.load(_session(request), upload_id)
+        if found is None or found["draft_id"] != draft_id:
+            raise HTTPException(status_code=404, detail="no such upload in this browser")
+        return found
