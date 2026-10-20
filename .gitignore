@@ -23,6 +23,7 @@ data/registry/
 data/search_cache/
 data/reviews/
 data/decisions/
+data/uploads/
 
 # Regeneron hackathon starter kit (not ours to redistribute)
 Regeneron starter-kit/

@@ -277,7 +277,7 @@ function AddTrial() {
             data-testid="add-trial-input"
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            placeholder="NCT02775435, or: squamous NSCLC pembrolizumab"
+            placeholder="NCT number or a description"
             aria-invalid={invalid || undefined}
             aria-describedby={invalid ? "add-trial-error" : undefined}
             className={`min-h-11 w-full min-w-0 rounded-md border ${invalid ? "border-verdict" : fieldBorder} bg-paper px-2 py-1 text-ink tabular-nums sm:min-h-9 sm:w-72 ${focusRing}`}

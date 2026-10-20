@@ -18,6 +18,7 @@ docs/
 
 # per-deployment state
 data/decisions/
+data/uploads/
 data/investigations/
 
 # tooling and local state

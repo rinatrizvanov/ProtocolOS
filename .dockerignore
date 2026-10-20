@@ -16,6 +16,7 @@ __pycache__/
 .zed/
 .helix/
 data/decisions/
+data/uploads/
 data/investigations/
 
 # not ours to redistribute
