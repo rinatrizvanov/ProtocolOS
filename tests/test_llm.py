@@ -169,3 +169,41 @@ def test_anthropic_refusal_is_a_model_error(monkeypatch):
     monkeypatch.setattr(anthropic, "Anthropic", Client)
     with pytest.raises(llm.ModelError, match="declined"):
         llm.json_call("s", "u", llm.LLM_VERIFY_SCHEMA, llm.Credentials("anthropic", "claude-opus-5-5", "sk-ant-" + "z" * 30))
+
+
+def _keywords(schema) -> set:
+    if isinstance(schema, dict):
+        return set(schema) | {k for v in schema.values() for k in _keywords(v)}
+    if isinstance(schema, list):
+        return {k for v in schema for k in _keywords(v)}
+    return set()
+
+
+def test_anthropic_gets_schemas_without_unsupported_keywords(monkeypatch):
+    """The investigator's maxItems and the parser's nullable fields reach Anthropic in a form its structured outputs accept."""
+    import anthropic
+
+    from trialforge import investigate
+
+    sent = []
+
+    class Messages:
+        def create(self, **kw):
+            sent.append(kw["output_config"]["format"]["schema"])
+            return _Resp("end_turn", "{}")
+
+    class Client:
+        def __init__(self, **kw):
+            self.messages = Messages()
+            self.beta = type("B", (), {"messages": Messages()})()
+
+    monkeypatch.setattr(anthropic, "Anthropic", Client)
+    creds = llm.Credentials("anthropic", "claude-opus-5-5", "sk-ant-" + "z" * 30)
+    for schema in (investigate.MODEL_SCHEMA, llm.PARSE_SCHEMA, llm.CRITIC_SCHEMA, llm.LLM_VERIFY_SCHEMA):
+        with pytest.raises(llm.ModelError):  # "{}" lacks the required keys; only the request matters here
+            llm.json_call("s", "u", schema, creds)
+    assert len(sent) == 4
+    for schema in sent:
+        assert not _keywords(schema) & {"maxItems", "minLength", "maxLength", "minimum", "maximum"}
+    statements = sent[0]["properties"]["statements"]
+    assert "maxItems" not in statements and "maxItems: 10" in statements["description"]  # kept as guidance for the model

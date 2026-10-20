@@ -228,7 +228,8 @@ def _anthropic_call(system: str, user: str, schema: dict, creds: Credentials, ef
         max_tokens=MAX_TOKENS,
         system=system,
         messages=[{"role": "user", "content": user}],
-        output_config={"effort": effort, "format": {"type": "json_schema", "schema": schema}},
+        # The API rejects keywords such as maxItems; the SDK's transform moves them into descriptions, as .parse() does.
+        output_config={"effort": effort, "format": {"type": "json_schema", "schema": anthropic.transform_schema(schema)}},
     )
     try:
         if creds.model in FALLBACK_MODELS:
@@ -251,7 +252,9 @@ def _anthropic_call(system: str, user: str, schema: dict, creds: Credentials, ef
     text = next((b.text for b in resp.content if b.type == "text"), None)
     if text is None:
         raise ModelError("model returned no text")
-    return json.loads(text)
+    obj = json.loads(text)
+    _check_schema(obj, schema)
+    return obj
 
 
 def _openai_call(system: str, user: str, schema: dict, creds: Credentials) -> dict:
@@ -348,18 +351,23 @@ structured JSON form. Do not add claims the text does not make. Use criterion id
 Claims: drug_property (drug, property in myelosuppressive|hepatic|renal|immunotherapy, value boolean),
 comparator_threshold (nct_id, value, unit), fda_quote (guidance in lab|ps|washout, quote), protocol_quote (quote)."""
 
+def _nullable(*types: str) -> dict:
+    # anyOf rather than a type list: Anthropic structured outputs (anthropic.transform_schema) take one type per schema.
+    return {"anyOf": [{"type": t} for t in types] + [{"type": "null"}]}
+
+
 PARSE_SCHEMA = {
     "type": "object",
     "properties": {
         "criterion_id": {"type": "string"},
         "action": {"type": "string", "enum": ["relax", "remove", "tighten", "retain", "add_provision", "justify_in_protocol"]},
-        "proposed_value": {"type": ["number", "null"]},
-        "proposed_unit": {"type": ["string", "null"]},
+        "proposed_value": _nullable("number"),
+        "proposed_unit": _nullable("string"),
         "claims": {"type": "array", "items": {"type": "object", "properties": {
             "type": {"type": "string", "enum": ["drug_property", "comparator_threshold", "fda_quote", "protocol_quote"]},
-            "drug": {"type": ["string", "null"]}, "property": {"type": ["string", "null"]}, "value": {},
-            "nct_id": {"type": ["string", "null"]}, "unit": {"type": ["string", "null"]},
-            "guidance": {"type": ["string", "null"]}, "quote": {"type": ["string", "null"]}},
+            "drug": _nullable("string"), "property": _nullable("string"), "value": _nullable("boolean", "number", "string"),
+            "nct_id": _nullable("string"), "unit": _nullable("string"),
+            "guidance": _nullable("string"), "quote": _nullable("string")},
             "required": ["type"], "additionalProperties": False}},
         "text": {"type": "string"},
     },
