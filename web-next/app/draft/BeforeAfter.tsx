@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import type { Draft, DraftCriterion } from "@/lib/contracts";
+import { DISPLAY_CLASSIFICATION, type Draft, type DraftCriterion } from "@/lib/contracts";
 import { ConditionMark, draftHasCondition, fmt, hasCondition, Icon, sourceOf, valueText, WARN } from "./DraftCard";
 
 // Only the fields this table reads from GET /api/review/{nct}.
@@ -14,11 +14,19 @@ interface ReviewCriterion {
   unit: string | null;
   value_norm: number | null;
   unit_norm: string | null;
-  source?: { page: number; url: string; text: string };
+  source?: { page: number | null; url: string; text: string };
 }
-interface ReviewLite {
-  target: { study: { nct_id: string; acronym: string | null; title: string; start_date: string } };
-  reviews: { criterion: ReviewCriterion }[];
+export interface ReviewLite {
+  target: { study: { nct_id: string; acronym: string | null; title: string; start_date: string | null } };
+  // An uploaded protocol's review (trialforge/upload.py) also carries the classification of each written value.
+  reviews: { criterion: ReviewCriterion; classification?: keyof typeof DISPLAY_CLASSIFICATION }[];
+}
+
+// A protocol supplied by the page instead of fetched by NCT: the visitor's uploaded protocol.
+export interface WrittenProtocol {
+  review: ReviewLite;
+  title: string;
+  note: string;
 }
 
 interface Row {
@@ -26,7 +34,9 @@ interface Row {
   // null when no criterion for this analyte was extracted from the protocol.
   written: string | null;
   writtenCondition: boolean;
-  source: { href: string; page: number } | null;
+  // href is null for an uploaded protocol, which has no public address.
+  source: { href: string | null; page: number } | null;
+  writtenReview: string | null;
   drafted: string | null;
   differs: boolean;
   // Set when the two sides state different measures (renal: GFR vs creatinine clearance); such a row is not compared.
@@ -43,11 +53,12 @@ const sameValue = (a: { operator: string; value: number; unit: string }, op: str
 const renalMeasure = (text: string) => (/GFR|glomerular/i.test(text) ? "GFR" : "CrCl");
 const prettyUnit = (u: string) => u.replace(/m2$/, "m²");
 
-function toRow(c: DraftCriterion, w: ReviewCriterion | undefined, total: number): Row {
+function toRow(c: DraftCriterion, w: ReviewCriterion | undefined, total: number, writtenReview: string | null = null): Row {
   const n = c.distribution.reduce((sum, d) => sum + d.count, 0);
   const drafted = c.proposed ? valueText(c.proposed.operator, c.proposed.value, c.proposed.unit, c.label) : null;
-  if (!w) return { c, written: null, writtenCondition: false, source: null, drafted, differs: true, measure: null, used: { k: 0, n, total } };
-  const source = w.source ? { href: `${w.source.url}#page=${w.source.page}`, page: w.source.page } : null;
+  if (!w) return { c, written: null, writtenCondition: false, source: null, writtenReview, drafted, differs: true, measure: null, used: { k: 0, n, total } };
+  const page = w.source?.page;
+  const source = page ? { href: w.source?.url ? `${w.source.url}#page=${page}` : null, page } : null;
   const writtenCondition = hasCondition(w.source?.text);
   if (c.analyte === "renal" && c.proposed) {
     const mw = renalMeasure(`${w.label} ${w.source?.text ?? ""}`);
@@ -55,7 +66,7 @@ function toRow(c: DraftCriterion, w: ReviewCriterion | undefined, total: number)
     if (mw !== md) {
       // The normalized unit drops "/1.73m2"; a different measure is shown as written, with its own label and unit.
       const written = w.value !== null ? `${w.operator}${fmt(w.value)} ${prettyUnit(w.unit ?? "")}`.trim() : `${w.operator}?`;
-      return { c, written, writtenCondition, source, drafted, differs: false, measure: { written: mw, drafted: md, writtenLabel: w.label }, used: { k: 0, n, total } };
+      return { c, written, writtenCondition, source, writtenReview, drafted, differs: false, measure: { written: mw, drafted: md, writtenLabel: w.label }, used: { k: 0, n, total } };
     }
   }
   const wv = w.value_norm ?? w.value;
@@ -67,6 +78,7 @@ function toRow(c: DraftCriterion, w: ReviewCriterion | undefined, total: number)
     written: wv !== null ? valueText(w.operator, wv, wu, c.label) : `${w.operator}?`,
     writtenCondition,
     source,
+    writtenReview,
     drafted,
     differs: c.proposed !== null && !same,
     measure: null,
@@ -117,7 +129,7 @@ function Written({ row }: { row: Row }) {
     <span className="inline-flex flex-col items-start gap-0.5">
       <span className="inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5">
         {row.written}
-        {row.source ? (
+        {row.source?.href ? (
           <a
             href={row.source.href}
             target="_blank"
@@ -126,10 +138,13 @@ function Written({ row }: { row: Row }) {
           >
             p.{row.source.page}
           </a>
+        ) : row.source ? (
+          <span className="text-xs text-muted">p.{row.source.page}</span>
         ) : null}
         {row.writtenCondition ? <ConditionMark short /> : null}
       </span>
       {row.measure ? <span className="text-xs text-muted">{row.measure.writtenLabel}</span> : null}
+      {row.writtenReview ? <span data-role="written-review" className="text-xs text-muted">Review: {row.writtenReview}</span> : null}
     </span>
   );
 }
@@ -153,18 +168,22 @@ const rowTone = (row: Row) => (row.measure || row.differs ? "bg-look-soft/50" : 
 // question for the team, not an error in either.
 export default function BeforeAfter({
   draft,
-  nct,
+  nct = null,
+  written: supplied = null,
   presetTitle = null,
   onOpen,
 }: {
   draft: Draft;
-  nct: string;
+  nct?: string | null;
+  written?: WrittenProtocol | null;
   presetTitle?: string | null;
   onOpen?: (id: string) => void;
 }) {
-  const [review, setReview] = useState<ReviewLite | null>(null);
+  const [fetched, setReview] = useState<ReviewLite | null>(null);
   const [failed, setFailed] = useState(false);
+  const review = supplied?.review ?? fetched;
   useEffect(() => {
+    if (!nct) return;
     let live = true;
     fetch(`/api/review/${encodeURIComponent(nct)}`)
       .then((r) => (r.ok ? (r.json() as Promise<ReviewLite>) : Promise.reject(new Error(String(r.status)))))
@@ -178,11 +197,18 @@ export default function BeforeAfter({
   if (failed) return <p className="text-sm text-muted">Could not load the protocol for the comparison.</p>;
   if (!review) return <p className="text-sm text-muted">Loading the protocol as written…</p>;
 
-  const written = new Map(review.reviews.map((r) => [r.criterion.analyte ?? r.criterion.id, r.criterion]));
+  const written = new Map(review.reviews.map((r) => [r.criterion.analyte ?? r.criterion.id, r]));
+  const reviewOf = (key: string) => {
+    const cls = written.get(key)?.classification;
+    return cls ? DISPLAY_CLASSIFICATION[cls] : null;
+  };
   // A drafted criterion the protocol does not state is a difference too; an insufficient one with nothing written is not shown.
   const rows = draft.criteria
     .filter((c) => written.has(c.analyte) || c.proposed !== null)
-    .map((c) => toRow(c, written.get(c.analyte), draft.precedents.length));
+    .map((c) => toRow(c, written.get(c.analyte)?.criterion, draft.precedents.length, reviewOf(c.analyte)));
+  // Criteria the protocol states that the draft has no counterpart for (an uploaded protocol may state more).
+  const drafted = new Set(draft.criteria.map((c) => c.analyte));
+  const extra = supplied ? review.reviews.filter((r) => !drafted.has(r.criterion.analyte ?? r.criterion.id)) : [];
   const comparable = rows.filter((r) => !r.measure).length;
   const differing = rows.filter((r) => r.differs).length;
   const otherMeasure = rows.length - comparable;
@@ -192,10 +218,19 @@ export default function BeforeAfter({
     <section data-testid="before-after" aria-labelledby="before-after-title" className="flex flex-col gap-2">
       <div>
         <h2 id="before-after-title" className="text-lg font-semibold text-ink">
-          Drafted at design time vs. the protocol as written ({study.acronym ?? study.nct_id})
+          {supplied
+            ? `Drafted from precedents vs. your protocol (${supplied.title})`
+            : `Drafted at design time vs. the protocol as written (${study.acronym ?? study.nct_id})`}
         </h2>
         <p className="text-sm text-muted">
-          {presetTitle ? `${presetTitle}. ` : ""}Registry title: {study.title}, started {study.start_date}. The draft uses only trials that started earlier.
+          {supplied ? (
+            supplied.note
+          ) : (
+            <>
+              {presetTitle ? `${presetTitle}. ` : ""}Registry title: {study.title}, started {study.start_date}. The draft uses only trials that started
+              earlier.
+            </>
+          )}{" "}
           Differences are review questions, not mistakes.
         </p>
       </div>
@@ -271,6 +306,25 @@ export default function BeforeAfter({
           </li>
         ))}
       </ul>
+
+      {extra.length ? (
+        <div data-testid="before-after-extra" className="flex flex-col gap-1 text-sm">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-muted">Also in your protocol, with no drafted counterpart</h3>
+          <ul className="flex flex-col gap-1">
+            {extra.map((r) => (
+              <li key={r.criterion.id} className="flex flex-wrap gap-x-2 text-[13px] text-ink">
+                <span className="font-medium">{r.criterion.label}</span>
+                <span className="tabular-nums">
+                  {r.criterion.operator}
+                  {r.criterion.value_norm !== null ? fmt(r.criterion.value_norm) : "?"} {r.criterion.unit_norm ?? ""}
+                </span>
+                {r.criterion.source?.page ? <span className="text-muted">p.{r.criterion.source.page}</span> : null}
+                {r.classification ? <span className="text-muted">Review: {DISPLAY_CLASSIFICATION[r.classification]}</span> : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
     </section>
   );
 }

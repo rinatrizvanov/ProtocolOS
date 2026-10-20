@@ -6,6 +6,7 @@ import { keyHeaders, sessionId, useModelKey } from "@/lib/visitor";
 import { AppHeader } from "../components/AppHeader";
 import { ModelKeyForm } from "../components/ModelKeyForm";
 import BeforeAfter from "./BeforeAfter";
+import ProtocolUpload from "./ProtocolUpload";
 import DraftCard, {
   BUCKET,
   BUCKET_ORDER,
@@ -457,6 +458,8 @@ function Result({ draft, presetId, presetTitle }: { draft: Draft; presetId: stri
       </div>
 
       {presetId === "el3-design-time" ? <BeforeAfter draft={draft} nct={EL3_NCT} presetTitle={presetTitle} onOpen={openOne} /> : null}
+
+      {draft.precedents.length ? <ProtocolUpload draft={draft} onOpen={openOne} /> : null}
 
       {draft.precedents.length ? (
         <details className="rounded-lg border border-line bg-white px-3 py-2 text-sm">
