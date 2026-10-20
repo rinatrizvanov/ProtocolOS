@@ -180,6 +180,10 @@ TrialPathfinder (Liu et al., *Nature* 2021) emulates trials on patient-level ele
 
 Third-party data is downloaded from its official source at runtime, is not redistributed in this repository and is not covered by this license; it remains under its own terms. No patient data is used.
 
+## Team
+
+Timur Rizvanov ([@TiRizvanov](https://github.com/TiRizvanov)) and Rinat Rizvanov ([@rinatrizvanov](https://github.com/rinatrizvanov)), who hosts this repository.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
