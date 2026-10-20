@@ -378,3 +378,4 @@ def test_status_names_providers_not_a_server_key(public):
     s = client.get("/api/status").json()
     assert set(s["llm"]["providers"]) == {"anthropic", "openai"} and s["llm"]["local_key"] is None
     assert "chalk" not in s
+    assert client.get("/api/status", headers={"X-Forwarded-For": "203.0.113.7, 10.0.0.1"}).json()["client"] == "203.0.113.7"

@@ -74,7 +74,7 @@ FastAPI serves interactive documentation at `/docs` and the schema at `/openapi.
 | `GET /api/nhanes?analyte=&threshold=` | NHANES share below a threshold |
 | `POST /api/parse`, `POST /api/critique` | Model components (401 `key_required` without the visitor's key) |
 | `POST /api/model/check` | Check the visitor's key (headers below) with the provider's models lookup |
-| `GET /api/status`, `GET /api/evals`, `GET /api/planted`, `GET /api/build` | Component status, committed evaluation results, running build |
+| `GET /api/status`, `GET /api/evals`, `GET /api/planted`, `GET /api/build` | Component status (with the client address the limits see for the caller), committed evaluation results, running build |
 
 ## 4. Review result (`run_review`)
 

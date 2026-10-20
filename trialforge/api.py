@@ -111,10 +111,12 @@ def get_review(nct: str, as_of: str = "auto", refresh: bool = False) -> dict:
 
 
 @app.get("/api/status")
-def status():
+def status(request: Request):
     passages, failed = load_passages()
     local = llm.from_env()
     return {
+        # The address the per-visitor limits use for this caller (access.client_of): shows whether a proxy passed it on.
+        "client": access.client_of(request.headers, request.client),
         "llm": {
             "mode": "your own key",
             "providers": {k: {"name": v["name"], "models": list(v["models"])} for k, v in llm.PROVIDERS.items()},
