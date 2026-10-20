@@ -14,7 +14,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import access, llm, nhanes
+from . import access, llm, nhanes, trial_index
 from .comparators import direction
 from .guidance import load_passages
 from .review import run_review
@@ -131,6 +131,7 @@ def status(request: Request):
         },
         "public": flag("PUBLIC"),
         "fda_passages": {"verified": len(passages), "failed": failed},
+        "trial_index": trial_index.status(),
         "evals": EVAL_RESULTS.exists(),
     }
 

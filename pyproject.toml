@@ -13,6 +13,7 @@ dependencies = [
     "pyarrow>=26.0.0",
     "pypdf>=6.21.1",
     "pdfminer.six>=20260107",
+    "fastembed>=0.9.0",
     "pydantic>=2.14.1",
     "anthropic>=1.15.0",
 ]

@@ -12,7 +12,17 @@ ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
 COPY pyproject.toml ./
 RUN pip install $(python -c "import tomllib;d=tomllib.load(open('pyproject.toml','rb'));print(' '.join(d['project']['dependencies']+d['dependency-groups']['dev']))")
 
+# Local embedding model for the semantic trial index (trialforge/trial_index.py: MODEL); a failed download leaves
+# trial search off, nothing else.
+ENV PROTOCOLOS_EMBED_CACHE=/app/.cache/fastembed
+RUN python -c "from fastembed import TextEmbedding; TextEmbedding('BAAI/bge-small-en-v1.5', cache_dir='/app/.cache/fastembed')" \
+ || echo "embedding model not downloaded; trial search stays off"
+
 COPY . .
+
+# The deploy ships data/index/ (docs/DEPLOY.md); a checkout without it builds the index here (a few minutes).
+RUN [ -f data/index/vectors.npy ] || python -m trialforge.trial_index build \
+ || echo "trial index not built; trial search stays off"
 
 # Build-time prewarm of the demo trials, plus the authoring-mode draft presets when trialforge.draft is
 # present. Exits 0 without network or on HTTP 403; the startup prewarm below then fills whatever is

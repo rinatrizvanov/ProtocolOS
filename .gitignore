@@ -33,3 +33,6 @@ data/investigations/
 
 # authoring-mode draft cache (rebuilt on demand)
 data/drafts/
+
+# semantic trial index built from ClinicalTrials.gov records (python -m trialforge.trial_index build)
+data/index/

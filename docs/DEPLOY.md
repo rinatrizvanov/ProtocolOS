@@ -126,7 +126,7 @@ STAGE=/tmp/protocolos-deploy
 rm -rf "$STAGE" && mkdir -p "$STAGE"
 git archive HEAD | tar -x -C "$STAGE"
 mkdir -p "$STAGE/data/drafts" "$STAGE/data/protocols" "$STAGE/data/registry"
-cp -RL data/reviews data/fda data/nhanes "$STAGE/data/"
+cp -RL data/reviews data/fda data/nhanes data/index "$STAGE/data/"   # data/index: python -m trialforge.trial_index build
 IDS=$(.venv/bin/python -c "from trialforge import draft; print(' '.join(draft.draft_id_for(p['idea'], p.get('exclude') or ()) for p in draft.PRESETS.values()))")
 for id in $IDS; do cp -L "data/drafts/$id.json" "$STAGE/data/drafts/"; done
 # registry records and page text (no PDFs) of the trials the shipped reviews and presets cite
