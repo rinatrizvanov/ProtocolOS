@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type KeyboardEvent } from "react";
-import { CACHED_TRIALS, EngineError, NCT, getReview, needsKey, type Classification, type Criterion, type Review, type Selection } from "@/lib/api";
+import { CACHED_TRIALS, EngineError, NCT, getReview, needsKey, searchTrials, type Classification, type Criterion, type Review, type Selection, type TrialHit } from "@/lib/api";
 import { DISPLAY_CLASSIFICATION } from "@/lib/contracts";
 import { useApi } from "@/lib/useApi";
 import { addedTrials, rememberTrial, useModelKey } from "@/lib/visitor";
@@ -232,52 +232,110 @@ function TrialPicker({ nct, tab }: { nct: string; tab: TabId }) {
   );
 }
 
-// Any ClinicalTrials.gov id; the review loads it, and asks for the visitor's key when the server has not analysed it yet.
+type Search = { status: "idle" } | { status: "busy" } | { status: "error"; message: string } | { status: "ready"; hits: TrialHit[] };
+
+// An NCT id opens that trial (the review asks for the visitor's key when the server has not analysed it yet); any
+// other text is a plain-language search of the phase 3 oncology trials with a posted protocol.
 function AddTrial() {
   const [value, setValue] = useState("");
   const [invalid, setInvalid] = useState(false);
+  const [search, setSearch] = useState<Search>({ status: "idle" });
+  function open(id: string) {
+    setValue("");
+    setSearch({ status: "idle" });
+    navigate({ nct: id, criterionId: null, tab: "rationale" });
+  }
   function submit(e: FormEvent) {
     e.preventDefault();
-    const id = value.trim().toUpperCase();
-    if (!/^NCT\d{8}$/.test(id)) {
+    const text = value.trim();
+    const id = text.toUpperCase();
+    if (/^NCT\d{8}$/.test(id)) {
+      setInvalid(false);
+      open(id);
+      return;
+    }
+    if (/^NCT\d*$/.test(id) || text.length < 3) {
       setInvalid(true);
       return;
     }
     setInvalid(false);
-    setValue("");
-    navigate({ nct: id, criterionId: null, tab: "rationale" });
+    setSearch({ status: "busy" });
+    searchTrials(text).then(
+      (r) => setSearch({ status: "ready", hits: r.results }),
+      (err: unknown) => setSearch({ status: "error", message: err instanceof EngineError ? (err.detail ?? err.message) : String(err) }),
+    );
   }
   return (
-    <form onSubmit={submit} className="flex min-w-0 flex-col gap-1 text-sm text-muted sm:flex-row sm:items-center sm:gap-2" aria-label="Add a trial">
-      <label htmlFor="add-trial" className="shrink-0">
-        Add a trial
-      </label>
-      <div className="flex min-w-0 gap-2">
-        <input
-          id="add-trial"
-          data-testid="add-trial-input"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          placeholder="NCT number, e.g. NCT02775435"
-          aria-invalid={invalid || undefined}
-          aria-describedby={invalid ? "add-trial-error" : undefined}
-          className={`min-h-11 w-full min-w-0 rounded-md border ${invalid ? "border-verdict" : fieldBorder} bg-paper px-2 py-1 text-ink tabular-nums sm:min-h-9 sm:w-60 ${focusRing}`}
-        />
-        <button
-          type="submit"
-          data-testid="add-trial-submit"
-          disabled={!value.trim()}
-          className={`min-h-11 shrink-0 rounded-md border border-ink px-3 py-1 text-ink transition-opacity duration-150 disabled:opacity-40 sm:min-h-9 ${focusRing}`}
-        >
-          Analyse
+    <div className="flex min-w-0 flex-col gap-2 lg:items-end">
+      <form onSubmit={submit} className="flex min-w-0 flex-col gap-1 text-sm text-muted sm:flex-row sm:items-center sm:gap-2" aria-label="Find or add a trial">
+        <label htmlFor="add-trial" className="shrink-0">
+          Find or add a trial
+        </label>
+        <div className="flex min-w-0 gap-2">
+          <input
+            id="add-trial"
+            data-testid="add-trial-input"
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            placeholder="NCT02775435, or: squamous NSCLC pembrolizumab"
+            aria-invalid={invalid || undefined}
+            aria-describedby={invalid ? "add-trial-error" : undefined}
+            className={`min-h-11 w-full min-w-0 rounded-md border ${invalid ? "border-verdict" : fieldBorder} bg-paper px-2 py-1 text-ink tabular-nums sm:min-h-9 sm:w-72 ${focusRing}`}
+          />
+          <button
+            type="submit"
+            data-testid="add-trial-submit"
+            disabled={!value.trim()}
+            className={`min-h-11 shrink-0 rounded-md border border-ink px-3 py-1 text-ink transition-opacity duration-150 disabled:opacity-40 sm:min-h-9 ${focusRing}`}
+          >
+            {/^nct\d{8}$/i.test(value.trim()) ? "Analyse" : "Search"}
+          </button>
+        </div>
+        {invalid ? (
+          <p id="add-trial-error" role="alert" className="text-xs text-verdict">
+            Expected an NCT id with 8 digits, or at least 3 characters to search.
+          </p>
+        ) : null}
+      </form>
+      <TrialHits search={search} onOpen={open} onHide={() => setSearch({ status: "idle" })} />
+    </div>
+  );
+}
+
+function TrialHits({ search, onOpen, onHide }: { search: Search; onOpen: (id: string) => void; onHide: () => void }) {
+  if (search.status === "idle") return null;
+  if (search.status === "busy") return <p className="text-sm text-muted">Searching…</p>;
+  if (search.status === "error") return <p role="alert" className="text-sm text-verdict">Search failed: {search.message}</p>;
+  if (!search.hits.length) return <p className="text-sm text-muted">No similar trial with a posted protocol.</p>;
+  return (
+    <ul data-testid="trial-hits" aria-label="Similar trials" className="flex w-full min-w-0 flex-col gap-1 sm:w-[32rem]">
+      {search.hits.map((h) => (
+        <li key={h.nct_id}>
+          <button
+            type="button"
+            data-testid="trial-hit"
+            onClick={() => onOpen(h.nct_id)}
+            className={`flex w-full min-w-0 flex-col items-start gap-0.5 rounded-md border border-line bg-white/70 px-3 py-2 text-left hover:border-ink ${focusRing}`}
+          >
+            <span className="w-full truncate text-sm font-medium text-ink">
+              {h.acronym ? `${h.acronym}: ` : ""}
+              {h.title}
+            </span>
+            <span className="text-xs tabular-nums text-muted">
+              {h.nct_id}
+              {h.start_date ? ` · started ${h.start_date}` : ""} ·{" "}
+              {isPreloaded(h.nct_id) || h.analysed ? <span className="text-support">opens now</span> : "analysis needs your key"}
+            </span>
+          </button>
+        </li>
+      ))}
+      <li className="flex items-start justify-between gap-3 text-xs text-muted">
+        <span>Nearest by meaning in the semantic index of phase 3 oncology trials with a posted protocol; nearness is not comparability.</span>
+        <button type="button" data-testid="trial-hits-hide" onClick={onHide} className={`shrink-0 rounded px-1 text-ink underline underline-offset-2 ${focusRing}`}>
+          Hide results
         </button>
-      </div>
-      {invalid ? (
-        <p id="add-trial-error" role="alert" className="text-xs text-verdict">
-          Expected a ClinicalTrials.gov id: NCT and 8 digits.
-        </p>
-      ) : null}
-    </form>
+      </li>
+    </ul>
   );
 }
 

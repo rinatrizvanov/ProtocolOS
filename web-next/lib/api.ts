@@ -334,6 +334,21 @@ export const getProtocolPage = (nct: string, page: number) =>
 export const saveDecision = (nct: string, criterionId: string, decision: DecisionKey, reason: string, reviewer: string) =>
   post<Record<string, DecisionRecord>>("/api/decision", { nct, criterion_id: criterionId, decision, reason, reviewer });
 
+// A trial from the semantic index (trialforge/trial_index.py); `analysed`: this server holds its review, so it opens without a key.
+export interface TrialHit {
+  nct_id: string;
+  title: string;
+  acronym: string | null;
+  conditions: string[];
+  phases: string[];
+  start_date: string | null;
+  score: number;
+  analysed: boolean;
+}
+
+export const searchTrials = (q: string, k = 8) =>
+  request<{ query: string; results: TrialHit[] }>(`/api/trials/search?q=${encodeURIComponent(q)}&k=${k}`);
+
 export const getPacket = (nct: string) => request<Packet>(`/api/packet/${encodeURIComponent(nct)}`);
 // A plain link cannot send headers, so the export link names the session in the query.
 export const packetExportUrl = (nct: string) => `/api/packet/${encodeURIComponent(nct)}?format=md&session=${sessionId()}`;
