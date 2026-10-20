@@ -13,6 +13,9 @@
 # the Next.js app deploys separately (Vercel)
 web-next/
 
+# documentation (screenshots, deck) is not read at runtime
+docs/
+
 # per-deployment state
 data/decisions/
 data/investigations/

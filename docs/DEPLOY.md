@@ -125,14 +125,16 @@ SHA=$(git rev-parse HEAD)
 STAGE=/tmp/protocolos-deploy
 rm -rf "$STAGE" && mkdir -p "$STAGE"
 git archive HEAD | tar -x -C "$STAGE"
-mkdir -p "$STAGE/data/drafts" "$STAGE/data/protocols"
-cp -RL data/reviews data/fda data/nhanes data/registry data/search_cache "$STAGE/data/"
+mkdir -p "$STAGE/data/drafts" "$STAGE/data/protocols" "$STAGE/data/registry"
+cp -RL data/reviews data/fda data/nhanes "$STAGE/data/"
 IDS=$(.venv/bin/python -c "from trialforge import draft; print(' '.join(draft.draft_id_for(p['idea'], p.get('exclude') or ()) for p in draft.PRESETS.values()))")
 for id in $IDS; do cp -L "data/drafts/$id.json" "$STAGE/data/drafts/"; done
+# registry records and page text (no PDFs) of the trials the shipped reviews and presets cite
 for n in $(cat data/reviews/*.json "$STAGE"/data/drafts/*.json | grep -oE 'NCT[0-9]{8}' | sort -u); do
-  cp -L data/protocols/"$n"__*.pages.json "$STAGE/data/protocols/" 2>/dev/null || true   # page text only, no PDFs
+  cp -L "data/registry/$n.json" "$STAGE/data/registry/" 2>/dev/null || true
+  cp -L data/protocols/"$n"__*.pages.json "$STAGE/data/protocols/" 2>/dev/null || true
 done
-du -sh "$STAGE"                                         # about 20 MB
+du -sh "$STAGE"                                         # about 25 MB; under 6 MB compressed without docs/
 ```
 
 If no caches are available at all, a plain `railway up` from a checkout still works: the build and startup
