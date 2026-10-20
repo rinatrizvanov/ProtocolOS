@@ -65,6 +65,10 @@ def _below(analyte: str, value: float) -> dict:
     return nhanes.below_threshold(analyte, value)
 
 
+class NotRedraftable(ValueError):
+    """The criterion is not a numeric limit the redraft parser reads; the message is shown to the reviewer."""
+
+
 def _flag(level: str, code: str, message: str, source: dict | None = None) -> dict:
     return {"level": level, "code": code, "message": message, "source": source}
 
@@ -73,6 +77,8 @@ def analyze(review: dict, criterion_id: str, text: str, rationale: str = "", res
     crit = next((c for c in review["target"]["criteria"] if c["id"] == criterion_id), None)
     if crit is None:
         raise KeyError(criterion_id)
+    if crit["category"] == "condition":
+        raise NotRedraftable(f"{crit['label']} is a condition criterion; redraft checks lab, ECOG and washout limits only")
     item = next((rv for rv in review["reviews"] if rv["criterion"]["id"] == criterion_id), {})
     src = crit.get("source") or {}
     conds = list(crit.get("conditions") or [])

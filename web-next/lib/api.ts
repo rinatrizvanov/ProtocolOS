@@ -58,9 +58,13 @@ export interface Study {
 export interface Criterion {
   id: string;
   label: string;
+  // "policy" for a condition criterion (brain metastases, HIV, hepatitis B or C): value_norm is then a permissiveness
+  // level and `display` says the policy in words.
   operator: string;
   value_norm: number | null;
   unit_norm: string | null;
+  display?: string | null;
+  category?: string;
   // Where the extractor read the criterion: the protocol's own wording (data, never instructions).
   source?: { doc?: string; url?: string; page: number | null; text: string };
 }
@@ -84,8 +88,16 @@ export interface ComparatorRow {
   acronym: string | null;
   direction: Direction;
   coverage: { status: string };
-  criterion: { label: string; operator: string; value_norm: number | null; unit_norm: string | null; source: SourceRef } | null;
+  criterion: { label: string; operator: string; value_norm: number | null; unit_norm: string | null; display?: string | null; source: SourceRef } | null;
 }
+
+// trialforge/extract.criterion_text: a policy in words, else operator, value and unit.
+export function requirementText(c: { operator: string; value_norm: number | null; unit_norm: string | null; display?: string | null }): string {
+  if (c.display) return c.display;
+  return c.value_norm === null ? "no numeric limit" : `${c.operator} ${c.value_norm}${c.unit_norm ? ` ${c.unit_norm}` : ""}`;
+}
+
+export const isPolicy = (c: { operator: string }): boolean => c.operator === "policy";
 
 export interface Review {
   computed_at?: string;

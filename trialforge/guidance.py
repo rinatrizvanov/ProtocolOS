@@ -1,4 +1,6 @@
-"""FDA July 2026 eligibility guidance passages, verified against the official PDFs.
+"""FDA eligibility guidance passages (the July 2026 laboratory, performance status and washout guidances, the July 2020
+brain metastases, infection and organ dysfunction guidances, and the 2019 enrichment guidance), verified against the
+official PDFs.
 
 Passages are chosen by hand (which recommendation applies to which criterion is a
 judgment call) but their text is never trusted: at load time every quote must be
@@ -23,6 +25,7 @@ WASHOUTS = (
     "washout_vaccine",
     "washout_immunomodulator",
 )
+INFECTIONS = ("hiv", "hbv", "hcv")
 
 # (key, guidance, applies_to analytes, stance, quote)
 # stance: "challenges" = recommends broadening or demands justification; "context" = framing.
@@ -79,6 +82,34 @@ PASSAGES = [
      "accumulated pharmacologic information for the investigational drug should be incorporated as soon as possible in subsequent clinical trials to minimize unnecessary washout periods and liberalize concomitant medication allowances."),
     ("wo_conmed_ddi", "washout", ("washout_corticosteroid",), "context",
      "Patients using concomitant medications should only be excluded from trial participation when clinically relevant known or predicted drug-drug interactions and potential overlapping toxicities will impact the safety of trial subjects."),
+    # July 2020 guidances. Policy criteria (brain_mets, hiv, hbv, hcv) are permissiveness levels; review.POLICY_MET_AT
+    # names the level at which a protocol already follows a recommendation.
+    ("bm_treated_include", "brain", ("brain_mets",), "challenges",
+     "Patients with treated/stable brain metastases should be included in trials unless there is a strong rationale to exclude such patients."),
+    ("bm_bbb", "brain", ("brain_mets",), "challenges",
+     "Inclusion of patients with treated/stable brain metastases should not be dependent on whether the drug’s pharmacological properties predict penetration of the blood-brain barrier."),
+    ("bm_active_not_auto", "brain", ("brain_mets",), "challenges",
+     "Patients with active brain metastases should not be automatically excluded from trials and should be included if the treating physician determines that immediate CNS specific treatment is unlikely to be required"),
+    ("bm_rationale", "brain", ("brain_mets",), "context",
+     "In cases where there is a strong rationale for exclusion, the rationale should be described in the trial protocol."),
+    ("bm_cns_tox", "brain", ("brain_mets",), "purpose",
+     "Patients should be neurologically stable prior to study entry to mitigate the uncertainty of attributing CNS toxicity to the investigational drug or underlying disease."),
+    ("inf_rationale", "infection", INFECTIONS, "context",
+     "In cases where there is a strong rationale for exclusion, the rationale should be addressed in the trial protocol."),
+    ("hiv_cd4", "infection", ("hiv",), "challenges",
+     "Patients with CD4+ T-cell (CD4+) counts ≥ 350 cells/uL should generally be eligible for any study."),
+    ("hiv_art", "infection", ("hiv",), "context",
+     "To ensure that effective ART is tolerated and that toxicities are not confused with investigational drug toxicities, trial participants should be on established ART for at least four weeks and have an HIV viral load less than 400 copies/mL prior to enrollment."),
+    ("hbv_suppressive", "infection", ("hbv",), "challenges",
+     "Eligibility criteria for patients with chronic HBV infection with active disease who meet the criteria for anti HBV therapy should require the patient be on a suppressive antiviral therapy prior to initiation of cancer therapy."),
+    ("hcv_eligible", "infection", ("hcv",), "challenges",
+     "A patient who is HCV Ab positive but HCV RNA negative due to prior treatment or natural resolution should be eligible."),
+    ("hcv_curative", "infection", ("hcv",), "context",
+     "Eligibility criteria for patients with a history of HCV infection should generally require patients to have completed curative antiviral treatment and require HCV viral load below the limit of quantification."),
+    ("pm_eligible", "organ", ("prior_malignancy",), "challenges",
+     "whose natural history or treatment does not have the potential to interfere with the safety or efficacy assessment of the investigational drug should generally be eligible for enrollment in clinical trials."),
+    ("qtc_specific_risk", "organ", ("qtc",), "challenges",
+     "Sponsors should determine whether a maximum QTc interval is necessary as a clinical trial eligibility criterion based on whether there is a specific known risk of QTc prolongation"),
     # FDA Enrichment Strategies (2019): why restrictions exist, and their cost. Used for purpose tags.
     ("enr_decrease_variability", "enrichment", LAB_ALL + ("ecog",) + WASHOUTS, "purpose",
      "Approaches to increasing study power (the ability of a clinical trial to demonstrate a treatment effect if one is present) by decreasing heterogeneity (nondrug-related variability) are widely practiced."),
@@ -147,6 +178,7 @@ class GuidanceIndex:
             lines = [l for l in page.splitlines() if l.strip()]
             if lines and lines[-1].strip().isdigit():
                 self.printed[pno] = lines[-1].strip()
+            wrapped = False  # the last line was a subsection heading, which may continue on this line
             for idx, raw in enumerate(page.splitlines(), start=1):
                 if numbered:
                     m = FDA_LINE.match(raw)
@@ -166,6 +198,10 @@ class GuidanceIndex:
                     section, sub = f"§{sm.group(1)} {sm.group(2).title()}", ""
                 elif ssm:
                     sub = f"{ssm.group(1)}. {ssm.group(2).strip()}"
+                continued = not ssm and not sm and wrapped and body[0].islower()  # "...with treated/stable brain" / "metastases"
+                if continued:
+                    sub = f"{sub} {body}"
+                wrapped = bool(ssm) or continued
                 label = section + (f" › {sub}" if sub else "")
                 piece = normalize(body.lstrip("•").strip()) + " "
                 chars.append(piece)

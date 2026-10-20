@@ -54,7 +54,7 @@ def review_protocol(doc: PdfDoc, name: str, d: dict) -> dict:
     t0 = time.monotonic()
     criteria, lines, method = protocol_criteria(doc)
     if not criteria:
-        raise UploadError("No eligibility criterion the extractor covers (lab limits, ECOG, washouts) was found in the PDF.")
+        raise UploadError("No eligibility criterion the extractor covers (lab limits, ECOG, washouts, conditions such as brain metastases or HIV) was found in the PDF.")
     precedents, _, _ = draft._load_precedents([p["nct_id"] for p in d["precedents"]], PRECEDENT_BUDGET_S, t0)
     if not precedents:
         raise UploadError("The draft's precedents could not be read on this server; draft the idea again.")

@@ -125,7 +125,7 @@ function CardStep({ draft, c, flagged }: { draft: Draft; c: DraftCriterion | und
   const caption = flagged
     ? `Each draft is critiqued like a finished protocol. ${c.label} gets "${verdict}" (support ${c.critique.scores.support}, challenge ${c.critique.scores.challenge}): a question for the team, not a mistake.`
     : top
-      ? `${top.count} of ${draft.precedents.length} precedents used ${top.operator}${top.value} ${top.unit}. The verifier re-checks the value against their protocol text before it is shown.`
+      ? `${top.count} of ${draft.precedents.length} precedents used ${top.display ?? `${top.operator}${top.value} ${top.unit}`}. The verifier re-checks the value against their protocol text before it is shown.`
       : "No precedent states a value, so no value is proposed.";
   return (
     <Step headline={headline} caption={caption}>

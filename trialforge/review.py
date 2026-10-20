@@ -11,11 +11,12 @@ Key guardrails:
 """
 from __future__ import annotations
 
+import calendar
 import re
 
 from . import druglib
 from .comparators import compare, load_comparators
-from .extract import analyze_trial
+from .extract import analyze_trial, criterion_text
 from .guidance import passages_for
 
 CLASS_REVIEW = "Review recommended"
@@ -32,6 +33,12 @@ TOPIC_TERMS = {
     "ecog": r"performance status",
     "washout_corticosteroid": r"corticosteroid|steroid",
     "washout_investigational": r"half-li[fv]e|washout",
+    "brain_mets": r"brain metast|CNS metast|central nervous system metast",
+    "hiv": r"\bHIV\b|human immunodeficiency virus",
+    "hbv": r"hepatitis B|\bHBV\b|HBsAg",
+    "hcv": r"hepatitis C|\bHCV\b",
+    "prior_malignancy": r"(?:second|prior|other|another) (?:primary )?malignanc",
+    "qtc": r"\bQTc|QT prolong",
 }
 
 # Evidence hierarchy shown to reviewers. Nothing in the deterministic engine is "model inference";
@@ -70,6 +77,14 @@ PURPOSE_RULES = {
     "washout_radiotherapy": [("Safety", None, "Avoids overlapping toxicity such as pneumonitis.")],
     "washout_surgery": [("Safety", None, "Allows recovery and wound healing before systemic therapy.")],
     "washout_vaccine": [("Safety", "immunotherapy", "Live vaccines with immunomodulating therapy may pose infection or immune risk.")],
+    "brain_mets": [("Safety", None, "Active brain metastases may need urgent CNS-directed treatment that would interrupt study therapy."),
+                   ("Statistical design (interpretability)", None, "Neurological symptoms from CNS disease can be hard to tell apart from drug toxicity.", "bm_cns_tox")],
+    "hiv": [("Safety", None, "Uncontrolled HIV raises infection risk, and antiretroviral drugs can interact with study drugs."),
+            ("Statistical design (interpretability)", None, "Antiretroviral toxicities could be attributed to the study drug.")],
+    "hbv": [("Safety", None, "Immunosuppressive or hepatotoxic therapy can reactivate hepatitis B.")],
+    "hcv": [("Safety", None, "Active hepatitis C can cause liver injury that is hard to separate from drug hepatotoxicity.")],
+    "prior_malignancy": [("Statistical design (interpretability)", None, "A second cancer can confound response, progression and survival assessment.")],
+    "qtc": [("Safety", None, "Limits arrhythmia risk when a study drug is known to prolong the QTc interval.")],
 }
 
 
@@ -101,14 +116,22 @@ def infer_purposes(crit: dict, drugs: set[str]) -> list[dict]:
     return out
 
 
-SPECIFIC_FDA = {"lab_duffy_broaden", "ps_include_ps2", "ps_later_phase", "wo_time_based_justified", "wo_parameters_not_time"}
+SPECIFIC_FDA = {"lab_duffy_broaden", "ps_include_ps2", "ps_later_phase", "wo_time_based_justified", "wo_parameters_not_time",
+                "bm_treated_include", "hiv_cd4", "hbv_suppressive", "hcv_eligible"}
+# The policy level (extract.BRAIN_POLICY and the like) at which a protocol already follows the recommendation: from
+# there on the passage is context, not a challenge.
+POLICY_MET_AT = {"bm_treated_include": 1, "bm_bbb": 1, "bm_active_not_auto": 2, "hiv_cd4": 1, "hbv_suppressive": 1, "hcv_eligible": 1}
+POLICY_SUGGESTIONS = {
+    "brain_mets": "Consider including patients with treated, stable brain metastases, or state the strong rationale for excluding them in the protocol (FDA brain metastases guidance, July 2020).",
+    "hiv": "Consider including patients with controlled HIV infection (for example CD4+ count of at least 350 cells/uL on established antiretroviral therapy), or state the rationale for excluding them in the protocol (FDA HIV, HBV and HCV guidance, July 2020).",
+    "hbv": "Consider including patients with chronic hepatitis B on suppressive antiviral therapy, or state the rationale for excluding them in the protocol (FDA HIV, HBV and HCV guidance, July 2020).",
+    "hcv": "Consider including patients who are HCV antibody-positive but HCV RNA-negative after treatment or natural resolution, or state the rationale for excluding them in the protocol (FDA HIV, HBV and HCV guidance, July 2020).",
+}
 TIME_BASED_PRIOR_THERAPY = {"washout_investigational", "washout_immunomodulator", "washout_radiotherapy"}
 
 
 def _fmt(c: dict) -> str:
-    v = c["value_norm"]
-    v = int(v) if v is not None and float(v).is_integer() else v
-    return f"{c['operator']}{v} {c['unit_norm']}"
+    return criterion_text(c)
 
 
 def protocol_rationale(doc, crit: dict, elig_pages: set[int]) -> list[dict]:
@@ -116,7 +139,7 @@ def protocol_rationale(doc, crit: dict, elig_pages: set[int]) -> list[dict]:
     pat = TOPIC_TERMS.get(crit["analyte"])
     if not doc or not pat:
         return []
-    val = crit["value_norm"]
+    val = crit["value_norm"] if crit["operator"] != "policy" else None  # a policy level is not a number the text would quote
     val_s = (str(int(val)) if float(val).is_integer() else str(val)) if val is not None else None
     hits = []
     for pno, page in enumerate(doc.pages, start=1):
@@ -137,7 +160,7 @@ def protocol_rationale(doc, crit: dict, elig_pages: set[int]) -> list[dict]:
             value_specific = False
             reasoning = bool(re.search(r"because|due to|risk|rationale|in order to|to ensure|higher|increase|toxicit|safety", sent, re.I))
             if val_s:
-                for vm in re.finditer(rf"(?<![\d.]){re.escape(val_s)}(?:\.0)?\s*(g/dL|×|x\s|mL|days?|weeks?)", sent):
+                for vm in re.finditer(rf"(?<![\d.]){re.escape(val_s)}(?:\.0)?\s*(g/dL|×|x\s|mL|days?|weeks?|years?|ms(?:ec)?\b)", sent):
                     window = sent[max(0, vm.start() - 90): vm.end() + 90]
                     if (re.search(pat, window, re.I) and reasoning
                             and re.search(r"eligib|inclusion|exclusion|entry|enrol|randomi|prior to (?:the )?(?:first|study)|threshold|required", window, re.I)):
@@ -206,6 +229,8 @@ def review_criterion(crit: dict, target: dict, comp_rows: list[dict], doc, elig_
         missing.append(f"No protocol text found that explains why {value_txt} was chosen (searched outside the eligibility section).")
 
     # 3. comparators
+    policy = crit["operator"] == "policy"
+    noun = "policy" if policy else "threshold"
     looser = [r for r in comp_rows if r["direction"] == "comparator looser"]
     same = [r for r in comp_rows if r["direction"] == "same"]
     stricter = [r for r in comp_rows if r["direction"] == "comparator stricter"]
@@ -218,14 +243,14 @@ def review_criterion(crit: dict, target: dict, comp_rows: list[dict], doc, elig_
             strength = "moderate" if cov["status"] in ("full", "n/a") else "weak"
             stance = "challenges"
             note = (f"{r['acronym'] or r['nct_id']} used {_fmt(r['criterion'])} (vs {value_txt}). "
-                    "A more permissive threshold in a comparable trial shows it was used, not that it was safe or that the stricter value is unnecessary.")
+                    f"A more permissive {noun} in a comparable trial shows it was used, not that it was safe or that the stricter {'policy' if policy else 'value'} is unnecessary.")
         elif r["direction"] == "comparator stricter":
             strength, stance = "weak", "supports"
-            note = f"{r['acronym'] or r['nct_id']} used a stricter {_fmt(r['criterion'])}."
+            note = f"{r['acronym'] or r['nct_id']} used a stricter {'policy: ' if policy else ''}{_fmt(r['criterion'])}."
         elif r["direction"] == "same":
             strength, stance = "weak", "context"
             op_note = " (same value, different operator)" if r["criterion"]["operator"] != crit["operator"] else ""
-            note = f"{r['acronym'] or r['nct_id']} used the same threshold{op_note}. Agreement may reflect template carry-forward (FDA lab guidance §II) rather than independent justification."
+            note = f"{r['acronym'] or r['nct_id']} used the same {noun}{op_note}. Agreement may reflect template carry-forward (FDA lab guidance §II) rather than independent justification."
         else:
             strength, stance = "none", "context"
             note = f"{r['acronym'] or r['nct_id']} uses a different measure ({r['criterion']['label']} {_fmt(r['criterion'])}); not directly comparable."
@@ -258,6 +283,8 @@ def review_criterion(crit: dict, target: dict, comp_rows: list[dict], doc, elig_
             stance = "context"  # conditional recommendation does not apply when hepatic agents are present
         if p.key in ("wo_time_based_justified", "wo_parameters_not_time") and analyte not in TIME_BASED_PRIOR_THERAPY:
             continue
+        if p.key in POLICY_MET_AT and crit["value_norm"] >= POLICY_MET_AT[p.key]:
+            stance = "context"  # the protocol already allows the patients this recommendation is about
         specific = p.key in SPECIFIC_FDA
         retro = bool(start) and start[:7] < d["issued"]
         ev.append({"kind": "fda", "stance": stance, "strength": "specific" if specific else "general", "key": p.key,
@@ -312,18 +339,20 @@ def _explain(cls, crit, looser, same, stricter, specific_fda, value_specific, su
              safety_note=None, fda_retrospective=False) -> str:
     # The trial's own rationale comes first; peer thresholds are precedent, not proof.
     parts = [safety_note] if safety_note else []
+    noun = "policy" if crit["operator"] == "policy" else "threshold"
     if value_specific:
         parts.append("the protocol contains a value-specific rationale")
     elif not safety_note:
         parts.append("no value-specific rationale was found in the protocol")
     if looser:
-        parts.append(f"{len(looser)} comparable trial(s) used a more permissive threshold (precedent, not evidence of safety)")
+        parts.append(f"{len(looser)} comparable trial(s) used a more permissive {noun} (precedent, not evidence of safety)")
     if same:
-        parts.append(f"{len(same)} used the same threshold")
+        parts.append(f"{len(same)} used the same {noun}")
     if stricter:
         parts.append(f"{len(stricter)} used a stricter one")
     if specific_fda:
-        parts.append("FDA's July 2026 guidance makes a specific recommendation for this criterion"
+        issued = max(e["issued"] for e in specific_fda)
+        parts.append(f"FDA's {calendar.month_name[int(issued[5:7])]} {issued[:4]} guidance makes a specific recommendation for this criterion"
                      + (" (issued after this trial started; applied retrospectively)" if fda_retrospective else ""))
     return f"{cls}: " + "; ".join(parts) + f". (support score {support}, challenge score {challenge})"
 
@@ -336,6 +365,12 @@ def suggest(cls: str, crit: dict, looser: list, specific_fda: list) -> dict:
     if a == "anc" and any(e["key"] == "lab_duffy_broaden" for e in specific_fda):
         return {"action": "add_provision",
                 "text": "Consider whether a Duffy-null-specific ANC provision is appropriate for this regimen (FDA lab guidance §III.B); requires clinical and pharmacology review of the myelosuppressive agents in the regimen."}
+    if crit["operator"] == "policy" and specific_fda:
+        return {"action": "justify_in_protocol", "text": POLICY_SUGGESTIONS[a]}
+    if crit["operator"] == "policy" and looser and cls == CLASS_REVIEW:
+        policies = sorted({_fmt(r["criterion"]) for r in looser})
+        return {"action": "justify_in_protocol",
+                "text": f"Document why the protocol's policy ({_fmt(crit)}) was chosen. Comparable trials used: {'; '.join(policies)}. That is precedent, not evidence that the broader policy is safe for this regimen."}
     if a == "ecog":
         return {"action": "justify_in_protocol",
                 "text": "State the rationale for excluding ECOG PS2 in the protocol, or consider a pre-specified exploratory PS2 cohort (FDA PS guidance §IV.A–B), contingent on earlier-phase safety data."}

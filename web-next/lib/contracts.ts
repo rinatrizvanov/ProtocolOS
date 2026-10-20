@@ -86,16 +86,17 @@ export interface PrecedentValue {
   url: string | null;
   coverage: "full" | "partial" | "none" | "n/a";
   eligible_for_default: boolean;
+  display?: string; // a condition policy in words (operator "policy")
 }
 export interface DraftCriterion {
   id: string;
   analyte: string;
-  category: "lab" | "performance_status" | "washout";
+  category: "lab" | "performance_status" | "washout" | "condition";
   label: string;
   section: "inclusion" | "exclusion";
   status: "drafted" | "insufficient_evidence";
-  proposed: { operator: string; value: number; unit: string; text: string; source_nct_id: string } | null;
-  distribution: { operator: string; value: number; unit: string; count: number; nct_ids: string[] }[];
+  proposed: { operator: string; value: number; unit: string; text: string; source_nct_id: string; display?: string } | null;
+  distribution: { operator: string; value: number; unit: string; count: number; nct_ids: string[]; display?: string }[];
   rationale: {
     categories: RationaleCategory[];
     precedents: PrecedentValue[];

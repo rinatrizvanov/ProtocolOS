@@ -24,8 +24,9 @@ from .sources import DATA, search_studies
 SEARCH_CACHE = DATA / "search_cache"
 
 # For ≥ criteria a higher value is stricter; for ≤ criteria a lower value is stricter.
-HIGHER_IS_STRICTER = {"hemoglobin", "anc", "platelets", "renal"}
-LOWER_IS_STRICTER = {"bilirubin", "ast_alt", "ecog"}
+HIGHER_IS_STRICTER = {"hemoglobin", "anc", "platelets", "renal", "prior_malignancy"}
+# condition policies (extract.BRAIN_POLICY and the like) are permissiveness levels: a lower level admits fewer patients
+LOWER_IS_STRICTER = {"bilirubin", "ast_alt", "ecog", "qtc", "brain_mets", "hiv", "hbv", "hcv"}
 # washouts: a longer required interval is stricter
 SIMILAR_TOLERANCE = 0.10  # values within 10% are reported as "similar", not stricter/looser
 SEMANTIC_K = 30  # nearest trials taken from the semantic index as extra candidates

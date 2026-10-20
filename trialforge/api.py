@@ -26,6 +26,9 @@ ROOT = Path(__file__).resolve().parent.parent
 WEB = ROOT / "web"
 REVIEW_CACHE = DATA / "reviews"  # the image's reviews (preloaded trials); every review when there is no state dir
 REVIEW_STATE = STATE / "reviews" if STATE != DATA else None
+# Bumped when a review gains content an older cached file lacks (2: condition criteria such as brain metastases and
+# HIV); a cached review with an older stamp is computed again on its next request.
+REVIEW_SCHEMA = 2
 EVAL_RESULTS = DATA / "eval_results.json"
 
 app = FastAPI(
@@ -91,6 +94,16 @@ def review_file(key: str) -> Path | None:
     return next((d / f"{key}.json" for d in (REVIEW_CACHE, REVIEW_STATE) if d and (d / f"{key}.json").exists()), None)
 
 
+def _current_review(key: str) -> dict | None:
+    """The first cached review for `key` with the current schema stamp, in the image's cache or the state dir."""
+    for d in (REVIEW_CACHE, REVIEW_STATE):
+        if d and (d / f"{key}.json").exists():
+            r = json.loads((d / f"{key}.json").read_text())
+            if r.get("review_schema") == REVIEW_SCHEMA:
+                return r
+    return None
+
+
 def get_review(nct: str, as_of: str = "auto", refresh: bool = False) -> dict:
     nct = nct.strip().upper()
     if not re.fullmatch(r"NCT\d{8}", nct):
@@ -102,16 +115,15 @@ def get_review(nct: str, as_of: str = "auto", refresh: bool = False) -> dict:
     key = f"{nct}_{as_of}"
     if not refresh and key in _mem:
         return _mem[key]
-    p = review_file(key)
-    if p is not None and not refresh:
-        r = json.loads(p.read_text())
-    else:
+    r = None if refresh else _current_review(key)
+    if r is None:
         p = (REVIEW_STATE or REVIEW_CACHE) / f"{key}.json"
         p.parent.mkdir(parents=True, exist_ok=True)
         t0 = time.time()
         r = run_review(nct, as_of=None if as_of == "none" else as_of)
         r["compute_seconds"] = round(time.time() - t0, 2)
         r["computed_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+        r["review_schema"] = REVIEW_SCHEMA
         p.write_text(json.dumps(r, default=list))
     _mem[key] = r
     return r
@@ -177,6 +189,8 @@ def whatif(req: WhatIf):
     crit = next((c for c in r["target"]["criteria"] if c["id"] == req.criterion_id), None)
     if not crit:
         raise HTTPException(404, "criterion not found")
+    if crit["operator"] == "policy":
+        raise HTTPException(400, f"{crit['label']} is a policy, not a numeric threshold; a what-if takes a number")
     rows = []
     for row in r["comparison"][req.criterion_id]:
         cc = row["criterion"]

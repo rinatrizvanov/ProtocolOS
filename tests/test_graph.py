@@ -48,7 +48,7 @@ def rule_sums(g, cid):
 
 def test_validation_empty_for_every_criterion_and_full_graph(el3):
     cids = [rv["criterion"]["id"] for rv in el3["reviews"]]
-    assert len(cids) == 11
+    assert len(cids) == 16  # 11 lab, ECOG and washout criteria, 5 condition criteria
     for cid in cids + [None]:
         g = build_graph(el3, {}, cid)
         assert g["validation"] == [] and validate_graph(g) == [], cid
@@ -222,7 +222,7 @@ def test_build_graph_is_read_only(monkeypatch):
     r = api.get_review(NCT)
     before = copy.deepcopy(r)
     g = build_graph(r, load_decisions(NCT))
-    assert g["validation"] == [] and len(by_type(g, "Criterion")) == 11
+    assert g["validation"] == [] and len(by_type(g, "Criterion")) == 16
     assert r == before
 
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { getReview, type Classification, type Criterion } from "@/lib/api";
+import { getReview, isPolicy, requirementText, type Classification } from "@/lib/api";
 import { DISPLAY_CLASSIFICATION } from "@/lib/contracts";
 import { useApi } from "@/lib/useApi";
 import { Failed, Frame, Pending } from "../components/Frame";
@@ -20,11 +20,6 @@ const LEGEND: { classification: Classification; swatch: string }[] = [
 const SWATCH = Object.fromEntries(LEGEND.map((l) => [l.classification, l.swatch])) as Record<Classification, string>;
 
 const ENROLLMENT_TYPE: Record<string, string> = { ACTUAL: "actual", ESTIMATED: "estimated", ANTICIPATED: "anticipated" };
-
-function threshold(c: Criterion): string {
-  if (c.value_norm === null) return "no numeric limit";
-  return `${c.operator} ${c.value_norm}${c.unit_norm ? ` ${c.unit_norm}` : ""}`;
-}
 
 export default function Screen1({ nct }: { nct: string }) {
   const state = useApi(() => getReview(nct));
@@ -70,7 +65,7 @@ export default function Screen1({ nct }: { nct: string }) {
               className={`rounded-lg border-l-4 p-4 ${TILE_CLASS[r.classification]}`}
             >
               <p className="text-base font-medium text-ink">{r.criterion.label}</p>
-              <p className="mt-1 text-2xl tabular-nums text-ink">{threshold(r.criterion)}</p>
+              <p className={`mt-1 text-ink ${isPolicy(r.criterion) ? "text-base" : "text-2xl tabular-nums"}`}>{requirementText(r.criterion)}</p>
               <p data-testid="tile-classification" className="mt-2 flex items-center gap-1.5 text-xs text-ink">
                 <span aria-hidden className={`h-2 w-2 shrink-0 rounded-full ${SWATCH[r.classification]}`} />
                 {DISPLAY_CLASSIFICATION[r.classification]}

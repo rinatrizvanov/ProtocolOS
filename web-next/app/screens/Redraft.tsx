@@ -102,6 +102,8 @@ export default function Redraft({ nct, criterionId, prefill, exampleNote }: Sele
   const inflight = useRef<AbortController | null>(null);
   const touched = useRef(false);
   const original = useRef<string>("");
+  // A condition criterion (brain metastases, HIV, hepatitis, prior malignancy, QTc) has no redraft parser yet.
+  const [condition, setCondition] = useState<string | null>(null);
 
   function run(nextText: string, nextRationale: string) {
     inflight.current?.abort();
@@ -148,6 +150,11 @@ export default function Redraft({ nct, criterionId, prefill, exampleNote }: Sele
       .then((review) => {
         if (cancelled) return;
         const c = review.reviews.find((r) => r.criterion.id === criterionId)?.criterion;
+        if (c?.category === "condition") {
+          setCondition(c.label);
+          setChecking(false);
+          return;
+        }
         const seed = c ? [c.label, c.operator, fmt(c.value_norm), c.unit_norm].filter(Boolean).join(" ") : criterionId;
         run(seed, "");
       })
@@ -195,6 +202,14 @@ export default function Redraft({ nct, criterionId, prefill, exampleNote }: Sele
   const pop = result?.population;
   const limit = result?.parsed ?? o;
   const dirty = touched.current && text !== original.current;
+
+  if (condition)
+    return (
+      <p data-testid="redraft-condition" className="max-w-2xl rounded-lg border border-line bg-white/70 p-4 text-sm text-ink">
+        {condition} is a condition criterion. The redraft checks read lab, ECOG and washout limits only; use the Rationale and
+        Compare tabs for this one, and record the team&apos;s decision in Decide.
+      </p>
+    );
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)]">

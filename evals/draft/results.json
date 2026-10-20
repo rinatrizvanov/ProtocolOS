@@ -2,9 +2,9 @@
   "summary": {
     "drafted_without_verified_precedent": 0,
     "overclaim_failures": 0,
-    "agreement": "22/31",
-    "agreement_k": 22,
-    "agreement_m": 31,
+    "agreement": "29/46",
+    "agreement_k": 29,
+    "agreement_m": 46,
     "trials": 4
   },
   "trials": [
@@ -30,12 +30,12 @@
       "draft_id": "d-bad3f3798427",
       "status": "ok",
       "summary": {
-        "drafted": 10,
+        "drafted": 15,
         "insufficient": 2,
         "precedents": 4,
         "candidates_checked": 4,
         "skipped": 0,
-        "elapsed_s": 1.85,
+        "elapsed_s": 1.76,
         "cached": false
       },
       "precedents": [
@@ -94,6 +94,46 @@
           "agrees": true
         },
         {
+          "id": "brain_mets",
+          "status": "drafted",
+          "drafted": "policy1.0 policy level",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "policy1.0 policy level",
+          "agrees": true
+        },
+        {
+          "id": "hbv",
+          "status": "drafted",
+          "drafted": "policy0.0 policy level",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "policy0.0 policy level",
+          "agrees": true
+        },
+        {
+          "id": "hcv",
+          "status": "drafted",
+          "drafted": "policy0.0 policy level",
+          "source_nct_id": "NCT02477826",
+          "trial_value": "policy1.0 policy level",
+          "agrees": false
+        },
+        {
+          "id": "hiv",
+          "status": "drafted",
+          "drafted": "policy0.0 policy level",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "policy0.0 policy level",
+          "agrees": true
+        },
+        {
+          "id": "prior_malignancy",
+          "status": "drafted",
+          "drafted": "\u22655.0 years",
+          "source_nct_id": "NCT02220894",
+          "trial_value": "\u22655.0 years",
+          "agrees": true
+        },
+        {
           "id": "washout_corticosteroid",
           "status": "drafted",
           "drafted": "\u226514.0 days",
@@ -135,7 +175,7 @@
         }
       ],
       "overclaim_hits": [],
-      "wall_s": 1.86
+      "wall_s": 1.77
     },
     {
       "nct_id": "NCT02819518",
@@ -195,12 +235,12 @@
       "draft_id": "d-089f06791c28",
       "status": "ok",
       "summary": {
-        "drafted": 12,
+        "drafted": 17,
         "insufficient": 0,
         "precedents": 4,
         "candidates_checked": 4,
         "skipped": 0,
-        "elapsed_s": 2.15,
+        "elapsed_s": 1.9,
         "cached": false
       },
       "precedents": [
@@ -267,6 +307,46 @@
           "agrees": true
         },
         {
+          "id": "brain_mets",
+          "status": "drafted",
+          "drafted": "policy1.0 policy level",
+          "source_nct_id": "NCT02142738",
+          "trial_value": "policy1.0 policy level",
+          "agrees": true
+        },
+        {
+          "id": "hbv",
+          "status": "drafted",
+          "drafted": "policy0.0 policy level",
+          "source_nct_id": "NCT02142738",
+          "trial_value": "policy1.0 policy level",
+          "agrees": false
+        },
+        {
+          "id": "hcv",
+          "status": "drafted",
+          "drafted": "policy1.0 policy level",
+          "source_nct_id": "NCT02142738",
+          "trial_value": "policy1.0 policy level",
+          "agrees": true
+        },
+        {
+          "id": "hiv",
+          "status": "drafted",
+          "drafted": "policy0.0 policy level",
+          "source_nct_id": "NCT02142738",
+          "trial_value": "policy1.0 policy level",
+          "agrees": false
+        },
+        {
+          "id": "prior_malignancy",
+          "status": "drafted",
+          "drafted": "\u22655.0 years",
+          "source_nct_id": "NCT02142738",
+          "trial_value": "\u22652.0 years",
+          "agrees": false
+        },
+        {
           "id": "washout_corticosteroid",
           "status": "drafted",
           "drafted": "\u22653.0 days",
@@ -308,7 +388,7 @@
         }
       ],
       "overclaim_hits": [],
-      "wall_s": 2.16
+      "wall_s": 1.92
     },
     {
       "nct_id": "NCT03409614",
@@ -334,12 +414,12 @@
       "draft_id": "d-7f876db8711f",
       "status": "ok",
       "summary": {
-        "drafted": 12,
+        "drafted": 17,
         "insufficient": 0,
         "precedents": 4,
         "candidates_checked": 4,
         "skipped": 0,
-        "elapsed_s": 1.52,
+        "elapsed_s": 1.51,
         "cached": false
       },
       "precedents": [
@@ -406,6 +486,46 @@
           "agrees": true
         },
         {
+          "id": "brain_mets",
+          "status": "drafted",
+          "drafted": "policy1.0 policy level",
+          "source_nct_id": "NCT03215706",
+          "trial_value": "policy1.0 policy level",
+          "agrees": true
+        },
+        {
+          "id": "hbv",
+          "status": "drafted",
+          "drafted": "policy0.0 policy level",
+          "source_nct_id": "NCT03351361",
+          "trial_value": "policy1.0 policy level",
+          "agrees": false
+        },
+        {
+          "id": "hcv",
+          "status": "drafted",
+          "drafted": "policy0.0 policy level",
+          "source_nct_id": "NCT03351361",
+          "trial_value": "policy1.0 policy level",
+          "agrees": false
+        },
+        {
+          "id": "hiv",
+          "status": "drafted",
+          "drafted": "policy0.0 policy level",
+          "source_nct_id": "NCT03351361",
+          "trial_value": "policy1.0 policy level",
+          "agrees": false
+        },
+        {
+          "id": "prior_malignancy",
+          "status": "drafted",
+          "drafted": "\u22655.0 years",
+          "source_nct_id": "NCT03351361",
+          "trial_value": "\u22652.0 years",
+          "agrees": false
+        },
+        {
           "id": "washout_corticosteroid",
           "status": "drafted",
           "drafted": "\u226514.0 days",
@@ -450,5 +570,5 @@
       "wall_s": 1.52
     }
   ],
-  "computed_at": "2026-10-18T01:00:20-0400"
+  "computed_at": "2026-10-19T22:59:01-0400"
 }

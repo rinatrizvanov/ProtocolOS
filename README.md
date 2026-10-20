@@ -2,7 +2,7 @@
 
 <h3 align="center">Every exclusion deserves a rationale.</h3>
 
-Eligibility criteria (lab thresholds, ECOG performance status, washout periods) decide who may join a cancer trial, and they are often carried forward from earlier protocols without a written reason. FDA's final guidance of July 2026 says lab restrictions from earlier trials "should not be carried forward automatically", but restrictions also exist for real reasons: safety, enrichment, interpretability. **ProtocolOS** shows a protocol team the likely rationale behind each criterion of an oncology protocol, compares it with earlier comparable trials and FDA guidance, checks every suggested change with a deterministic verifier, and can draft criteria for a new trial idea from verified precedents only. The team decides; ProtocolOS prepares the rationale and a review packet.
+Eligibility criteria (lab thresholds, ECOG performance status, washout periods, and conditions such as brain metastases, HIV, hepatitis B and C, prior cancers and QTc) decide who may join a cancer trial, and they are often carried forward from earlier protocols without a written reason. FDA's final guidance of July 2026 says lab restrictions from earlier trials "should not be carried forward automatically", but restrictions also exist for real reasons: safety, enrichment, interpretability. **ProtocolOS** shows a protocol team the likely rationale behind each criterion of an oncology protocol, compares it with earlier comparable trials and FDA guidance, checks every suggested change with a deterministic verifier, and can draft criteria for a new trial idea from verified precedents only. The team decides; ProtocolOS prepares the rationale and a review packet.
 
 ProtocolOS (formerly TrialLens) was built at HackHarvard 2026 for the Regeneron "Reinvent Clinical Trials & Drug Development" and Chalk "Best Data-Driven Agent Built on Chalk" tracks. The Chalk integration was removed after the event; the submitted state is the git tag `hackharvard-submission`. It is a research prototype, not clinical, regulatory or safety advice.
 
@@ -40,7 +40,7 @@ Pick a trial (EMPOWER-Lung 3, NCT03409614, is the worked example) and a criterio
 
 ## Mode B: Create criteria from an idea
 
-Enter a condition, drugs, setting, phase and a design date. ProtocolOS finds comparable trials that started before that date and drafts lab, ECOG and washout criteria. Each proposed value is copied from a precedent whose threshold the verifier matched to its protocol page; without one, the criterion is *Insufficient evidence* and gets no value. The same review engine then critiques the draft, and a before/after compares it with a protocol as written. The preset "EMPOWER-Lung 3 at design time" drafts from that trial's own idea at its start date, with its own protocol excluded.
+Enter a condition, drugs, setting, phase and a design date. ProtocolOS finds comparable trials that started before that date and drafts lab, ECOG, washout and condition criteria. Each proposed value is copied from a precedent whose threshold the verifier matched to its protocol page; without one, the criterion is *Insufficient evidence* and gets no value. The same review engine then critiques the draft, and a before/after compares it with a protocol as written. The preset "EMPOWER-Lung 3 at design time" drafts from that trial's own idea at its start date, with its own protocol excluded.
 
 ![Draft criteria for the EMPOWER-Lung 3 design-time preset](docs/img/draft.png)
 
@@ -88,7 +88,8 @@ Every number below comes from a committed result file in `data/` or `evals/`; `p
 | First run on unseen set 1 | 15/21, then 21/21 after one fix; the first-run number is the honest estimate |
 | Unseen set 2 (6 protocols, measured once, not tuned) | 29/33 |
 | Comparator threshold direction, where both values were extracted | 1780/1802 |
-| FDA quotes verbatim / protocol source lines on the cited page | 32/32 · 157/157 |
+| Condition criteria (brain metastases, HIV, hepatitis B, hepatitis C, prior malignancy, QTc), labelled on the same 19 protocols the rules were written on | 89/93 correct; 0/20 criteria the text does not state were extracted |
+| FDA quotes verbatim / protocol source lines on the cited page | 45/45 · 239/239 |
 | Regimen (developer-curated reference, 12 protocols) | precision 98.2%, recall 100% |
 
 **B. Planted issues** (the method of Regeneron's *Trial by Design, Part 2*): one threshold made stricter (24 variants) or looser (10) on the protocol's own source line, in 5 real, previously unseen protocols. A stricter criterion is not assumed wrong; the test is whether ProtocolOS escalates it for review.
@@ -103,13 +104,13 @@ The first run found three bugs (agents outside the drug table treated as non-mye
 
 **C. Verifier** (39 developer-designed cases: 24 injected faults, 10 valid, 5 ambiguous): 24/24 faults rejected, 0/10 valid recommendations rejected and 5/5 ambiguous cases flagged, (`data/eval_results.json`; during the hackathon the same cases also ran on Chalk Evaluations with the same result). The same developer wrote the cases and the verifier, so this tests designed behaviour, not robustness.
 
-**D. Investigator answer checker** (`evals/investigator/results.json`; EMPOWER-Lung 3, 11 criteria, 4 questions): 44/44 of the investigator's own answers not rejected; 336/336 planted defects rejected (unknown trial ids, changed numbers, causal phrases, misquotes, dropped counterevidence, injected instructions). This shows the checker catches these classes, not defects a model would produce.
+**D. Investigator answer checker** (`evals/investigator/results.json`; EMPOWER-Lung 3, 16 criteria, 4 questions): 64/64 of the investigator's own answers not rejected; 484/484 planted defects rejected (unknown trial ids, changed numbers, causal phrases, misquotes, dropped counterevidence, injected instructions). This shows the checker catches these classes, not defects a model would produce.
 
-**E. Drafting, leave-one-out** (`evals/draft/results.json`): each of 4 cached trials drafted from its own idea at its start date, itself excluded. Criteria drafted without a verified precedent: 0. Overclaim failures: 0. Drafted values equal to the trial's own value: 22/31. Agreement shows a value was used before, not that it is right.
+**E. Drafting, leave-one-out** (`evals/draft/results.json`): each of 4 cached trials drafted from its own idea at its start date, itself excluded. Criteria drafted without a verified precedent: 0. Overclaim failures: 0. Drafted values or policies equal to the trial's own: 29/46. Agreement shows a value was used before, not that it is right.
 
 **F. Population context** (`evals/impact/impact_numbers.json`): the survey-weighted share of US adults (NHANES 2017-2018) below the EMPOWER-Lung 3 hemoglobin threshold and below ≥9 g/dL, with standard errors. It describes the general population, not a trial-eligible population, and is not an enrollment prediction.
 
-**G. Semantic comparator candidates** (`evals/semantic/results.json`): the 19 gold protocols reviewed twice, with comparators started before each trial: keyword discovery alone, then keyword plus the trials nearest in the semantic index (a local embedding model over the 1,412 phase 3 oncology trials with a posted protocol). Semantic candidates pass the same rules plus stricter ones the keyword query implies (shared cancer site, lung histology, breast subtype, no later-line, maintenance or radiotherapy programme for a target that is not one). 9 of 19 protocols got a different comparator set, 2 of the 4 with no keyword comparator got some, 19 comparators came only from the semantic index, and 12 of 159 criterion classifications changed. A changed classification is a different review input, not an improvement: no gold label says which comparators are right. Evaluations A to F use keyword discovery; new analyses on the public server use both.
+**G. Semantic comparator candidates** (`evals/semantic/results.json`): the 19 gold protocols reviewed twice, with comparators started before each trial: keyword discovery alone, then keyword plus the trials nearest in the semantic index (a local embedding model over the 1,412 phase 3 oncology trials with a posted protocol). Semantic candidates pass the same rules plus stricter ones the keyword query implies (shared cancer site, lung histology, breast subtype, no later-line, maintenance or radiotherapy programme for a target that is not one). 9 of 19 protocols got a different comparator set, 2 of the 4 with no keyword comparator got some, 19 comparators came only from the semantic index, and 20 of 250 criterion classifications changed (12 of them lab, ECOG or washout criteria, as before the condition criteria were added). A changed classification is a different review input, not an improvement: no gold label says which comparators are right. Evaluations A to F use keyword discovery; new analyses on the public server use both.
 
 No model-based evaluation results are committed; `python -m evals.run_evals --llm` adds an LLM-only verifier baseline when a key is present.
 
@@ -147,7 +148,7 @@ Root files: `Dockerfile` and `railway.toml` (engine container), `pyproject.toml`
 
 - **Blind spot.** ProtocolOS sees public documents only. Rationale in non-public sources (preclinical toxicology, internal development data, regulator correspondence) cannot be seen, so "no rationale found" never means "no rationale exists".
 - **Protocol versions.** Posted protocols are usually the final amendment, not the design-time draft; amendment history is not tracked.
-- **Retrospective guidance.** The July 2026 FDA guidance post-dates the reviewed trials; it is applied as a present-day review standard and labelled retrospective, not as a judgment of what the designers could have known.
+- **Retrospective guidance.** The July 2026 FDA guidances post-date the reviewed trials, and the July 2020 ones post-date most of them; it is applied as a present-day review standard and labelled retrospective, not as a judgment of what the designers could have known.
 - **Coverage.** Many phase 3 trials post no protocol PDF; for those only registry text, which rarely states lab thresholds, is available.
 - **Method.** Extraction is rule-based and misses unusual layouts; the drug table is curated at class level; rationale categories are inferred; classification is a transparent heuristic, not a validated model; no clinician has reviewed the outputs.
 - **NHANES** describes the US general population, not people with cancer. Race or ethnicity is not a proxy for Duffy-null phenotype.
@@ -162,7 +163,7 @@ TrialPathfinder (Liu et al., *Nature* 2021) emulates trials on patient-level ele
 
 - **ClinicalTrials.gov** (U.S. National Library of Medicine), API v2: registry records and comparator search.
 - **Sponsor protocol PDFs** posted on ClinicalTrials.gov; they remain the property of their sponsors.
-- **FDA guidance:** *Cancer Clinical Trial Eligibility Criteria* on laboratory values, performance status, and washout periods and concomitant medications (July 2026), and *Enrichment Strategies for Clinical Trials* (March 2019).
+- **FDA guidance:** *Cancer Clinical Trial Eligibility Criteria* on laboratory values, performance status, and washout periods and concomitant medications (July 2026); on brain metastases, on patients with HIV, hepatitis B virus or hepatitis C virus infections, and on patients with organ dysfunction or prior or concurrent malignancies (July 2020); and *Enrichment Strategies for Clinical Trials* (March 2019).
 - **NHANES 2017-2018** (CDC, National Center for Health Statistics): demographics and complete blood count public-use files.
 
 Third-party data is downloaded from its official source at runtime, is not redistributed in this repository and is not covered by this license; it remains under its own terms. No patient data is used.

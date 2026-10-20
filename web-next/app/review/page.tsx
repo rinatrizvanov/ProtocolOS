@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type KeyboardEvent } from "react";
-import { CACHED_TRIALS, EngineError, NCT, getReview, needsKey, searchTrials, type Classification, type Criterion, type Review, type Selection, type TrialHit } from "@/lib/api";
+import { CACHED_TRIALS, EngineError, NCT, getReview, needsKey, requirementText, searchTrials, type Classification, type Review, type Selection, type TrialHit } from "@/lib/api";
 import { DISPLAY_CLASSIFICATION } from "@/lib/contracts";
 import { useApi } from "@/lib/useApi";
 import { addedTrials, rememberTrial, useModelKey } from "@/lib/visitor";
@@ -81,9 +81,7 @@ function parseSelection(search: string): Parsed {
     : { nct: NCT, criterionId: null, tab, missing: echo(raw), missingCriterion: null };
 }
 
-function threshold(c: Criterion): string {
-  return c.value_norm === null ? "no numeric limit" : `${c.operator} ${c.value_norm}${c.unit_norm ? ` ${c.unit_norm}` : ""}`;
-}
+const threshold = requirementText;
 
 const PHASE = (p: string) => p.replace(/^PHASE(\d)$/i, "Phase $1").replace(/^EARLY_PHASE1$/i, "Early phase 1");
 const STATUS = (s: string) => s.charAt(0) + s.slice(1).toLowerCase().replace(/_/g, " ");
@@ -132,7 +130,7 @@ function CriteriaList({
             >
               <span className="block text-sm font-medium text-ink">{r.criterion.label}</span>
               <span className="block text-xs tabular-nums">
-                {r.criterion.operator} {r.criterion.value_norm} {r.criterion.unit_norm}
+                {threshold(r.criterion)}
               </span>
               <span className="mt-0.5 flex items-center gap-1.5 text-xs text-ink">
                 <span aria-hidden className={`h-1.5 w-1.5 shrink-0 rounded-full ${DOT[r.classification]}`} />
@@ -159,7 +157,7 @@ function CriterionPicker({ review, nct, selected, tab }: { review: Review; nct: 
       >
         {review.reviews.map((r) => (
           <option key={r.criterion.id} value={r.criterion.id}>
-            {`${[r.criterion.label, r.criterion.operator, r.criterion.value_norm, r.criterion.unit_norm].filter((x) => x !== null && x !== "").join(" ")} (${DISPLAY_CLASSIFICATION[r.classification]})`}
+            {`${r.criterion.label} ${threshold(r.criterion)} (${DISPLAY_CLASSIFICATION[r.classification]})`}
           </option>
         ))}
       </select>
@@ -200,7 +198,8 @@ function TrialPicker({ nct, tab }: { nct: string; tab: TabId }) {
   const titles = useTrialTitles([...CACHED_TRIALS, ...extra]);
   const label = (id: string) => (titles[id] ? `${id} · ${clip(titles[id], 48)}` : id);
   return (
-    <div className="flex min-w-0 flex-col gap-2 lg:items-end">
+    // shrink-0 beside the title: the fixed-width controls would otherwise overflow leftwards over a long title
+    <div className="flex min-w-0 flex-col gap-2 lg:shrink-0 lg:items-end">
       <label className="flex min-w-0 flex-col gap-1 text-sm text-muted sm:flex-row sm:items-center sm:gap-2">
         <span className="shrink-0">Trial</span>
         <select
@@ -544,7 +543,7 @@ function AddedTrialNotes({ review }: { review: Review }) {
       ) : null}
       {noCriteria ? (
         <p role="note" data-testid="no-criteria" className="rounded-md border border-look bg-look-soft/50 px-3 py-2 text-sm text-ink">
-          No eligibility criterion the extractor covers (lab limits, ECOG, washouts) was found{noProtocol ? "" : " in the posted protocol"}.
+          No eligibility criterion the extractor covers (lab limits, ECOG, washouts, conditions such as brain metastases or HIV) was found{noProtocol ? "" : " in the posted protocol"}.
           The extractor is rule-based and misses unusual layouts; this does not mean the protocol has no such criteria.
         </p>
       ) : null}

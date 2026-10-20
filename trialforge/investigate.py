@@ -32,7 +32,7 @@ from datetime import datetime, timezone
 from fastapi import HTTPException
 
 from .sources import STATE
-from .verifier import GUIDANCE_FOR_CATEGORY, NECESSITY, OVERCLAIM, RELEVANT_PROPERTY, verify
+from .verifier import NECESSITY, OVERCLAIM, RELEVANT_PROPERTY, expected_guidance, verify
 
 QUESTIONS = ("why_flagged", "contradicting", "support_retaining", "what_would_change")
 MODES = ("deterministic", "model")
@@ -164,7 +164,7 @@ def claims_from_nodes(cited: list[dict], crit: dict, review: dict, stances: dict
                            "value": d.get("value_norm"), "unit": d.get("unit_norm")})
         elif n["type"] == "GuidancePassage" and src.get("quote"):
             gk = guidance_key(n)
-            if gk and gk == GUIDANCE_FOR_CATEGORY.get(crit.get("category")):
+            if gk and gk == expected_guidance(crit):
                 claims.append({"type": "fda_quote", "guidance": gk, "quote": src["quote"]})
         elif n["type"] == "CuratedFact":
             prop = RELEVANT_PROPERTY.get(crit.get("analyte"))
@@ -533,9 +533,14 @@ def _join(xs: list[str]) -> str:
     return xs[0] if len(xs) == 1 else ", ".join(xs[:-1]) + " and " + xs[-1]
 
 
+def _requirement(d: dict) -> str:
+    """A node's requirement: its policy in words, else operator, value and unit."""
+    return d["display"] if d.get("display") else f"{d.get('operator')}{_fv(d.get('value_norm'))} {d.get('unit_norm')}"
+
+
 def _crit_text(node: dict) -> str:
     d = node.get("data") or {}
-    return f"{d.get('label')} {d.get('operator')}{_fv(d.get('value_norm'))} {d.get('unit_norm')}"
+    return f"{d.get('label')} {_requirement(d)}"
 
 
 def _cmp_name(n: dict) -> str:
@@ -545,8 +550,7 @@ def _cmp_name(n: dict) -> str:
 
 
 def _cmp_value(n: dict) -> str:
-    d = n.get("data") or {}
-    return f"{d.get('operator')}{_fv(d.get('value_norm'))} {d.get('unit_norm')}"
+    return _requirement(n.get("data") or {})
 
 
 def _timing(fda: list[dict]) -> str:

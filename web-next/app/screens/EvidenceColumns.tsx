@@ -59,6 +59,7 @@ function text(value: unknown): string {
 }
 
 function threshold(data: GraphNode["data"]): string {
+  if (typeof data.display === "string" && data.display) return data.display; // a condition policy, in words
   return `${text(data.operator)}${text(data.value_norm)} ${text(data.unit_norm)}`.trim();
 }
 
@@ -70,6 +71,7 @@ function limitOf(data: GraphNode["data"]) {
 // "Same value as this trial", unless the engine's "same" hides a different operator or a washout within 10%.
 function sameSentence(node: GraphNode, target: GraphNode | undefined): string {
   if (!target) return "Same value as this trial";
+  if (target.data.operator === "policy") return "Same policy as this trial";
   const said = sameText(limitOf(target.data), limitOf(node.data));
   return said === "same limit" ? "Same value as this trial" : `${said.charAt(0).toUpperCase()}${said.slice(1)}`;
 }

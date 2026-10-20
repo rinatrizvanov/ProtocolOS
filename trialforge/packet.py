@@ -9,6 +9,7 @@ import json
 import time
 from pathlib import Path
 
+from .extract import criterion_text
 from .sources import STATE
 
 DECISIONS = STATE / "decisions"
@@ -57,9 +58,7 @@ def save_decision(nct: str, criterion_id: str, decision: str, reason: str, revie
 
 
 def _fmt(c):
-    v = c["value_norm"]
-    v = int(v) if v is not None and float(v).is_integer() else v
-    return f"{c['operator']}{v} {c['unit_norm']}"
+    return criterion_text(c)
 
 
 def build_packet(review: dict, decisions: dict | None = None) -> dict:

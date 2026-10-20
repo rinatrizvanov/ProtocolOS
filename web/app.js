@@ -2,7 +2,8 @@
 const $ = (s, el = document) => el.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const fmtNum = (v) => (v == null ? "—" : Number.isInteger(+v) ? String(+v) : String(+v));
-const fmtCrit = (c) => (c ? `${c.operator}${fmtNum(c.value_norm)} ${c.unit_norm}` : "—");
+// a condition policy (operator "policy") is shown in words; its value is a permissiveness level
+const fmtCrit = (c) => (c ? c.display || `${c.operator}${fmtNum(c.value_norm)} ${c.unit_norm}` : "—");
 const clsKey = (c) => (c.startsWith("Review") ? "review" : c.startsWith("Evidence") ? "retain" : "insufficient");
 
 const state = { nct: null, asOf: "auto", review: null, selected: null, status: null };
@@ -104,7 +105,7 @@ function renderSummary() {
 }
 
 function renderCriteria() {
-  const groups = { lab: "Laboratory", performance_status: "Performance status", washout: "Washout periods" };
+  const groups = { lab: "Laboratory", performance_status: "Performance status", washout: "Washout periods", condition: "Conditions" };
   let html = "";
   for (const [g, label] of Object.entries(groups)) {
     const items = state.review.reviews.filter((r) => r.criterion.category === g);
@@ -200,9 +201,9 @@ function renderDetail() {
     <div class="card"><h3>Rationale that is missing</h3><ul class="missing">${r.missing_evidence.map((m) => `<li>${esc(m)}</li>`).join("") || "<li>none recorded</li>"}</ul></div>
 
     <div class="card" id="whatifCard"><h3>Inspect an alternative threshold</h3>
-      ${c.value_norm != null ? `<div class="form-row"><label>Alternative value (${esc(c.unit_norm)})</label>
+      ${c.value_norm != null && c.operator !== "policy" ? `<div class="form-row"><label>Alternative value (${esc(c.unit_norm)})</label>
         <input type="number" id="altVal" step="any" value="${esc(suggestAlt(c, rows))}" style="width:110px" />
-        <button class="small" id="runWhatif">Compare &amp; verify</button></div><div id="whatifOut"></div>` : "<div class='src'>No numeric value.</div>"}
+        <button class="small" id="runWhatif">Compare &amp; verify</button></div><div id="whatifOut"></div>` : `<div class='src'>${c.operator === "policy" ? "A policy, not a numeric threshold." : "No numeric value."}</div>`}
     </div>
 
     <div class="card"><h3>Challenge a recommendation (verification layer)</h3>${challengeForm(c)}<div id="verifyOut"></div></div>`;

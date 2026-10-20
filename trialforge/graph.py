@@ -174,7 +174,8 @@ def build_graph(review: dict, decisions: dict | None = None, criterion_id: str |
                        {"criterion_id": cid, "label": crit["label"], "operator": crit["operator"],
                         "value_norm": crit["value_norm"], "unit_norm": crit["unit_norm"], "section": crit.get("section"),
                         "analyte": crit.get("analyte"), "category": crit.get("category"),
-                        "conditions": crit.get("conditions", []), "line": csrc.get("line")},
+                        "conditions": crit.get("conditions", []), "line": csrc.get("line"),
+                        **({"display": crit["display"]} if crit.get("display") else {})},
                        {"nct": nct, "page": csrc.get("page"), "quote": csrc.get("text"), "url": csrc.get("url")})
         assess = node(f"assess:{nct}:{cid}", "Assessment", f"Assessment of {crit['label']} {value_txt}",
                       {"scores": dict(rv["scores"]), "explanation": rv.get("explanation")})
@@ -225,7 +226,8 @@ def build_graph(review: dict, decisions: dict | None = None, criterion_id: str |
                     {"nct_id": e["nct_id"], "acronym": r.get("acronym"), "operator": rc.get("operator"),
                      "value_norm": rc.get("value_norm"), "unit_norm": rc.get("unit_norm"), "direction": r.get("direction"),
                      "coverage": {"status": cov.get("status"), "missing_classes": cov.get("missing_classes", [])},
-                     "similarity": similarity.get(e["nct_id"]), "summary": e.get("summary")},
+                     "similarity": similarity.get(e["nct_id"]), "summary": e.get("summary"),
+                     **({"display": rc["display"]} if rc.get("display") else {})},
                     {"nct": e["nct_id"], "page": e.get("page"), "quote": e.get("quote"), "url": e.get("url")})
             elif kind == "fda":
                 ev_node[i] = node(f"fda:{e['key']}", "GuidancePassage", "FDA: " + _short(e.get("quote")),

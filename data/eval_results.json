@@ -1,7 +1,7 @@
 {
- "generated_at": "2026-10-19 21:02:19",
+ "generated_at": "2026-10-19 22:58:37",
  "runner": "local (evals/run_evals.py)",
- "seconds": 183.6,
+ "seconds": 101.6,
  "first_run": {
   "generated_at": "2026-10-17 12:00:58",
   "extraction_by_split": {
@@ -1493,6 +1493,987 @@
     }
    ]
   },
+  "conditions": {
+   "protocols": 19,
+   "labelled": 93,
+   "correct": 89,
+   "absent": 20,
+   "false_positive": 0,
+   "recall": 0.956989247311828,
+   "precision": 0.9888888888888889,
+   "ambiguous": 1,
+   "by_type": {
+    "brain_mets": {
+     "labelled": 19,
+     "correct": 19,
+     "absent": 0,
+     "false_positive": 0
+    },
+    "hiv": {
+     "labelled": 18,
+     "correct": 18,
+     "absent": 1,
+     "false_positive": 0
+    },
+    "hbv": {
+     "labelled": 18,
+     "correct": 17,
+     "absent": 1,
+     "false_positive": 0
+    },
+    "hcv": {
+     "labelled": 17,
+     "correct": 16,
+     "absent": 1,
+     "false_positive": 0
+    },
+    "prior_malignancy": {
+     "labelled": 19,
+     "correct": 17,
+     "absent": 0,
+     "false_positive": 0
+    },
+    "qtc": {
+     "labelled": 2,
+     "correct": 2,
+     "absent": 17,
+     "false_positive": 0
+    }
+   },
+   "rows": [
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "id": "hiv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "id": "hbv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03409614",
+     "name": "EMPOWER-Lung 3",
+     "id": "prior_malignancy",
+     "gold": "\u22652",
+     "ok": true,
+     "got": "\u22652",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03088540",
+     "name": "EMPOWER-Lung 1",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03088540",
+     "name": "EMPOWER-Lung 1",
+     "id": "hiv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03088540",
+     "name": "EMPOWER-Lung 1",
+     "id": "hbv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03088540",
+     "name": "EMPOWER-Lung 1",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03088540",
+     "name": "EMPOWER-Lung 1",
+     "id": "prior_malignancy",
+     "gold": "\u22652",
+     "ok": true,
+     "got": "\u22652",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "id": "hbv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02578680",
+     "name": "KEYNOTE-189",
+     "id": "prior_malignancy",
+     "gold": "\u22655",
+     "ok": true,
+     "got": "\u22655",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02775435",
+     "name": "KEYNOTE-407",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02775435",
+     "name": "KEYNOTE-407",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02775435",
+     "name": "KEYNOTE-407",
+     "id": "hbv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02775435",
+     "name": "KEYNOTE-407",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02775435",
+     "name": "KEYNOTE-407",
+     "id": "prior_malignancy",
+     "gold": "\u22655",
+     "ok": true,
+     "got": "\u22655",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03215706",
+     "name": "CheckMate 9LA",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "registry",
+     "why": ""
+    },
+    {
+     "nct": "NCT03215706",
+     "name": "CheckMate 9LA",
+     "id": "prior_malignancy",
+     "gold": "\u22652",
+     "ok": false,
+     "got": "\u2014",
+     "doc": null,
+     "why": "not extracted"
+    },
+    {
+     "nct": "NCT02367781",
+     "name": "IMpower130",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02367781",
+     "name": "IMpower130",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02367781",
+     "name": "IMpower130",
+     "id": "hbv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02367781",
+     "name": "IMpower130",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02367781",
+     "name": "IMpower130",
+     "id": "prior_malignancy",
+     "gold": "\u22655",
+     "ok": true,
+     "got": "\u22655",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02366143",
+     "name": "IMpower150",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02366143",
+     "name": "IMpower150",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02366143",
+     "name": "IMpower150",
+     "id": "hbv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02366143",
+     "name": "IMpower150",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02366143",
+     "name": "IMpower150",
+     "id": "prior_malignancy",
+     "gold": "\u22655",
+     "ok": true,
+     "got": "\u22655",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03351361",
+     "name": "eNERGY",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "registry",
+     "why": ""
+    },
+    {
+     "nct": "NCT03351361",
+     "name": "eNERGY",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "registry",
+     "why": ""
+    },
+    {
+     "nct": "NCT03351361",
+     "name": "eNERGY",
+     "id": "hbv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "registry",
+     "why": ""
+    },
+    {
+     "nct": "NCT03351361",
+     "name": "eNERGY",
+     "id": "prior_malignancy",
+     "gold": "\u22655",
+     "ok": true,
+     "got": "\u22655",
+     "doc": "registry",
+     "why": ""
+    },
+    {
+     "nct": "NCT02864251",
+     "name": "CheckMate 722",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02864251",
+     "name": "CheckMate 722",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02864251",
+     "name": "CheckMate 722",
+     "id": "hbv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02864251",
+     "name": "CheckMate 722",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02864251",
+     "name": "CheckMate 722",
+     "id": "prior_malignancy",
+     "gold": "\u22653",
+     "ok": true,
+     "got": "\u22653",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02220894",
+     "name": "KEYNOTE-042",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02220894",
+     "name": "KEYNOTE-042",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02220894",
+     "name": "KEYNOTE-042",
+     "id": "hbv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02220894",
+     "name": "KEYNOTE-042",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02220894",
+     "name": "KEYNOTE-042",
+     "id": "prior_malignancy",
+     "gold": "\u22655",
+     "ok": true,
+     "got": "\u22655",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02819518",
+     "name": "KEYNOTE-355 (TNBC)",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02819518",
+     "name": "KEYNOTE-355 (TNBC)",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02819518",
+     "name": "KEYNOTE-355 (TNBC)",
+     "id": "hbv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02819518",
+     "name": "KEYNOTE-355 (TNBC)",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02819518",
+     "name": "KEYNOTE-355 (TNBC)",
+     "id": "prior_malignancy",
+     "gold": "\u22655",
+     "ok": true,
+     "got": "\u22655",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02872116",
+     "name": "CheckMate 649 (gastric)",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02872116",
+     "name": "CheckMate 649 (gastric)",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02872116",
+     "name": "CheckMate 649 (gastric)",
+     "id": "hbv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02872116",
+     "name": "CheckMate 649 (gastric)",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02872116",
+     "name": "CheckMate 649 (gastric)",
+     "id": "prior_malignancy",
+     "gold": "\u22653",
+     "ok": true,
+     "got": "\u22653",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03434379",
+     "name": "IMbrave150 (HCC)",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03434379",
+     "name": "IMbrave150 (HCC)",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03434379",
+     "name": "IMbrave150 (HCC)",
+     "id": "hbv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03434379",
+     "name": "IMbrave150 (HCC)",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03434379",
+     "name": "IMbrave150 (HCC)",
+     "id": "prior_malignancy",
+     "gold": "\u22655",
+     "ok": true,
+     "got": "\u22655",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03434379",
+     "name": "IMbrave150 (HCC)",
+     "id": "qtc",
+     "gold": "\u2264500",
+     "ok": true,
+     "got": "\u2264500",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02657434",
+     "name": "IMpower132 (NSCLC)",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02657434",
+     "name": "IMpower132 (NSCLC)",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02657434",
+     "name": "IMpower132 (NSCLC)",
+     "id": "hbv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02657434",
+     "name": "IMpower132 (NSCLC)",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02657434",
+     "name": "IMpower132 (NSCLC)",
+     "id": "prior_malignancy",
+     "gold": "\u22655",
+     "ok": true,
+     "got": "\u22655",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03164616",
+     "name": "POSEIDON (NSCLC)",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03164616",
+     "name": "POSEIDON (NSCLC)",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03164616",
+     "name": "POSEIDON (NSCLC)",
+     "id": "hbv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03164616",
+     "name": "POSEIDON (NSCLC)",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03164616",
+     "name": "POSEIDON (NSCLC)",
+     "id": "prior_malignancy",
+     "gold": "\u22655",
+     "ok": true,
+     "got": "\u22655",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02358031",
+     "name": "KEYNOTE-048 (head and neck)",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02358031",
+     "name": "KEYNOTE-048 (head and neck)",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02358031",
+     "name": "KEYNOTE-048 (head and neck)",
+     "id": "hbv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02358031",
+     "name": "KEYNOTE-048 (head and neck)",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02358031",
+     "name": "KEYNOTE-048 (head and neck)",
+     "id": "prior_malignancy",
+     "gold": "\u22655",
+     "ok": true,
+     "got": "\u22655",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02763579",
+     "name": "IMpower133 (SCLC)",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02763579",
+     "name": "IMpower133 (SCLC)",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02763579",
+     "name": "IMpower133 (SCLC)",
+     "id": "hbv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02763579",
+     "name": "IMpower133 (SCLC)",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02763579",
+     "name": "IMpower133 (SCLC)",
+     "id": "prior_malignancy",
+     "gold": "\u22655",
+     "ok": true,
+     "got": "\u22655",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02853331",
+     "name": "KEYNOTE-426 (renal)",
+     "id": "brain_mets",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02853331",
+     "name": "KEYNOTE-426 (renal)",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02853331",
+     "name": "KEYNOTE-426 (renal)",
+     "id": "hbv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02853331",
+     "name": "KEYNOTE-426 (renal)",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": true,
+     "got": "policy1",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02853331",
+     "name": "KEYNOTE-426 (renal)",
+     "id": "prior_malignancy",
+     "gold": "\u22653",
+     "ok": true,
+     "got": "\u22653",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT02853331",
+     "name": "KEYNOTE-426 (renal)",
+     "id": "qtc",
+     "gold": "<480",
+     "ok": true,
+     "got": "<480",
+     "doc": "protocol",
+     "why": ""
+    },
+    {
+     "nct": "NCT03043872",
+     "name": "CASPIAN (SCLC)",
+     "id": "brain_mets",
+     "gold": "policy2",
+     "ok": true,
+     "got": "policy2",
+     "doc": "registry",
+     "why": ""
+    },
+    {
+     "nct": "NCT03043872",
+     "name": "CASPIAN (SCLC)",
+     "id": "hiv",
+     "gold": "policy0",
+     "ok": true,
+     "got": "policy0",
+     "doc": "registry",
+     "why": ""
+    },
+    {
+     "nct": "NCT03043872",
+     "name": "CASPIAN (SCLC)",
+     "id": "hbv",
+     "gold": "policy0",
+     "ok": false,
+     "got": "policy1",
+     "doc": "registry",
+     "why": "wrong value"
+    },
+    {
+     "nct": "NCT03043872",
+     "name": "CASPIAN (SCLC)",
+     "id": "hcv",
+     "gold": "policy1",
+     "ok": false,
+     "got": "\u2014",
+     "doc": null,
+     "why": "not extracted"
+    },
+    {
+     "nct": "NCT03043872",
+     "name": "CASPIAN (SCLC)",
+     "id": "prior_malignancy",
+     "gold": "\u22655",
+     "ok": false,
+     "got": "\u2014",
+     "doc": null,
+     "why": "not extracted"
+    }
+   ],
+   "note": "Condition criteria (brain metastases, HIV, hepatitis B, hepatitis C, prior malignancy, QTc), hand-labelled from the protocol's own eligibility text (the registry summary where it disagrees is not the label). Policy criteria are scored as a permissiveness level: brain_mets 0 = any brain metastases excluded, 1 = treated/stable allowed, 2 = untreated asymptomatic also allowed; hiv 0 = HIV excluded, 1 = controlled HIV allowed; hbv 0 = chronic or known HBsAg-positive excluded, 1 = only active infection excluded; hcv 0 = HCV antibody-positive excluded, 1 = only active (RNA-positive) infection excluded. prior_malignancy is the disease-free interval in years required for another cancer; qtc is the allowed QTc in ms. absent = the eligibility text states no such criterion (an extracted value counts as a false positive). ambiguous = the text can be read two ways; not scored. Labeller: TrialForge developer (single annotator, not independently adjudicated). split: dev for every protocol: these rules were written and tuned on these same 19 protocols, so the score measures fit to the development set, not accuracy on unseen protocols."
+  },
   "regimen": {
    "protocols": 12,
    "precision": 0.9824561403508771,
@@ -1731,11 +2712,11 @@
    ]
   },
   "citations": {
-   "fda_total": 32,
-   "fda_ok": 32,
+   "fda_total": 45,
+   "fda_ok": 45,
    "fda_quote_accuracy": 1.0,
-   "prot_total": 157,
-   "prot_ok": 157,
+   "prot_total": 239,
+   "prot_ok": 239,
    "protocol_quote_accuracy": 1.0,
    "prot_misses": [],
    "nct_total": 12,

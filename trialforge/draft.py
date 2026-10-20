@@ -47,7 +47,8 @@ NOTES = [
     "protocols; otherwise: Insufficient evidence.",
     "A toxicity link supports having a threshold, not a specific value. A more permissive precedent shows a "
     "threshold was used, not that it was safe.",
-    "ProtocolOS structures lab, ECOG and washout criteria only. " + BLIND_SPOT,
+    "ProtocolOS structures lab, ECOG, washout and condition criteria (brain metastases, HIV, hepatitis B and C, prior "
+    "malignancy, QTc) only. " + BLIND_SPOT,
 ]
 DISPLAY_CLASSIFICATION = {
     review.CLASS_REVIEW: "Review recommended",
@@ -259,7 +260,7 @@ def _protocol_url(study: dict) -> str | None:
 
 
 def _relevant_passages(analyte: str, category: str) -> list:
-    expected = verifier.GUIDANCE_FOR_CATEGORY.get(category)
+    expected = verifier.expected_guidance({"analyte": analyte, "category": category})
     out = []
     for p in guidance.passages_for(analyte):
         if p.stance == "purpose" or p.guidance != expected:
@@ -421,9 +422,12 @@ def draft_criteria(idea: dict, fixed_precedents: list[dict] | None = None, exclu
             eligible = cov["status"] == "full" or (cov["status"] == "n/a" and rel is None)
             pvals.append((p, c, cov, eligible))
         dist: dict[tuple, list[str]] = {}
+        shown: dict[tuple, str | None] = {}  # a policy's words for each distinct value
         for p, c, _, _ in pvals:
             dist.setdefault((c["operator"], c["value_norm"], c["unit_norm"]), []).append(p["study"]["nct_id"])
-        distribution = [{"operator": o, "value": v, "unit": u, "count": len(n), "nct_ids": n}
+            shown.setdefault((c["operator"], c["value_norm"], c["unit_norm"]), c.get("display"))
+        distribution = [{"operator": o, "value": v, "unit": u, "count": len(n), "nct_ids": n,
+                         **({"display": shown[(o, v, u)]} if shown[(o, v, u)] else {})}
                         for (o, v, u), n in sorted(dist.items(), key=lambda kv: (-len(kv[1]), _stricter_key(analyte, kv[0][1])))]
         elig = [(p, c) for p, c, _, e in pvals if e]
         default = None
@@ -456,8 +460,8 @@ def draft_criteria(idea: dict, fixed_precedents: list[dict] | None = None, exclu
             base = next(c for _, c, _, _ in s["pvals"] if (c["operator"], c["value_norm"], c["unit_norm"]) == (d0["operator"], d0["value"], d0["unit"]))
             v, u = base["value_norm"], base["unit_norm"]
         unit_s = "" if u and u.lower() in base["label"].lower() else f" {u}"  # "ECOG performance status ≤1", not "≤1 ECOG"
-        text = f"{base['label']} {base['operator']}{_fmtv(v)}{unit_s}"
-        s["dcrit"] = {"id": s["cid"], "analyte": s["analyte"], "category": s["category"], "label": base["label"],
+        text = f"{base['label']}: {base['display']}" if base.get("display") else f"{base['label']} {base['operator']}{_fmtv(v)}{unit_s}"
+        s["dcrit"] = {"id": s["cid"], "analyte": s["analyte"], "category": s["category"], "label": base["label"], "display": base.get("display"),
                       "section": base["section"], "operator": base["operator"], "value": v, "unit": u,
                       "value_norm": v, "unit_norm": u, "conditions": copy.deepcopy(base.get("conditions") or []),
                       "exceptions": [], "source": {"doc": "draft", "url": None, "page": None, "line": None, "text": text},
@@ -498,10 +502,10 @@ def draft_criteria(idea: dict, fixed_precedents: list[dict] | None = None, exclu
                 status = "drafted"
                 insufficient_reason = None
                 proposed = {"operator": src_c["operator"], "value": v, "unit": u, "text": dcrit["source"]["text"],
-                            "source_nct_id": src_p["study"]["nct_id"]}
+                            "source_nct_id": src_p["study"]["nct_id"], **({"display": dcrit["display"]} if dcrit["display"] else {})}
                 names = ", ".join(_name(p) for p, _ in cited)
-                why.append(f"Value: {len(cited)} of {len(s['elig'])} regimen-matched precedents used "
-                           f"{src_c['operator']}{_fmtv(v)} {u} ({names}); copied from {_name(src_p)}.")
+                used = src_c.get("display") or f"{src_c['operator']}{_fmtv(v)} {u}"
+                why.append(f"Value: {len(cited)} of {len(s['elig'])} regimen-matched precedents used {used} ({names}); copied from {_name(src_p)}.")
                 if s["tie"]:
                     why.append("Ties go to the stricter value.")
         if not rel:
@@ -560,7 +564,8 @@ def draft_criteria(idea: dict, fixed_precedents: list[dict] | None = None, exclu
             prec_vals.append({"nct_id": p["study"]["nct_id"], "acronym": p["study"].get("acronym"), "operator": c["operator"],
                               "value": c["value_norm"], "unit": c["unit_norm"], "page": c["source"].get("page"),
                               "quote": c["source"].get("text", ""), "url": c["source"].get("url"), "coverage": cov["status"],
-                              "eligible_for_default": bool(e and c["operator"] == default_op and c["unit_norm"] == default_u)})
+                              "eligible_for_default": bool(e and c["operator"] == default_op and c["unit_norm"] == default_u),
+                              **({"display": c["display"]} if c.get("display") else {})})
         criteria_out.append({
             "id": dcrit["id"], "analyte": analyte, "category": s["category"], "label": dcrit["label"],
             "section": dcrit["section"], "status": status, "proposed": proposed, "distribution": s["distribution"],

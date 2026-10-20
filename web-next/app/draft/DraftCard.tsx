@@ -66,7 +66,9 @@ export function shownUnit(unit: string, label: string): string {
   if (!unit || unit === "ECOG" || label.toLowerCase().includes(unit.toLowerCase())) return "";
   return unit;
 }
-export function valueText(operator: string, value: number, unit: string, label: string): string {
+// `display` is a condition policy in words (operator "policy"); it replaces the level number.
+export function valueText(operator: string, value: number, unit: string, label: string, display?: string | null): string {
+  if (display) return display;
   const u = shownUnit(unit, label);
   return `${operator}${fmt(value)}${u ? ` ${u}` : ""}`;
 }
@@ -171,8 +173,12 @@ function Distribution({ c, drafted, precedents }: { c: DraftCriterion; drafted: 
         {c.distribution.map((d) => {
           const chosen = c.proposed !== null && d.operator === c.proposed.operator && d.value === c.proposed.value;
           return (
-            <li key={`${d.operator}${d.value}${d.unit}`} className="grid grid-cols-[5.5rem_1fr] items-start gap-2 text-[13px] sm:grid-cols-[6.5rem_1fr]">
-              <span className={`tabular-nums ${chosen ? "font-semibold text-ink" : "text-muted"}`}>{valueText(d.operator, d.value, d.unit, c.label)}</span>
+            <li
+              key={`${d.operator}${d.value}${d.unit}`}
+              // a policy's words do not fit the narrow value column, so they sit above their bar
+              className={`grid items-start gap-2 text-[13px] ${d.display ? "grid-cols-1 gap-y-0" : "grid-cols-[5.5rem_1fr] sm:grid-cols-[6.5rem_1fr]"}`}
+            >
+              <span className={`tabular-nums ${chosen ? "font-semibold text-ink" : "text-muted"}`}>{valueText(d.operator, d.value, d.unit, c.label, d.display)}</span>
               <div className="flex min-w-0 flex-col gap-1 pt-1.5">
                 <div className="flex items-center gap-2">
                   <div className="h-1.5 flex-1 rounded-sm bg-uncounted-soft">
@@ -434,11 +440,17 @@ export default function DraftCard({
         {drafted && c.proposed ? (
           <div className="grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-[11rem_1fr]">
             <div className="flex flex-col items-start gap-1">
-              <p data-testid="draft-value" className="text-2xl font-semibold leading-tight tabular-nums tracking-tight text-ink">
-                {c.proposed.operator}
-                {fmt(c.proposed.value)}
-                {shownUnit(c.proposed.unit, c.label) ? <span className="text-base font-medium text-muted"> {shownUnit(c.proposed.unit, c.label)}</span> : null}
-              </p>
+              {c.proposed.display ? (
+                <p data-testid="draft-value" className="text-base font-semibold leading-snug text-ink">
+                  {c.proposed.display}
+                </p>
+              ) : (
+                <p data-testid="draft-value" className="text-2xl font-semibold leading-tight tabular-nums tracking-tight text-ink">
+                  {c.proposed.operator}
+                  {fmt(c.proposed.value)}
+                  {shownUnit(c.proposed.unit, c.label) ? <span className="text-base font-medium text-muted"> {shownUnit(c.proposed.unit, c.label)}</span> : null}
+                </p>
+              )}
               {draftHasCondition(c) ? <ConditionMark /> : null}
             </div>
             <div className="flex min-w-0 flex-col gap-1.5">

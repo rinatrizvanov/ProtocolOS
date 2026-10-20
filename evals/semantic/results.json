@@ -12,7 +12,7 @@
   },
   "seconds": 279.4
  },
- "seconds": 80.0,
+ "seconds": 80.1,
  "summary": {
   "targets": 19,
   "errors": 0,
@@ -20,8 +20,8 @@
   "targets_without_keyword_comparators": 4,
   "of_those_with_semantic_comparators": 2,
   "semantic_only_comparators_used": 19,
-  "criteria": 159,
-  "criteria_with_changed_classification": 12
+  "criteria": 250,
+  "criteria_with_changed_classification": 20
  },
  "targets": [
   {
@@ -108,7 +108,12 @@
      "washout_corticosteroid": "Insufficient evidence",
      "washout_investigational": "Insufficient evidence",
      "washout_vaccine": "Insufficient evidence",
-     "washout_surgery": "Insufficient evidence"
+     "washout_surgery": "Insufficient evidence",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Evidence supports retaining",
+     "hbv": "Evidence supports retaining",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Evidence supports retaining"
     }
    },
    "semantic": {
@@ -191,7 +196,12 @@
      "washout_corticosteroid": "Insufficient evidence",
      "washout_investigational": "Insufficient evidence",
      "washout_vaccine": "Insufficient evidence",
-     "washout_surgery": "Insufficient evidence"
+     "washout_surgery": "Insufficient evidence",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Evidence supports retaining",
+     "hbv": "Evidence supports retaining",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Evidence supports retaining"
     }
    },
    "classification_changes": [],
@@ -281,7 +291,12 @@
      "washout_corticosteroid": "Review recommended",
      "washout_investigational": "Insufficient evidence",
      "washout_vaccine": "Evidence supports retaining",
-     "washout_surgery": "Insufficient evidence"
+     "washout_surgery": "Insufficient evidence",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Evidence supports retaining",
+     "hbv": "Evidence supports retaining",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Evidence supports retaining"
     }
    },
    "semantic": {
@@ -364,7 +379,12 @@
      "washout_corticosteroid": "Review recommended",
      "washout_investigational": "Insufficient evidence",
      "washout_vaccine": "Evidence supports retaining",
-     "washout_surgery": "Insufficient evidence"
+     "washout_surgery": "Insufficient evidence",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Evidence supports retaining",
+     "hbv": "Evidence supports retaining",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Evidence supports retaining"
     }
    },
    "classification_changes": [],
@@ -430,7 +450,12 @@
      "washout_investigational": "Review recommended",
      "washout_surgery": "Insufficient evidence",
      "washout_radiotherapy": "Review recommended",
-     "washout_vaccine": "Evidence supports retaining"
+     "washout_vaccine": "Evidence supports retaining",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "semantic": {
@@ -513,7 +538,12 @@
      "washout_investigational": "Review recommended",
      "washout_surgery": "Insufficient evidence",
      "washout_radiotherapy": "Review recommended",
-     "washout_vaccine": "Evidence supports retaining"
+     "washout_vaccine": "Evidence supports retaining",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "classification_changes": [
@@ -597,7 +627,12 @@
      "washout_investigational": "Review recommended",
      "washout_surgery": "Insufficient evidence",
      "washout_radiotherapy": "Review recommended",
-     "washout_vaccine": "Evidence supports retaining"
+     "washout_vaccine": "Evidence supports retaining",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "semantic": {
@@ -680,7 +715,12 @@
      "washout_investigational": "Review recommended",
      "washout_surgery": "Insufficient evidence",
      "washout_radiotherapy": "Review recommended",
-     "washout_vaccine": "Evidence supports retaining"
+     "washout_vaccine": "Evidence supports retaining",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "classification_changes": [],
@@ -766,7 +806,8 @@
      "renal": "Evidence supports retaining",
      "ast_alt": "Evidence supports retaining",
      "bilirubin": "Evidence supports retaining",
-     "ecog": "Review recommended"
+     "ecog": "Review recommended",
+     "brain_mets": "Evidence supports retaining"
     }
    },
    "semantic": {
@@ -845,7 +886,8 @@
      "renal": "Evidence supports retaining",
      "ast_alt": "Evidence supports retaining",
      "bilirubin": "Evidence supports retaining",
-     "ecog": "Review recommended"
+     "ecog": "Review recommended",
+     "brain_mets": "Evidence supports retaining"
     }
    },
    "classification_changes": [],
@@ -874,7 +916,12 @@
      "hemoglobin": "Insufficient evidence",
      "ast_alt": "Insufficient evidence",
      "bilirubin": "Insufficient evidence",
-     "ecog": "Review recommended"
+     "ecog": "Review recommended",
+     "brain_mets": "Insufficient evidence",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Insufficient evidence",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "semantic": {
@@ -940,7 +987,12 @@
      "hemoglobin": "Evidence supports retaining",
      "ast_alt": "Evidence supports retaining",
      "bilirubin": "Insufficient evidence",
-     "ecog": "Review recommended"
+     "ecog": "Review recommended",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "classification_changes": [
@@ -956,6 +1008,16 @@
     },
     {
      "criterion": "ast_alt",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    },
+    {
+     "criterion": "brain_mets",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    },
+    {
+     "criterion": "hcv",
      "keyword": "Insufficient evidence",
      "semantic": "Evidence supports retaining"
     }
@@ -993,7 +1055,12 @@
      "hemoglobin": "Insufficient evidence",
      "ast_alt": "Insufficient evidence",
      "bilirubin": "Insufficient evidence",
-     "ecog": "Review recommended"
+     "ecog": "Review recommended",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "semantic": {
@@ -1047,7 +1114,12 @@
      "hemoglobin": "Evidence supports retaining",
      "ast_alt": "Evidence supports retaining",
      "bilirubin": "Insufficient evidence",
-     "ecog": "Review recommended"
+     "ecog": "Review recommended",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "classification_changes": [
@@ -1140,7 +1212,12 @@
      "hemoglobin": "Review recommended",
      "renal": "Evidence supports retaining",
      "ast_alt": "Evidence supports retaining",
-     "bilirubin": "Evidence supports retaining"
+     "bilirubin": "Evidence supports retaining",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Review recommended",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "semantic": {
@@ -1218,7 +1295,12 @@
      "hemoglobin": "Review recommended",
      "renal": "Evidence supports retaining",
      "ast_alt": "Evidence supports retaining",
-     "bilirubin": "Evidence supports retaining"
+     "bilirubin": "Evidence supports retaining",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Review recommended",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "classification_changes": [],
@@ -1306,7 +1388,12 @@
      "bilirubin": "Evidence supports retaining",
      "ecog": "Review recommended",
      "washout_corticosteroid": "Insufficient evidence",
-     "washout_surgery": "Evidence supports retaining"
+     "washout_surgery": "Evidence supports retaining",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "semantic": {
@@ -1387,7 +1474,12 @@
      "bilirubin": "Evidence supports retaining",
      "ecog": "Review recommended",
      "washout_corticosteroid": "Insufficient evidence",
-     "washout_surgery": "Evidence supports retaining"
+     "washout_surgery": "Evidence supports retaining",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "classification_changes": [],
@@ -1437,7 +1529,12 @@
      "washout_corticosteroid": "Evidence supports retaining",
      "washout_radiotherapy": "Review recommended",
      "washout_surgery": "Insufficient evidence",
-     "washout_vaccine": "Evidence supports retaining"
+     "washout_vaccine": "Evidence supports retaining",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "semantic": {
@@ -1496,7 +1593,12 @@
      "washout_corticosteroid": "Evidence supports retaining",
      "washout_radiotherapy": "Review recommended",
      "washout_surgery": "Evidence supports retaining",
-     "washout_vaccine": "Evidence supports retaining"
+     "washout_vaccine": "Evidence supports retaining",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "classification_changes": [
@@ -1535,7 +1637,12 @@
      "ecog": "Review recommended",
      "washout_radiotherapy": "Review recommended",
      "washout_corticosteroid": "Insufficient evidence",
-     "washout_vaccine": "Insufficient evidence"
+     "washout_vaccine": "Insufficient evidence",
+     "brain_mets": "Insufficient evidence",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Insufficient evidence",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "semantic": {
@@ -1569,12 +1676,32 @@
      "ecog": "Review recommended",
      "washout_radiotherapy": "Review recommended",
      "washout_corticosteroid": "Insufficient evidence",
-     "washout_vaccine": "Insufficient evidence"
+     "washout_vaccine": "Insufficient evidence",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Evidence supports retaining"
     }
    },
    "classification_changes": [
     {
      "criterion": "bilirubin",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    },
+    {
+     "criterion": "brain_mets",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    },
+    {
+     "criterion": "hcv",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    },
+    {
+     "criterion": "prior_malignancy",
      "keyword": "Insufficient evidence",
      "semantic": "Evidence supports retaining"
     }
@@ -1614,7 +1741,12 @@
      "ast_alt": "Insufficient evidence",
      "bilirubin": "Insufficient evidence",
      "ecog": "Review recommended",
-     "washout_corticosteroid": "Insufficient evidence"
+     "washout_corticosteroid": "Insufficient evidence",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "semantic": {
@@ -1662,7 +1794,12 @@
      "ast_alt": "Insufficient evidence",
      "bilirubin": "Insufficient evidence",
      "ecog": "Review recommended",
-     "washout_corticosteroid": "Insufficient evidence"
+     "washout_corticosteroid": "Insufficient evidence",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "classification_changes": [],
@@ -1687,7 +1824,13 @@
      "ast_alt": "Insufficient evidence",
      "bilirubin": "Insufficient evidence",
      "renal": "Insufficient evidence",
-     "ecog": "Review recommended"
+     "ecog": "Review recommended",
+     "brain_mets": "Insufficient evidence",
+     "hiv": "Review recommended",
+     "hbv": "Insufficient evidence",
+     "hcv": "Insufficient evidence",
+     "prior_malignancy": "Insufficient evidence",
+     "qtc": "Insufficient evidence"
     }
    },
    "semantic": {
@@ -1722,12 +1865,28 @@
      "ast_alt": "Insufficient evidence",
      "bilirubin": "Insufficient evidence",
      "renal": "Evidence supports retaining",
-     "ecog": "Review recommended"
+     "ecog": "Review recommended",
+     "brain_mets": "Insufficient evidence",
+     "hiv": "Review recommended",
+     "hbv": "Evidence supports retaining",
+     "hcv": "Insufficient evidence",
+     "prior_malignancy": "Insufficient evidence",
+     "qtc": "Evidence supports retaining"
     }
    },
    "classification_changes": [
     {
      "criterion": "renal",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    },
+    {
+     "criterion": "hbv",
+     "keyword": "Insufficient evidence",
+     "semantic": "Evidence supports retaining"
+    },
+    {
+     "criterion": "qtc",
      "keyword": "Insufficient evidence",
      "semantic": "Evidence supports retaining"
     }
@@ -1810,7 +1969,12 @@
      "ast_alt": "Evidence supports retaining",
      "bilirubin": "Review recommended",
      "renal": "Evidence supports retaining",
-     "ecog": "Review recommended"
+     "ecog": "Review recommended",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Evidence supports retaining"
     }
    },
    "semantic": {
@@ -1889,10 +2053,21 @@
      "ast_alt": "Evidence supports retaining",
      "bilirubin": "Review recommended",
      "renal": "Evidence supports retaining",
-     "ecog": "Review recommended"
+     "ecog": "Review recommended",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
-   "classification_changes": [],
+   "classification_changes": [
+    {
+     "criterion": "prior_malignancy",
+     "keyword": "Evidence supports retaining",
+     "semantic": "Insufficient evidence"
+    }
+   ],
    "comparators_changed": true
   },
   {
@@ -1977,7 +2152,12 @@
      "renal": "Evidence supports retaining",
      "ecog": "Review recommended",
      "washout_radiotherapy": "Review recommended",
-     "washout_vaccine": "Evidence supports retaining"
+     "washout_vaccine": "Evidence supports retaining",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "semantic": {
@@ -2058,7 +2238,12 @@
      "renal": "Evidence supports retaining",
      "ecog": "Review recommended",
      "washout_radiotherapy": "Review recommended",
-     "washout_vaccine": "Evidence supports retaining"
+     "washout_vaccine": "Evidence supports retaining",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Evidence supports retaining",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "classification_changes": [],
@@ -2091,7 +2276,12 @@
      "ecog": "Review recommended",
      "washout_radiotherapy": "Review recommended",
      "washout_corticosteroid": "Insufficient evidence",
-     "washout_vaccine": "Insufficient evidence"
+     "washout_vaccine": "Insufficient evidence",
+     "brain_mets": "Insufficient evidence",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Insufficient evidence",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "semantic": {
@@ -2117,7 +2307,12 @@
      "ecog": "Review recommended",
      "washout_radiotherapy": "Review recommended",
      "washout_corticosteroid": "Insufficient evidence",
-     "washout_vaccine": "Insufficient evidence"
+     "washout_vaccine": "Insufficient evidence",
+     "brain_mets": "Insufficient evidence",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Insufficient evidence",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "classification_changes": [],
@@ -2136,7 +2331,12 @@
      "hemoglobin": "Insufficient evidence",
      "ast_alt": "Insufficient evidence",
      "bilirubin": "Insufficient evidence",
-     "ecog": "Review recommended"
+     "ecog": "Review recommended",
+     "brain_mets": "Insufficient evidence",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Insufficient evidence",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "semantic": {
@@ -2148,7 +2348,12 @@
      "hemoglobin": "Insufficient evidence",
      "ast_alt": "Insufficient evidence",
      "bilirubin": "Insufficient evidence",
-     "ecog": "Review recommended"
+     "ecog": "Review recommended",
+     "brain_mets": "Insufficient evidence",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Insufficient evidence",
+     "prior_malignancy": "Insufficient evidence"
     }
    },
    "classification_changes": [],
@@ -2176,7 +2381,13 @@
      "washout_investigational": "Review recommended",
      "washout_radiotherapy": "Review recommended",
      "washout_surgery": "Insufficient evidence",
-     "washout_vaccine": "Insufficient evidence"
+     "washout_vaccine": "Insufficient evidence",
+     "brain_mets": "Insufficient evidence",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Insufficient evidence",
+     "prior_malignancy": "Insufficient evidence",
+     "qtc": "Insufficient evidence"
     }
    },
    "semantic": {
@@ -2197,7 +2408,13 @@
      "washout_investigational": "Review recommended",
      "washout_radiotherapy": "Review recommended",
      "washout_surgery": "Insufficient evidence",
-     "washout_vaccine": "Insufficient evidence"
+     "washout_vaccine": "Insufficient evidence",
+     "brain_mets": "Insufficient evidence",
+     "hiv": "Review recommended",
+     "hbv": "Review recommended",
+     "hcv": "Insufficient evidence",
+     "prior_malignancy": "Insufficient evidence",
+     "qtc": "Insufficient evidence"
     }
    },
    "classification_changes": [],
@@ -2227,7 +2444,10 @@
     "classes": {
      "ast_alt": "Evidence supports retaining",
      "bilirubin": "Evidence supports retaining",
-     "ecog": "Review recommended"
+     "ecog": "Review recommended",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Evidence supports retaining"
     }
    },
    "semantic": {
@@ -2250,7 +2470,10 @@
     "classes": {
      "ast_alt": "Evidence supports retaining",
      "bilirubin": "Evidence supports retaining",
-     "ecog": "Review recommended"
+     "ecog": "Review recommended",
+     "brain_mets": "Evidence supports retaining",
+     "hiv": "Review recommended",
+     "hbv": "Evidence supports retaining"
     }
    },
    "classification_changes": [],

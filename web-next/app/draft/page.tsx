@@ -163,7 +163,7 @@ function groupsOf(criteria: DraftCriterion[]) {
 }
 
 function shownValue(c: DraftCriterion): string {
-  return c.proposed ? valueText(c.proposed.operator, c.proposed.value, c.proposed.unit, c.label) : "no value";
+  return c.proposed ? valueText(c.proposed.operator, c.proposed.value, c.proposed.unit, c.label, c.proposed.display) : "no value";
 }
 
 function IdeaLine({ draft }: { draft: Draft }) {
@@ -365,7 +365,7 @@ function draftMarkdown(draft: Draft): string {
       out.push(`### ${n + 1}. ${c.label}`, "");
       const src = sourceOf(c);
       if (c.status === "drafted" && c.proposed) {
-        out.push(`- Value: ${valueText(c.proposed.operator, c.proposed.value, c.proposed.unit, c.label)}${draftHasCondition(c) ? " (the source wording adds a condition; see the quote)" : ""}`);
+        out.push(`- Value: ${valueText(c.proposed.operator, c.proposed.value, c.proposed.unit, c.label, c.proposed.display)}${draftHasCondition(c) ? " (the source wording adds a condition; see the quote)" : ""}`);
         const where = src ? `${src.acronym ?? src.nct_id}${src.page ? `, protocol p.${src.page}` : ""}` : c.proposed.source_nct_id;
         out.push(`- Source: ${where}${src ? `: "${excerpt(src.quote)}"` : ""}`);
         if (src?.url) out.push(`- Protocol: ${src.page ? `${src.url}#page=${src.page}` : src.url}`);
@@ -682,7 +682,7 @@ export default function DraftPage() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight text-ink">Create criteria from an idea</h1>
             <p className="mt-1 text-sm text-muted">
-              Lab, ECOG and washout criteria drafted from earlier trials of a similar regimen; each proposed value is verified against its source, then
+              Criteria drafted from earlier trials of a similar regimen; each proposed value is verified against its source, then
               critiqued.
             </p>
           </div>

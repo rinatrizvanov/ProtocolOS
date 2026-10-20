@@ -148,7 +148,7 @@
         const retro = guidance.filter((n) => n.data.retrospective).length;
         const gIds = new Set(guidance.map((n) => n.id));
         const gPoints = d.edges.filter((e) => gIds.has(e.from) || gIds.has(e.to)).reduce((s, e) => s + (e.points || 0), 0);
-        const vals = looser ? [...new Set(looser.data.members.map((m) => byId[m] && `${byId[m].data.operator}${byId[m].data.value_norm} ${byId[m].data.unit_norm}`).filter(Boolean))] : [];
+        const vals = looser ? [...new Set(looser.data.members.map((m) => byId[m] && (byId[m].data.display || `${byId[m].data.operator}${byId[m].data.value_norm} ${byId[m].data.unit_norm}`)).filter(Boolean))] : [];
         const lines = [];
         if (looser) lines.push(`<li><span class="tour-dot challenge"></span><b>+${looser.data.points} challenge</b>: ${plural(looser.data.members.length, "comparable trial")} used a lower threshold (${h(vals.join(", "))}), precedent for review.</li>`);
         if (regimen) lines.push(`<li><span class="tour-dot support"></span><b>+${regimen.data.points} support</b>: the regimen supports having <i>a</i> threshold, not this value.</li>`);

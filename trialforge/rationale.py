@@ -17,6 +17,7 @@ import math
 import re
 
 from . import druglib
+from .extract import criterion_text
 
 SCHEMA_VERSION = 1
 BLIND_SPOT = ("Rationale in non-public sources (preclinical toxicology, internal development data, regulator "
@@ -50,10 +51,7 @@ CHEMO = re.compile(r"chemo", re.I)
 
 
 def _fmt(c: dict) -> str:
-    v = c.get("value_norm")
-    if v is not None and float(v).is_integer():
-        v = int(v)
-    return f"{c.get('operator') or ''}{v} {c.get('unit_norm') or ''}".strip()
+    return criterion_text(c)
 
 
 def _status(item: dict) -> str:

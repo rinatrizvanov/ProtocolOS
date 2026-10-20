@@ -53,7 +53,7 @@ class SourceRef:
 class Criterion:
     id: str
     analyte: str
-    category: str  # lab | performance_status | washout
+    category: str  # lab | performance_status | washout | condition (brain metastases, infections, prior cancer, QTc)
     label: str
     section: str  # inclusion | exclusion
     operator: str | None
@@ -66,9 +66,20 @@ class Criterion:
     source: SourceRef | None = None
     item_text: str = ""
     method: str = "rule-based"
+    # Words for a policy criterion (brain metastases, HIV, HBV, HCV), whose value_norm is only its permissiveness level.
+    display: str | None = None
 
     def to_dict(self):
         return asdict(self)
+
+
+def criterion_text(c: dict) -> str:
+    """How a criterion's requirement reads: its policy in words, else operator, value and unit."""
+    if c.get("display"):
+        return c["display"]
+    v = c.get("value_norm")
+    v = int(v) if v is not None and float(v).is_integer() else v
+    return f"{c.get('operator') or ''}{v} {c.get('unit_norm') or ''}".strip()
 
 
 @dataclass
@@ -87,6 +98,12 @@ LABELS = {
     "ast_alt": "AST / ALT",
     "renal": "Renal function",
     "ecog": "ECOG performance status",
+    "brain_mets": "Brain metastases",
+    "hiv": "HIV infection",
+    "hbv": "Hepatitis B",
+    "hcv": "Hepatitis C",
+    "prior_malignancy": "Malignancy-free interval",
+    "qtc": "QTc interval",
 }
 
 
@@ -485,6 +502,181 @@ def extract_washouts(lines: list[Line], url: str, doc_kind: str) -> list[Criteri
     return out
 
 
+# ------------------------------------------------------------- conditions: brain metastases, infections, prior cancer, QTc
+#
+# Policy criteria have no threshold: value_norm is a permissiveness level (higher allows more patients), used only to
+# compare protocols with each other, and `display` says the policy in words. Levels follow the FDA eligibility
+# guidances of July 2020 on brain metastases and on HIV, HBV and HCV infections.
+
+POLICY_UNIT = "policy level"
+BRAIN_POLICY = {0: "Brain metastases excluded", 1: "Treated, stable brain metastases allowed; active excluded",
+                2: "Untreated, asymptomatic brain metastases allowed"}
+HIV_POLICY = {0: "Known HIV infection excluded", 1: "HIV infection allowed when controlled"}
+HBV_POLICY = {0: "Chronic or known hepatitis B excluded", 1: "Only active hepatitis B excluded"}
+HCV_POLICY = {0: "Hepatitis C infection or history excluded", 1: "Only active hepatitis C excluded"}
+
+BRAIN_KW = re.compile(r"brain\s+metast|CNS\s+metast|central\s+nervous\s+system\s+(?:\(CNS\)\s+)?metast|metastases\s+(?:to|of|in)\s+the\s+(?:brain|CNS)|^\W*brain\s+metastases", re.I)
+ALLOWED = r"(?<!in)(?<!not )(?:eligible|allowed|permitted|may\s+(?:be\s+)?(?:participate|enrol(?:l)?ed|included))"
+BRAIN_UNTREATED_OK = re.compile(
+    # no "treated" between the CNS mention and the allowance: "untreated ... CNS metastases Patients with treated CNS lesions are
+    # eligible" is an exclusion followed by an allowance for treated lesions (a bullet without a full stop)
+    rf"untreated(?:(?!\btreated\b)[^.;•▪◦●]){{0,80}}(?:brain|CNS)(?:(?!\btreated\b)[^.;•▪◦●]){{0,120}}{ALLOWED}|{ALLOWED}[^.;•▪◦●]{{0,60}}untreated[^.;•▪◦●]{{0,40}}(?:brain|CNS)|"
+    rf"asymptomatic\s+or\s+(?:previously\s+)?treated", re.I)
+BRAIN_TREATED_OK = re.compile(
+    rf"(?:previously\s+)?treated[^.;•▪◦●]{{0,80}}(?:brain|CNS)[^.;•▪◦●]{{0,160}}{ALLOWED}|{ALLOWED}[^.;•▪◦●]{{0,40}}(?:if|provided|when)[^.;•▪◦●]{{0,40}}(?:brain|CNS)[^.;•▪◦●]{{0,80}}treated|"
+    rf"provided\s+(?:that\s+)?(?:they|the\s+(?:brain\s+)?metastases)\s+(?:are|have)\s+(?:\w+\s+){{0,3}}(?:stable|treated)|stable[^.;•▪◦●]{{0,120}}{ALLOWED}|"
+    rf"(?:must|should)\s+be\s+(?:\w+[ ,]+){{0,4}}(?:asymptomatic|stable|treated)|"
+    rf"(?:active|untreated|symptomatic|unstable|progressing|progressive)\s+(?:\w+\s+)?(?:brain|CNS|central\s+nervous)", re.I)
+STABLE_FOR = re.compile(r"stable\s+(?:for\s+)?(?:at\s+least\s+)?(\d+)\s*(week|day|month)s?", re.I)
+STEROID_FREE = re.compile(r"(?:without|not\s+requiring|off)\s+(?:the\s+use\s+of\s+)?(?:systemic\s+)?(?:cortico)?steroids?[^.;•▪◦●]{0,60}?(\d+)\s*(day|week|month)s?", re.I)
+
+HIV_KW = re.compile(r"\bHIV\b|human\s+immunodeficiency\s+virus", re.I)
+HIV_OK = re.compile(rf"HIV[^.;•▪◦●]{{0,160}}{ALLOWED}|CD4\+?[^.;•▪◦●]{{0,40}}(?:≥|>=|>|at\s+least)\s*\d{{2,3}}|viral\s+load[^.;•▪◦●]{{0,40}}(?:<|undetectable|below)|"
+                    rf"(?:effective|stable)\s+(?:antiretroviral|ART)|well[- ]controlled\s+HIV|uncontrolled\s+(?:\w+\s+){{0,3}}(?:HIV|human\s+immunodeficiency)", re.I)
+CD4 = re.compile(r"CD4\+?(?:\s+T[- ]cell)?\s+(?:count|cell\s+count)?s?[^.;\d]{0,20}(?:≥|>=|>|at\s+least)\s*(\d{2,3})", re.I)
+HBV_KW = re.compile(r"hepatitis\s+B|\bHBV\b|HBsAg|HepBsAg", re.I)
+HCV_KW = re.compile(r"hepatitis\s+(?:B\s*(?:,|/|and|or)\s*)?C\b|\bHCV\b", re.I)
+# A chronic carrier with suppressed virus may enrol; else a positive surface antigen (any chronic infection) excludes.
+HBV_CARRIER_OK = re.compile(rf"(?:HBsAg|HepBsAg|chronic|hepatitis\s+B)[^.;•▪◦●]{{0,160}}(?:controlled|DNA[^.;•▪◦●]{{0,60}}(?:below|undetectable|negative|<))[^.;•▪◦●]{{0,160}}{ALLOWED}|"
+                            rf"uncontrolled\s+(?:\w+\s+){{0,3}}(?:hepatitis\s+B|HBV)", re.I)
+HBSAG_EXCLUDES = re.compile(r"(?:HBsAg|surface\s+antigen)[^.;•▪◦●]{0,40}(?:positive|reactive|\+)|(?:positive|reactive)[^.;•▪◦●]{0,40}(?:HBsAg|surface\s+antigen)|chronic\s+or\s+acute", re.I)
+HCV_ACTIVE_ONLY = re.compile(r"\bRNA\b|\bPCR\b|viral\s+load|presence\s+of\s+(?:the\s+)?virus|uncontrolled|\bactive\b", re.I)
+ACTIVE_ONLY = re.compile(r"\bactive\b|uncontrolled|detectable|\bDNA\b|viral\s+load|replicat", re.I)
+
+# "malignancy" wording only: "other anti-cancer therapy" and the like are not about a second cancer.
+OTHER_CANCER = re.compile(r"(?:additional|other|second(?:ary)?|another|prior|concurrent|previous|history\s+of(?:\s+another)?)\s+(?:primary\s+|invasive\s+|active\s+|known\s+)*malignanc|"
+                          r"(?:second|another|other)\s+primary\s+(?:cancer|tumou?r)|malignanc(?:y|ies)\s+other\s+than|"
+                          r"another\s+(?:(?:previous|prior|concomitant|or)\s+)*cancer\b(?!\s+(?:therap|treatment|drug))", re.I)
+WORD_NUM = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5}
+YEARS = r"(\d+|one|two|three|four|five)\s*(?:\(\d+\)\s*)?years?"
+WITHIN_YEARS = re.compile(rf"(?:within|in)\s+(?:the\s+)?(?:past|last|previous|preceding|prior)?\s*{YEARS}|{YEARS}\s+(?:prior\s+to|before|since|from)|"
+                          rf"(?:for|of|at\s+least|more\s+than|≥|>=|>)\s*{YEARS}", re.I)
+# "No history of prior malignancy" with no time limit: the strictest interval, kept comparable as a very long one.
+NO_PRIOR_CANCER = re.compile(r"no\s+(?:known\s+)?(?:history\s+of\s+)?(?:prior|other|any|another)\s+(?:primary\s+)?malignanc|history\s+of\s+(?:another\s+|prior\s+)?(?:primary\s+)?malignanc", re.I)
+LIFETIME_YEARS = 100
+ONLY_ACTIVE_CANCER = re.compile(r"progress(?:ing|ed)|requir(?:es|ed|ing)\s+(?:active\s+)?treatment|active\s+treatment|\bactive\s+within", re.I)
+CANCER_EXCEPTIONS = [("basal cell carcinoma of the skin", r"basal[- ]cell"), ("cutaneous squamous cell carcinoma", r"squamous[- ]cell\s+(?:carcinoma\s+)?(?:of\s+the\s+)?skin|squamous\s+cell\s+skin|cutaneous\s+squamous"),
+                     ("non-melanoma skin cancer", r"non-?melanoma(?:tous)?\s+skin"), ("carcinoma in situ", r"in[- ]situ"),
+                     ("superficial bladder cancer", r"superficial\s+bladder|non-?muscle[- ]invasive")]
+
+QTC_KW = re.compile(r"QTc[FB]?\b|QT\s+interval\s+corrected|corrected\s+QT", re.I)
+QTC_VAL = re.compile(r"(≥|>=|>|≤|<=|<|greater\s+than|more\s+than|exceeding)\s*(\d{3})\s*(?:ms|msec|milliseconds)", re.I)
+# Items in condition criteria also start at bullets (Roche "•", registry "*", "!" from a symbol font) and at BMS-style
+# lettered sub-items "a)"; "a." sub-items qualify their parent item and stay with it.
+SUB_ITEM = re.compile(r"^\s{0,20}(?:[•*▪◦●!]\s*|[a-z]\)\s+)\S|^\s{0,20}[•*▪◦●!]\s*$")
+
+
+def _condition_items(lines: list[Line]) -> list[list[Line]]:
+    out = []
+    for item in group_items(lines):
+        cur: list[Line] = []
+        for ln in item:
+            if cur and SUB_ITEM.match(ln.text):
+                out.append(cur)
+                cur = []
+            cur.append(ln)
+        if cur:
+            out.append(cur)
+    return out
+
+
+def _policy(cid: str, level: int, text: str, ln: Line, item_text: str, url: str, doc_kind: str, conditions=None) -> Criterion:
+    return Criterion(id=cid, analyte=cid, category="condition", label=LABELS[cid], section=ln.section, operator="policy",
+                     value=float(level), unit=POLICY_UNIT, value_norm=float(level), unit_norm=POLICY_UNIT,
+                     conditions=conditions or [], source=SourceRef(doc_kind, url, ln.page, ln.line, ln.text.strip()),
+                     item_text=item_text, display=text)
+
+
+def _first_line(item: list[Line], kw: re.Pattern) -> Line:
+    return next((l for l in item if kw.search(l.text)), item[0])
+
+
+def _items_about(items: list[list[Line]], kw: re.Pattern) -> list[tuple[list[Line], str]]:
+    """Items mentioning `kw`, the one where it comes earliest first (the item about it, not one citing it)."""
+    found = [(it, _join(it)) for it in items if kw.search(_join(it))]
+    return sorted(found, key=lambda x: kw.search(x[1]).start())
+
+
+def _sentences_about(text: str, kw: re.Pattern) -> str:
+    return " ".join(sent for sent in re.split(r"(?<=[.;])\s+|\s*[•▪◦●]\s*", text) if kw.search(sent))
+
+
+def _span(n: str, unit: str) -> str:
+    return f"{n} {unit.lower()}{'' if n == '1' else 's'}"
+
+
+def extract_conditions(lines: list[Line], url: str, doc_kind: str) -> list[Criterion]:
+    """Brain metastases, HIV, HBV and HCV policies, the malignancy-free interval and the QTc limit, where stated."""
+    out: list[Criterion] = []
+    items = _condition_items(lines)
+    brain = _items_about(items, BRAIN_KW)
+    if brain:
+        text = " ".join(t for _, t in brain[:3])
+        level = 2 if BRAIN_UNTREATED_OK.search(text) else 1 if BRAIN_TREATED_OK.search(text) else 0
+        conds = []
+        if (m := STABLE_FOR.search(text)):
+            conds.append({"when": "stability", "text": f"stable for at least {_span(m.group(1), m.group(2))}"})
+        if (m := STEROID_FREE.search(text)):
+            conds.append({"when": "steroids", "text": f"off corticosteroids for at least {_span(m.group(1), m.group(2))}"})
+        out.append(_policy("brain_mets", level, BRAIN_POLICY[level], _first_line(brain[0][0], BRAIN_KW), text, url, doc_kind, conds))
+    hiv = _items_about(items, HIV_KW)
+    if hiv:
+        text = _sentences_about(hiv[0][1], HIV_KW) or hiv[0][1]
+        conds = [{"when": "CD4", "text": f"CD4+ count at least {m.group(1)} cells/µL"}] if (m := CD4.search(hiv[0][1])) else []
+        level = 1 if HIV_OK.search(hiv[0][1]) else 0
+        out.append(_policy("hiv", level, HIV_POLICY[level], _first_line(hiv[0][0], HIV_KW), text, url, doc_kind, conds))
+    hbv = _items_about(items, HBV_KW)
+    if hbv:
+        text = " ".join(_sentences_about(t, HBV_KW) for _, t in hbv[:2])
+        level = 1 if HBV_CARRIER_OK.search(text) else 0 if HBSAG_EXCLUDES.search(text) else 1 if ACTIVE_ONLY.search(text) else 0
+        out.append(_policy("hbv", level, HBV_POLICY[level], _first_line(hbv[0][0], HBV_KW), text, url, doc_kind))
+    hcv = _items_about(items, HCV_KW)
+    if hcv:
+        text = " ".join(_sentences_about(t, re.compile(r"hepatitis\s+C|\bHCV\b|hepatitis\s+B\s*(?:or|and|/)\s*C", re.I)) for _, t in hcv[:2])
+        level = 1 if HCV_ACTIVE_ONLY.search(text) else 0
+        out.append(_policy("hcv", level, HCV_POLICY[level], _first_line(hcv[0][0], HCV_KW), text, url, doc_kind))
+    # The look-back can sit in a sub-bullet of the same numbered item ("History of another primary malignancy except for:
+    # ! ... no known active disease ≥5 years"), so it is searched in the window after the keyword, within the item.
+    found = None
+    for item, text in _items_about(group_items(lines), OTHER_CANCER):
+        for km in OTHER_CANCER.finditer(text):
+            window = text[km.start():][:400]
+            m = WITHIN_YEARS.search(window)
+            only_active = ONLY_ACTIVE_CANCER.search(window)
+            # the negation precedes the keyword: "Have no history of prior malignancy"
+            lifetime = not m and not only_active and NO_PRIOR_CANCER.search(text[max(0, km.start() - 40):km.start() + 400])
+            if m or only_active or lifetime:  # else not a comparable interval: no look-back, activity or lifetime rule
+                found = (item, window, m, only_active, lifetime)
+                break
+        if found:
+            break
+    if found:
+        item, window, m, only_active, lifetime = found
+        raw = next((g for g in m.groups() if g), "0").lower() if m else "0"
+        years = LIFETIME_YEARS if lifetime else (WORD_NUM.get(raw) or int(raw))
+        conds = [{"when": "only if active", "text": "progressing or requiring active treatment"}] if only_active else []
+        ln = next((l for l in item if OTHER_CANCER.search(l.text) and l.text.strip()[:40] in window), _first_line(item, OTHER_CANCER))
+        out.append(Criterion(id="prior_malignancy", analyte="prior_malignancy", category="condition", label=LABELS["prior_malignancy"],
+                             section=ln.section, operator="≥", value=float(years), unit="years", value_norm=float(years), unit_norm="years",
+                             conditions=conds, exceptions=[name for name, rx in CANCER_EXCEPTIONS if re.search(rx, window, re.I)],
+                             source=SourceRef(doc_kind, url, ln.page, ln.line, ln.text.strip()), item_text=window,
+                             display="No prior malignancy at any time (listed exceptions aside)" if lifetime else None))
+    for item, text in _items_about(items, QTC_KW):
+        m = QTC_VAL.search(text[QTC_KW.search(text).start():])
+        if not m:
+            continue
+        op = _norm_op({"greater than": ">", "more than": ">", "exceeding": ">"}.get(m.group(1).lower(), m.group(1)), item[0].section)
+        if op not in ("≤", "<"):
+            continue  # a QTc floor is not an eligibility limit
+        ln = _first_line(item, QTC_KW)
+        conds = [{"when": "sex-specific", "text": "different limits by sex"}] if re.search(r"\bmales?\b|\bfemales?\b|\bmen\b|\bwomen\b", text, re.I) else []
+        out.append(Criterion(id="qtc", analyte="qtc", category="condition", label=LABELS["qtc"], section=item[0].section, operator=op,
+                             value=float(m.group(2)), unit="ms", value_norm=float(m.group(2)), unit_norm="ms", conditions=conds,
+                             source=SourceRef(doc_kind, url, ln.page, ln.line, ln.text.strip()), item_text=text))
+        break
+    return out
+
+
 # ------------------------------------------------------------- regimen
 
 DOSE_CONTEXT = re.compile(r"mg/m|AUC\s*\d|mg/kg|\bQ[1-4]W\b|every\s+[1-4]\s+weeks|\bIV\b|infusion|\d+\s*mg\b", re.I)
@@ -581,7 +773,7 @@ def protocol_criteria(doc: PdfDoc) -> tuple[list[Criterion], list[Line], str]:
     lines = eligibility_lines(doc)
     if lines:
         return (extract_labs(lines, doc.url, "protocol") + extract_ecog(lines, doc.url, "protocol")
-                + extract_washouts(lines, doc.url, "protocol"), lines, "section headings")
+                + extract_washouts(lines, doc.url, "protocol") + extract_conditions(lines, doc.url, "protocol"), lines, "section headings")
     lines = anchor_lines(doc)
     return extract_labs(lines, doc.url, "protocol"), lines, "lab-block anchor (eligibility headings not extractable from PDF text)"
 
@@ -604,12 +796,14 @@ def analyze_trial(nct_id: str, doc_override: PdfDoc | None = None) -> dict:
         # supplement criteria the PDF region did not yield from the registry text
         have = {c.id for c in criteria}
         reg = registry_lines(study)
-        for c in extract_ecog(reg, summary["registry_url"], "registry") + extract_washouts(reg, summary["registry_url"], "registry"):
+        for c in (extract_ecog(reg, summary["registry_url"], "registry") + extract_washouts(reg, summary["registry_url"], "registry")
+                  + extract_conditions(reg, summary["registry_url"], "registry")):
             if c.id not in have:
                 criteria.append(c)
     if not doc or not criteria:
         lines = registry_lines(study)
-        criteria = extract_labs(lines, summary["registry_url"], "registry") + extract_ecog(lines, summary["registry_url"], "registry") + extract_washouts(lines, summary["registry_url"], "registry")
+        criteria = (extract_labs(lines, summary["registry_url"], "registry") + extract_ecog(lines, summary["registry_url"], "registry")
+                    + extract_washouts(lines, summary["registry_url"], "registry") + extract_conditions(lines, summary["registry_url"], "registry"))
         summary["criteria_source"] = "registry eligibility text (no protocol PDF available)" if not doc else "registry eligibility text (protocol section not parsed)"
     regimen = extract_regimen(study, doc)
     return {"study": summary, "criteria": [c.to_dict() for c in criteria], "regimen": regimen, "_doc": doc}

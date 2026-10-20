@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
-import { getProtocolPage, getReview, type ComparatorRow, type ProtocolPage, type Selection } from "@/lib/api";
+import { getProtocolPage, getReview, isPolicy, requirementText, type ComparatorRow, type Criterion, type ProtocolPage, type Selection } from "@/lib/api";
 import { useApi } from "@/lib/useApi";
 import { Failed, Frame, Pending } from "../components/Frame";
 import { COVERAGE_TEXT, DIRECTION_TEXT, fmtLimit, sameKind, sameText } from "./limits";
@@ -147,6 +147,74 @@ const BAR: Record<string, string> = { "comparator looser": "bg-look/40", "compar
 
 const fmt = (v: number) => (Number.isInteger(v) ? String(v) : String(Number(v.toFixed(3))));
 
+// A condition policy (brain metastases, HIV, hepatitis B or C) has levels, not a scale: each trial's policy in words,
+// with the engine's direction, and no dot plot.
+function PolicyCompare({ rows, target, noComparators, sponsors, detailed }: {
+  rows: ComparatorRow[];
+  target: Criterion;
+  noComparators: boolean;
+  sponsors: Map<string, string>;
+  detailed: boolean;
+}) {
+  const [open, setOpen] = useState<Stated | null>(null);
+  const closeDrawer = useCallback(() => setOpen(null), []);
+  const stated = rows.filter(isStated);
+  const count = (d: string) => stated.filter((r) => r.direction === d).length;
+  const n = stated.length;
+  const caption = noComparators
+    ? "No similar trial was found for this protocol."
+    : n === 0
+      ? "None of the similar trials states this criterion."
+      : `Of ${n} similar ${n === 1 ? "trial" : "trials"} stating this policy, ${count("comparator looser")} used a less strict one, ${count("comparator stricter")} a stricter one and ${count("same")} the same; differences are questions for the team.`;
+  return (
+    <Frame variant={detailed ? "app" : "tour"} headline={detailed ? "Policies in similar trials" : "Compare: one rule, similar trials."} caption={caption}>
+      <div data-testid="policy-compare" className="flex w-full max-w-3xl flex-col">
+        <div className="pb-3">
+          <p className="text-xs text-muted">this trial</p>
+          <p data-testid="target-policy" className="text-lg font-semibold text-ink">
+            {requirementText(target)}
+          </p>
+        </div>
+        <ul className="flex flex-col">
+          {rows.map((r) => (
+            <li key={r.nct_id} className="border-t border-line">
+              {isStated(r) ? (
+                <button
+                  type="button"
+                  data-testid="comparator-policy"
+                  data-nct={r.nct_id}
+                  data-direction={r.direction}
+                  onClick={() => setOpen(r)}
+                  title="Open the protocol page this policy comes from"
+                  className="flex w-full items-start gap-3 py-2 text-left transition-colors duration-150 hover:bg-line/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-ink"
+                >
+                  <span aria-hidden className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${DOT[r.direction] ?? "bg-uncounted"}`} />
+                  <span className="flex min-w-0 flex-col">
+                    <span className="text-sm text-ink">
+                      <span className="font-medium">{r.acronym ?? r.nct_id}</span>: {requirementText(r.criterion)}
+                    </span>
+                    <span className="text-xs text-muted">
+                      {r.direction === "same" ? "same policy (may be copied from older templates)" : (DIRECTION_TEXT[r.direction] ?? r.direction)}
+                      {detailed && sponsors.get(r.nct_id) ? ` · ${sponsors.get(r.nct_id)}` : ""}
+                    </span>
+                  </span>
+                </button>
+              ) : (
+                <p className="py-2 pl-5.5 text-sm text-muted">
+                  <span className="font-medium text-ink">{r.acronym ?? r.nct_id}</span>: not found in its eligibility text
+                </p>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+      {open && (
+        <ProtocolDrawer nct={open.nct_id} page={open.criterion.source.page} quote={open.criterion.source.text} title={open.acronym ?? open.nct_id} onClose={closeDrawer} />
+      )}
+    </Frame>
+  );
+}
+
 // `detailed` is the app's Compare tab (sponsor and regimen lines, body-scale heading); the tour keeps the short labels.
 export default function Screen2({ nct, criterionId, detailed = false }: Selection & { detailed?: boolean }) {
   const state = useApi(() => getReview(nct));
@@ -156,6 +224,9 @@ export default function Screen2({ nct, criterionId, detailed = false }: Selectio
   if (state.status === "error") return <Failed message={state.message} action="load the comparison" />;
   const rows = state.data.comparison[criterionId] ?? [];
   const target = state.data.reviews.find((r) => r.criterion.id === criterionId)?.criterion;
+  const sponsors = new Map(state.data.comparators.map((c) => [c.study.nct_id, c.study.sponsor]));
+  if (target && isPolicy(target))
+    return <PolicyCompare rows={rows} target={target} noComparators={state.data.comparators.length === 0} sponsors={sponsors} detailed={detailed} />;
   if (!target || target.value_norm === null)
     return <Failed message={`no numeric ${criterionId} limit in the review`} action="draw the comparison" engine={false} />;
   const targetValue = target.value_norm;
@@ -165,7 +236,6 @@ export default function Screen2({ nct, criterionId, detailed = false }: Selectio
   const comparable = rows.filter((r) => r.direction !== "different measure");
   const plotted = comparable.filter(isPlotted);
   const withCriterion = comparable.filter(isStated);
-  const sponsors = new Map(state.data.comparators.map((c) => [c.study.nct_id, c.study.sponsor]));
   const looser = withCriterion.filter((r) => r.direction === "comparator looser").length;
   const stricter = withCriterion.filter((r) => r.direction === "comparator stricter").length;
   const same = withCriterion.filter((r) => r.direction === "same").length;

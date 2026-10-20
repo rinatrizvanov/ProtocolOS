@@ -51,6 +51,24 @@ FDA_GUIDANCES = {
         "issued": "2026-07",
         "url": "https://www.fda.gov/media/178016/download",
     },
+    "brain": {
+        "title": "Cancer Clinical Trial Eligibility Criteria: Brain Metastases",
+        "date": "July 2020",
+        "issued": "2020-07",
+        "url": "https://www.fda.gov/media/121317/download",
+    },
+    "infection": {
+        "title": "Cancer Clinical Trial Eligibility Criteria: Patients with HIV, Hepatitis B Virus, or Hepatitis C Virus Infections",
+        "date": "July 2020",
+        "issued": "2020-07",
+        "url": "https://www.fda.gov/media/121319/download",
+    },
+    "organ": {
+        "title": "Cancer Clinical Trial Eligibility Criteria: Patients with Organ Dysfunction or Prior or Concurrent Malignancies",
+        "date": "July 2020",
+        "issued": "2020-07",
+        "url": "https://www.fda.gov/media/123745/download",
+    },
     "enrichment": {
         "title": "Enrichment Strategies for Clinical Trials to Support Determination of Effectiveness of Human Drugs and Biological Products",
         "date": "March 2019",

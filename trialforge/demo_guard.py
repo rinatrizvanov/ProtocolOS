@@ -60,7 +60,8 @@ def _api():
 
 
 def is_cold(nct: str, as_of: str) -> bool:
-    """True when `api.get_review(nct, as_of)` would compute instead of reading a cache."""
+    """True when no review of `nct` was ever cached. A cache with an older schema stamp (api.REVIEW_SCHEMA) counts as warm:
+    it was allowed once, and api.get_review computes it again once."""
     api = _api()
     key = f"{nct.strip().upper()}_{as_of}"
     return key not in api._mem and api.review_file(key) is None

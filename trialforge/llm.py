@@ -335,7 +335,8 @@ CRITIC_SCHEMA = {
 
 def critique(review_item: dict, regimen: dict, creds: Credentials) -> dict:
     payload = {
-        "criterion": {k: review_item["criterion"][k] for k in ("label", "operator", "value_norm", "unit_norm", "section", "conditions", "exceptions")},
+        "criterion": {k: review_item["criterion"][k] for k in ("label", "operator", "value_norm", "unit_norm", "section", "conditions", "exceptions")
+                      + (("display",) if review_item["criterion"].get("display") else ())},
         "regimen": {k: {"class": v["class"], "myelosuppressive": v["myelosuppressive"], "hepatic": v["hepatic"], "renal": v["renal"], "immunotherapy": v["immunotherapy"]} for k, v in regimen.items()},
         "classification": review_item["classification"],
         "explanation": review_item["explanation"],
@@ -376,8 +377,13 @@ PARSE_SCHEMA = {
 }
 
 
+def _current(c: dict) -> str:
+    """A criterion's requirement in prompts: a policy in words, numeric limits as they were always written."""
+    return c.get("display") or f"{c['operator']}{c['value_norm']} {c['unit_norm']}"
+
+
 def parse_recommendation(text: str, ctx: dict, creds: Credentials) -> dict:
-    crits = [{"id": c["id"], "label": c["label"], "current": f"{c['operator']}{c['value_norm']} {c['unit_norm']}"} for c in ctx["target"]["criteria"]]
+    crits = [{"id": c["id"], "label": c["label"], "current": _current(c)} for c in ctx["target"]["criteria"]]
     user = json.dumps({"criteria": crits, "regimen": sorted(ctx["target"]["regimen"]["drugs"]), "recommendation": text}, ensure_ascii=False)
     out = json_call(PARSE_SYSTEM, user, PARSE_SCHEMA, creds, effort="low")
     out["claims"] = [{k: v for k, v in c.items() if v is not None} for c in out["claims"]]
@@ -399,8 +405,8 @@ LLM_VERIFY_SCHEMA = {
 
 def llm_only_verify(rec: dict, ctx: dict, creds: Credentials) -> dict:
     context = {
-        "criteria": [{"id": c["id"], "current": f"{c['operator']}{c['value_norm']} {c['unit_norm']}"} for c in ctx["target"]["criteria"]],
+        "criteria": [{"id": c["id"], "current": _current(c)} for c in ctx["target"]["criteria"]],
         "regimen": {k: v["class"] for k, v in ctx["target"]["regimen"]["drugs"].items()},
-        "comparators": [{"nct_id": c["study"]["nct_id"], "thresholds": {x["id"]: f"{x['operator']}{x['value_norm']} {x['unit_norm']}" for x in c["criteria"]}} for c in ctx["comparators"]],
+        "comparators": [{"nct_id": c["study"]["nct_id"], "thresholds": {x["id"]: _current(x) for x in c["criteria"]}} for c in ctx["comparators"]],
     }
     return json_call(LLM_VERIFY_SYSTEM, json.dumps({"context": context, "recommendation": rec}, ensure_ascii=False), LLM_VERIFY_SCHEMA, creds)

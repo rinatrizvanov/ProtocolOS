@@ -23,6 +23,8 @@ from __future__ import annotations
 
 import re
 
+from .extract import criterion_text
+
 NCT_RE = re.compile(r"^NCT\d{8}$")
 
 PLAUSIBLE = {
@@ -33,17 +35,27 @@ PLAUSIBLE = {
     "ast_alt": (1.0, 20.0, "×ULN"),
     "renal": (10.0, 120.0, "mL/min"),
     "ecog": (0.0, 4.0, "ECOG"),
+    "brain_mets": (0.0, 2.0, "policy level"),
+    "hiv": (0.0, 1.0, "policy level"),
+    "hbv": (0.0, 1.0, "policy level"),
+    "hcv": (0.0, 1.0, "policy level"),
+    "prior_malignancy": (0.0, 100.0, "years"),  # extract.LIFETIME_YEARS stands for "no prior malignancy at any time"
+    "qtc": (400.0, 550.0, "ms"),
 }
 UNIT_ALIASES = {
     "g/dl": "g/dL", "x10^9/l": "×10⁹/L", "×10^9/l": "×10⁹/L", "x 10^9/l": "×10⁹/L", "×10⁹/l": "×10⁹/L",
     "10^9/l": "×10⁹/L", "xuln": "×ULN", "×uln": "×ULN", "uln": "×ULN", "ml/min": "mL/min", "days": "days", "ecog": "ECOG",
+    "years": "years", "ms": "ms", "msec": "ms", "policylevel": "policy level",
 }
 RELEVANT_PROPERTY = {
     "hemoglobin": "myelosuppressive", "anc": "myelosuppressive", "platelets": "myelosuppressive",
     "bilirubin": "hepatic", "ast_alt": "hepatic", "renal": "renal", "washout_corticosteroid": "immunotherapy",
 }
 GUIDANCE_FOR_CATEGORY = {"lab": "lab", "performance_status": "ps", "washout": "washout"}
-HIGHER_IS_STRICTER = {"hemoglobin", "anc", "platelets", "renal"}
+# condition criteria have one category but three guidances
+GUIDANCE_FOR_ANALYTE = {"brain_mets": "brain", "hiv": "infection", "hbv": "infection", "hcv": "infection",
+                        "prior_malignancy": "organ", "qtc": "organ"}
+HIGHER_IS_STRICTER = {"hemoglobin", "anc", "platelets", "renal", "prior_malignancy"}
 
 OVERCLAIM = re.compile(
     r"\b(?:is|are|would be|will be)\s+(?:completely\s+|entirely\s+)?safe\b|no (?:additional |increased )?risk|proven|guarantee[sd]?|"
@@ -59,6 +71,11 @@ def _norm_unit(u: str | None) -> str | None:
         return None
     k = u.strip().lower().replace(" ", "")
     return UNIT_ALIASES.get(k, u.strip())
+
+
+def expected_guidance(crit: dict) -> str | None:
+    """The FDA guidance that addresses this criterion; a quote from another one fails the fda_topic check."""
+    return GUIDANCE_FOR_ANALYTE.get(crit.get("analyte")) or GUIDANCE_FOR_CATEGORY.get(crit.get("category"))
 
 
 def _looser(analyte: str, new: float, old: float) -> bool:
@@ -94,7 +111,7 @@ def verify(rec: dict, ctx: dict, resolvers: dict | None = None) -> dict:
     if crit is None:
         fail("criterion_exists", f"Criterion '{rec.get('criterion_id')}' was not extracted from {target['study']['nct_id']}.")
         return _result(checks)
-    ok("criterion_exists", f"{crit['label']} {crit['operator']}{crit['value_norm']} {crit['unit_norm']} (p.{crit['source']['page']}).")
+    ok("criterion_exists", f"{crit['label']} {criterion_text(crit)} (p.{crit['source']['page']}).")
     analyte = crit["analyte"]
     action = rec.get("action", "")
     regimen = target["regimen"]["drugs"]
@@ -171,7 +188,7 @@ def verify(rec: dict, ctx: dict, resolvers: dict | None = None) -> dict:
             if res.get("ok") is None:
                 warn("fda_quote", "FDA quote could not be checked in this environment.")
                 continue
-            expected = GUIDANCE_FOR_CATEGORY.get(crit["category"])
+            expected = expected_guidance(crit)
             if g != expected:
                 fail("fda_topic", f"Cited guidance '{g}' does not address {crit['category'].replace('_',' ')} criteria (expected '{expected}').")
                 continue

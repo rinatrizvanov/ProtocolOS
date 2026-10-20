@@ -21,7 +21,7 @@ class RedraftReq(BaseModel):
 def redraft_route(req: RedraftReq):
     from . import demo_guard
     from .api import get_review, resolvers
-    from .redraft import analyze
+    from .redraft import NotRedraftable, analyze
 
     nct = req.nct.strip().upper()
     if not demo_guard.valid_nct(nct):
@@ -33,6 +33,8 @@ def redraft_route(req: RedraftReq):
         return analyze(review, req.criterion_id, req.text, req.rationale, resolvers())
     except KeyError:
         raise HTTPException(404, "criterion not found") from None
+    except NotRedraftable as e:
+        raise HTTPException(400, str(e)) from None
 
 
 def install(app) -> None:

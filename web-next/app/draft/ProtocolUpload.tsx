@@ -98,7 +98,7 @@ export default function ProtocolUpload({ draft, onOpen }: { draft: Draft; onOpen
           Compare with your protocol
         </h2>
         <p className="text-sm text-muted">
-          Upload a protocol PDF: its lab, ECOG and washout criteria are read with the same extractor and each is reviewed against this
+          Upload a protocol PDF: its lab, ECOG, washout and condition criteria are read with the same extractor and each is reviewed against this
           draft&apos;s precedents. Upload only a protocol that is already public. The server reads its text, deletes the file, and keeps the
           extracted criteria for this browser only.
         </p>

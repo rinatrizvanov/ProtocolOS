@@ -38,11 +38,11 @@ The evidence engine is deterministic on purpose: every output can be traced to a
 
 ## How we evaluated it
 All numbers come from committed result files in the repository; gold labels are from a single annotator. None of this is clinical validation.
-- **Real protocols:** 122/128 hand-labelled criteria extracted correctly across 19 protocols. The first run on unseen protocols scored 15/21, kept on record; a fix brought it to 21/21. A second unseen set of six protocols scored 29/33 on its only run. FDA quotes 32/32 verbatim.
+- **Real protocols:** 122/128 hand-labelled criteria extracted correctly across 19 protocols. The first run on unseen protocols scored 15/21, kept on record; a fix brought it to 21/21. A second unseen set of six protocols scored 29/33 on its only run. FDA quotes 45/45 verbatim.
 - **Planted issues** (the Regeneron starter-sheet method): we made thresholds stricter on 5 real, previously unseen protocols (24 variants). 24/24 were never classified as "Rationale supports keeping"; 16–22/24 were explicitly escalated, depending on whether precedent is limited to trials that started earlier; 0/10 loosened thresholds were falsely flagged. The first run exposed three bugs, which are documented.
 - **Verifier:** 24/24 developer-designed faults rejected and 0/10 valid recommendations rejected, both locally and on Chalk Evaluations. The developer wrote both the faults and the verifier.
-- **Investigator answer checker** (local evaluation `protocolos-investigator`): 336/336 planted defects rejected (unknown trial IDs, changed numbers, causal phrases, misquotes, dropped counter-evidence, injected instructions), 44/44 of the investigator's own answers not rejected. The developers wrote both the mutants and the checker.
-- **Drafting, leave-one-out** on 4 cached trials (each drafted from its own idea at its start date, itself excluded): 0 criteria drafted without a verified precedent, 0 overclaim failures, and 22/31 drafted values equal to the trial's own value. Agreement shows a value was used before, not that it is right.
+- **Investigator answer checker** (local evaluation `protocolos-investigator`): 484/484 planted defects rejected (unknown trial IDs, changed numbers, causal phrases, misquotes, dropped counter-evidence, injected instructions), 64/64 of the investigator's own answers not rejected. The developers wrote both the mutants and the checker.
+- **Drafting, leave-one-out** on 4 cached trials (each drafted from its own idea at its start date, itself excluded): 0 criteria drafted without a verified precedent, 0 overclaim failures, and 29/46 drafted values or policies equal to the trial's own. Agreement shows a value was used before, not that it is right.
 
 ## Challenges
 - Protocol PDFs are messy: wrapped table cells, Symbol-font glyphs instead of ≥ and µ, image-only pages, and synopsis sections that look like eligibility sections.

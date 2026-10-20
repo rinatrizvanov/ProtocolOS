@@ -14,6 +14,7 @@ interface ReviewCriterion {
   unit: string | null;
   value_norm: number | null;
   unit_norm: string | null;
+  display?: string | null;
   source?: { page: number | null; url: string; text: string };
 }
 export interface ReviewLite {
@@ -55,7 +56,7 @@ const prettyUnit = (u: string) => u.replace(/m2$/, "m²");
 
 function toRow(c: DraftCriterion, w: ReviewCriterion | undefined, total: number, writtenReview: string | null = null): Row {
   const n = c.distribution.reduce((sum, d) => sum + d.count, 0);
-  const drafted = c.proposed ? valueText(c.proposed.operator, c.proposed.value, c.proposed.unit, c.label) : null;
+  const drafted = c.proposed ? valueText(c.proposed.operator, c.proposed.value, c.proposed.unit, c.label, c.proposed.display) : null;
   if (!w) return { c, written: null, writtenCondition: false, source: null, writtenReview, drafted, differs: true, measure: null, used: { k: 0, n, total } };
   const page = w.source?.page;
   const source = page ? { href: w.source?.url ? `${w.source.url}#page=${page}` : null, page } : null;
@@ -75,7 +76,7 @@ function toRow(c: DraftCriterion, w: ReviewCriterion | undefined, total: number,
   const k = wv === null ? 0 : (c.distribution.find((d) => sameValue(d, w.operator, wv, wu))?.count ?? 0);
   return {
     c,
-    written: wv !== null ? valueText(w.operator, wv, wu, c.label) : `${w.operator}?`,
+    written: wv !== null ? valueText(w.operator, wv, wu, c.label, w.display) : `${w.operator}?`,
     writtenCondition,
     source,
     writtenReview,
@@ -315,8 +316,7 @@ export default function BeforeAfter({
               <li key={r.criterion.id} className="flex flex-wrap gap-x-2 text-[13px] text-ink">
                 <span className="font-medium">{r.criterion.label}</span>
                 <span className="tabular-nums">
-                  {r.criterion.operator}
-                  {r.criterion.value_norm !== null ? fmt(r.criterion.value_norm) : "?"} {r.criterion.unit_norm ?? ""}
+                  {r.criterion.display ?? `${r.criterion.operator}${r.criterion.value_norm !== null ? fmt(r.criterion.value_norm) : "?"} ${r.criterion.unit_norm ?? ""}`}
                 </span>
                 {r.criterion.source?.page ? <span className="text-muted">p.{r.criterion.source.page}</span> : null}
                 {r.classification ? <span className="text-muted">Review: {DISPLAY_CLASSIFICATION[r.classification]}</span> : null}

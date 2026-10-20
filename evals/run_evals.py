@@ -26,6 +26,7 @@ from trialforge.verifier import default_resolvers, verify
 from .verifier_cases import CASES
 
 GOLD = json.loads((Path(__file__).parent / "gold" / "criteria.json").read_text())
+CONDITIONS = json.loads((Path(__file__).parent / "gold" / "conditions.json").read_text())
 OUT = DATA / "eval_results.json"
 
 
@@ -68,6 +69,36 @@ def eval_extraction():
         "value_recall": tot["found"] / tot["gold"], "precision": tot["found"] / tot["extracted"] if tot["extracted"] else None,
         "by_split": splits, "rows": rows,
     }, analyses
+
+
+def eval_conditions(analyses):
+    """Condition criteria (evals/gold/conditions.json): a labelled value must match, an absent one must not be extracted."""
+    rows, by_type = [], defaultdict(lambda: {"labelled": 0, "correct": 0, "absent": 0, "false_positive": 0})
+    for p in CONDITIONS["protocols"]:
+        a = analyses.get(p["nct"]) or analyze_trial(p["nct"])
+        got = {c["id"]: c for c in a["criteria"]}
+        for cid, (op, val) in p["conditions"].items():
+            c = got.get(cid)
+            ok = c is not None and c["operator"] == op and close(c["value_norm"], val)
+            by_type[cid]["labelled"] += 1
+            by_type[cid]["correct"] += ok
+            rows.append({"nct": p["nct"], "name": p["name"], "id": cid, "gold": f"{op}{val:g}", "ok": ok,
+                         "got": f"{c['operator']}{c['value_norm']:g}" if c else "—", "doc": c["source"]["doc"] if c else None,
+                         "why": "" if ok else ("not extracted" if c is None else "wrong value")})
+        for cid in p.get("absent", []):
+            c = got.get(cid)
+            by_type[cid]["absent"] += 1
+            by_type[cid]["false_positive"] += c is not None
+            if c is not None:
+                rows.append({"nct": p["nct"], "name": p["name"], "id": cid, "gold": "absent", "ok": False,
+                             "got": f"{c['operator']}{c['value_norm']:g}", "doc": c["source"]["doc"], "why": "extracted, not in the text"})
+    tot = {k: sum(t[k] for t in by_type.values()) for k in ("labelled", "correct", "absent", "false_positive")}
+    extracted_labelled = sum(1 for r in rows if r["gold"] != "absent" and r["got"] != "—")
+    return {"protocols": len(CONDITIONS["protocols"]), **tot,
+            "recall": tot["correct"] / tot["labelled"],
+            "precision": tot["correct"] / (extracted_labelled + tot["false_positive"]),
+            "ambiguous": sum(len(p.get("ambiguous", {})) for p in CONDITIONS["protocols"]),
+            "by_type": dict(by_type), "rows": rows, "note": CONDITIONS["_about"]}
 
 
 def eval_regimen(analyses):
@@ -243,6 +274,7 @@ def main():
     extraction, analyses = eval_extraction()
     suites = {
         "extraction": extraction,
+        "conditions": eval_conditions(analyses),
         "regimen": eval_regimen(analyses),
         "comparison": eval_comparison(analyses),
         "citations": eval_citations(analyses),
@@ -264,6 +296,12 @@ def main():
     for r in e["rows"]:
         if not r["ok"]:
             print(f"   MISS {r['split']:8s} {r['name']:22s} {r['id']:24s} gold {r['gold']:8s} got {r['got']:8s} ({r['why']})")
+    co = suites["conditions"]
+    print(f"Conditions (dev set): {co['correct']}/{co['labelled']} labelled values correct; {co['false_positive']}/{co['absent']} absent ones extracted; "
+          f"precision {co['precision']:.3f}; {co['ambiguous']} ambiguous not scored")
+    for r in co["rows"]:
+        if not r["ok"]:
+            print(f"   MISS {r['name']:22s} {r['id']:18s} gold {r['gold']:10s} got {r['got']:10s} ({r['why']}; {r['doc'] or 'no source'})")
     g = suites["regimen"]
     print(f"Regimen: precision {g['precision']:.3f} recall {g['recall']:.3f} (tp {g['tp']}, fp {g['fp']}, fn {g['fn']})")
     for r in g["rows"]:

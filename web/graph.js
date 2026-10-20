@@ -221,7 +221,7 @@
   function fillSelect() {
     const sel = $("#graph-criterion");
     const items = state.review?.reviews || [];
-    sel.innerHTML = items.map((r) => `<option value="${esc(r.criterion.id)}">${esc(r.criterion.label)} ${esc(r.criterion.operator || "")}${esc(num(r.criterion.value_norm))} ${esc(r.criterion.unit_norm || "")} · ${esc(r.classification)}</option>`).join("");
+    sel.innerHTML = items.map((r) => `<option value="${esc(r.criterion.id)}">${esc(r.criterion.label)} ${esc(r.criterion.display || `${r.criterion.operator || ""}${num(r.criterion.value_norm)} ${r.criterion.unit_norm || ""}`)} · ${esc(r.classification)}</option>`).join("");
     sel.value = g.cid || "";
     sel.disabled = !items.length;
   }
@@ -600,7 +600,7 @@
     switch (n.type) {
       case "Criterion":
         body = `${quote}<div class="gp-row">${srcLinkHtml(s.nct, s.page, s.quote, `Open ${s.nct} protocol p.${s.page}`) || `<span class="src">registry text (no protocol page)</span>`}${pdf}</div>
-          <div class="src">${esc(d.section || "")} criterion · ${esc(d.operator || "")}${esc(num(d.value_norm))} ${esc(d.unit_norm || "")}</div>`;
+          <div class="src">${esc(d.section || "")} criterion · ${esc(d.display || `${d.operator || ""}${num(d.value_norm)} ${d.unit_norm || ""}`)}</div>`;
         break;
       case "Passage":
         body = `${quote}<div class="gp-row">${srcLinkHtml(s.nct, s.page, s.quote, `Open ${s.nct} protocol p.${s.page}`)}${pdf}</div>
@@ -608,7 +608,7 @@
         break;
       case "ComparatorThreshold": {
         const sim = d.similarity || {};
-        body = `<div><b>${esc(d.acronym || d.nct_id)}</b>${d.acronym && d.acronym !== d.nct_id ? ` <span class="src">${esc(d.nct_id)}</span>` : ""} used <b>${esc(d.operator || "")}${esc(num(d.value_norm))} ${esc(d.unit_norm || "")}</b> · ${esc(human(d.direction))}</div>
+        body = `<div><b>${esc(d.acronym || d.nct_id)}</b>${d.acronym && d.acronym !== d.nct_id ? ` <span class="src">${esc(d.nct_id)}</span>` : ""} used <b>${esc(d.display || `${d.operator || ""}${num(d.value_norm)} ${d.unit_norm || ""}`)}</b> · ${esc(human(d.direction))}</div>
           ${quote}<div class="gp-row">${srcLinkHtml(s.nct, s.page, s.quote, `Open ${s.nct} protocol p.${s.page}`)}${pdf}<a class="gp-link" href="https://clinicaltrials.gov/study/${esc(d.nct_id)}" target="_blank" rel="noopener">Registry record</a></div>
           <div class="gp-kv"><span>Regimen coverage</span><span>${esc(d.coverage?.status || "?")}${(d.coverage?.missing_classes || []).length ? ` (lacks ${esc(d.coverage.missing_classes.join(", "))})` : ""}</span>
             ${sim.protocol_class_jaccard != null ? `<span>Drug-class overlap</span><span>${esc(num(sim.protocol_class_jaccard))} (protocol classes), ${esc(num(sim.registry_jaccard))} (registry)</span>` : ""}
